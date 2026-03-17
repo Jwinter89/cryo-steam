@@ -300,10 +300,12 @@
             <line class="flow-line active" x1="285" y1="290" x2="285" y2="310" stroke="#D4A843"/>
             <line class="flow-line active" x1="285" y1="310" x2="700" y2="310" stroke="#D4A843"/>
             <line class="flow-line active" x1="700" y1="310" x2="700" y2="60" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
-            <!-- Compressor discharge to sales gas (yellow) -->
-            <line class="flow-line active" x1="728" y1="45" x2="780" y2="45" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
-            <text x="780" y="40" font-size="7" fill="#D4A843" font-family="Courier New">SALES</text>
-            <text x="780" y="50" font-size="7" fill="#D4A843" font-family="Courier New">GAS</text>
+            <!-- Compressor discharge recycles to front end (yellow) -->
+            <line class="flow-line active" x1="728" y1="45" x2="760" y2="45" stroke="#D4A843"/>
+            <line class="flow-line active" x1="760" y1="45" x2="760" y2="15" stroke="#D4A843"/>
+            <line class="flow-line active" x1="760" y1="15" x2="55" y2="15" stroke="#D4A843"/>
+            <line class="flow-line active" x1="55" y1="15" x2="55" y2="180" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
+            <text x="400" y="12" text-anchor="middle" font-size="7" fill="#D4A843" font-family="Courier New">RECYCLE TO INLET</text>
 
             <!-- OVERHEAD COMPRESSOR -->
             <g id="equip-comp" transform="translate(690,25)">
