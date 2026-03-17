@@ -104,6 +104,38 @@ const StabilizerConfig = {
       value: 10.2, sp: 10.0, min: 5, max: 18,
       hi: 11.5, hh: 13.0, lo: 9.0, ll: 7.0,
       controllable: false, noise: 0.08, responseRate: 0.02
+    },
+
+    // ---- GAS CHROMATOGRAPH (Product Stream) ----
+    {
+      tag: 'GC-C1', desc: 'METHANE (C1)', unit: 'mol%',
+      value: 0.8, sp: 0.5, min: 0, max: 10,
+      hi: 2.0, hh: 3.5, lo: null, ll: null,
+      controllable: false, noise: 0.02, responseRate: 0.015
+    },
+    {
+      tag: 'GC-C2', desc: 'ETHANE (C2)', unit: 'mol%',
+      value: 2.1, sp: 1.5, min: 0, max: 15,
+      hi: 4.0, hh: 6.0, lo: null, ll: null,
+      controllable: false, noise: 0.03, responseRate: 0.015
+    },
+    {
+      tag: 'GC-C3', desc: 'PROPANE (C3)', unit: 'mol%',
+      value: 8.5, sp: 7.0, min: 0, max: 30,
+      hi: 15.0, hh: 20.0, lo: null, ll: null,
+      controllable: false, noise: 0.05, responseRate: 0.018
+    },
+    {
+      tag: 'GC-C4', desc: 'BUTANES (C4)', unit: 'mol%',
+      value: 22.0, sp: 22.0, min: 5, max: 45,
+      hi: null, hh: null, lo: null, ll: null,
+      controllable: false, noise: 0.08, responseRate: 0.02
+    },
+    {
+      tag: 'GC-C5', desc: 'PENTANES+ (C5+)', unit: 'mol%',
+      value: 66.6, sp: 69.0, min: 30, max: 95,
+      hi: null, hh: null, lo: null, ll: null,
+      controllable: false, noise: 0.1, responseRate: 0.02
     }
   ],
 
@@ -204,6 +236,52 @@ const StabilizerConfig = {
         // Slowly drift toward ambient (simulated)
         const ambient = 85; // Will be replaced by weather system
         return (ambient - val) * 0.001;
+      }
+    },
+
+    // ---- GC CASCADE RULES ----
+    // Reboiler temp drives composition — higher temp strips more lights
+    {
+      source: 'TIC-102', target: 'GC-C1', type: 'custom',
+      id: 'reboiler-to-gc-c1',
+      fn: (reboilerTemp, pv, dt) => {
+        // C1 should be near 0.5% at SP=300F. Below SP = more C1 in product
+        const target = 0.5 + Math.max(0, (300 - reboilerTemp) * 0.04);
+        return (target - pv.value) * 0.008;
+      }
+    },
+    {
+      source: 'TIC-102', target: 'GC-C2', type: 'custom',
+      id: 'reboiler-to-gc-c2',
+      fn: (reboilerTemp, pv, dt) => {
+        const target = 1.5 + Math.max(0, (300 - reboilerTemp) * 0.08);
+        return (target - pv.value) * 0.008;
+      }
+    },
+    {
+      source: 'TIC-102', target: 'GC-C3', type: 'custom',
+      id: 'reboiler-to-gc-c3',
+      fn: (reboilerTemp, pv, dt) => {
+        const target = 7.0 + Math.max(0, (300 - reboilerTemp) * 0.15);
+        return (target - pv.value) * 0.006;
+      }
+    },
+    {
+      source: 'TIC-102', target: 'GC-C4', type: 'custom',
+      id: 'reboiler-to-gc-c4',
+      fn: (reboilerTemp, pv, dt) => {
+        // C4 increases slightly when too hot (over-stripping pulls some C4 overhead)
+        const target = 22.0 - Math.max(0, (reboilerTemp - 320) * 0.1);
+        return (target - pv.value) * 0.005;
+      }
+    },
+    {
+      source: 'TIC-102', target: 'GC-C5', type: 'custom',
+      id: 'reboiler-to-gc-c5',
+      fn: (reboilerTemp, pv, dt) => {
+        // C5+ is the remainder — increases as lights are stripped out
+        const target = 69.0 + Math.min(8, Math.max(-10, (reboilerTemp - 300) * 0.12));
+        return (target - pv.value) * 0.005;
       }
     }
   ],

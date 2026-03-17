@@ -1298,6 +1298,132 @@ g[id^="equip-"]:hover line {
   border: 1px solid var(--border);
 }
 
+/* ---- GAS CHROMATOGRAPH DISPLAY ---- */
+.gc-display {
+  font-family: var(--font-mono);
+  padding: 0;
+}
+.gc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+}
+.gc-title {
+  font-size: 10px;
+  color: var(--text-tag);
+  letter-spacing: 0.1em;
+}
+.gc-stream {
+  font-size: 9px;
+  color: var(--text-unit);
+}
+.gc-cycle {
+  font-size: 9px;
+  color: var(--text-unit);
+  margin-left: auto;
+}
+.gc-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px 4px;
+  height: 120px;
+}
+.gc-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 60px;
+  height: 100%;
+}
+.gc-bar-val {
+  font-size: 10px;
+  color: var(--text-normal);
+  margin-bottom: 2px;
+  min-height: 14px;
+}
+.gc-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  background: var(--bg-input);
+  border: 1px solid var(--border-lite);
+}
+.gc-bar {
+  width: 100%;
+  transition: height 0.5s ease;
+  min-height: 2px;
+}
+.gc-bar-label {
+  font-size: 10px;
+  color: var(--text-label);
+  margin-top: 3px;
+  letter-spacing: 0.05em;
+}
+.gc-table {
+  padding: 4px 8px 8px;
+}
+.gc-table-row {
+  display: grid;
+  grid-template-columns: 32px 70px 1fr 36px 40px;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px;
+  margin: 1px 0;
+  background: var(--bg-card);
+  font-size: 10px;
+}
+.gc-total-row {
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+  padding-top: 4px;
+}
+.gc-comp-name {
+  color: var(--text-tag);
+  font-weight: bold;
+}
+.gc-comp-full {
+  color: var(--text-unit);
+  font-size: 8px;
+}
+.gc-comp-val {
+  color: var(--text-normal);
+  text-align: right;
+  font-size: 12px;
+}
+.gc-comp-unit {
+  color: var(--text-unit);
+  font-size: 9px;
+}
+.gc-comp-status {
+  text-align: center;
+  font-size: 9px;
+  padding: 1px 3px;
+}
+.gc-ok { color: var(--text-label); }
+.gc-warn { color: var(--alarm-lo); }
+.gc-alarm { color: var(--alarm-crit); }
+
+/* Desktop GC panel overlay on center panel */
+.gc-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  background: var(--bg-panel);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 30;
+  display: none;
+}
+
 /* ---- SCROLLBAR STYLING ---- */
 ::-webkit-scrollbar {
   width: 6px;

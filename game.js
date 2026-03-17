@@ -26,7 +26,8 @@
       { id: 'inlet', label: 'INLET SEP' },
       { id: 'hotoil', label: 'HOT OIL' },
       { id: 'compression', label: 'COMPRESSION' },
-      { id: 'tanks', label: 'TANKS' }
+      { id: 'tanks', label: 'TANKS' },
+      { id: 'gc', label: 'GC' }
     ],
     refrigeration: [
       { id: 'overview', label: 'OVERVIEW' },
@@ -121,6 +122,7 @@
     multiPlantManager: null,
     eventActionPanel: null,
     fieldNotes: null,
+    gcDisplay: null,
 
     currentScreen: 'title-screen',
     currentMode: null,    // learn, operate, crisis, optimize
@@ -392,10 +394,28 @@
               this._openGaugeSheet(facility, tab.id, tab.label);
             }
           } else {
-            // Desktop: filter left panel
+            // Desktop: filter left panel or show GC
+            const wasActive = btn.classList.contains('active') && this._activeBuilding === tab.id;
             tabBar.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            this._filterGaugesByBuilding(facility, tab.id);
+
+            if (tab.id === 'gc') {
+              if (wasActive) {
+                this._closeDesktopGC();
+                this._activeBuilding = null;
+                const first = tabBar.querySelector('.building-tab');
+                if (first) first.classList.add('active');
+                this._filterGaugesByBuilding(facility, first?.dataset.building);
+              } else {
+                btn.classList.add('active');
+                this._activeBuilding = tab.id;
+                this._openDesktopGC();
+              }
+            } else {
+              btn.classList.add('active');
+              this._activeBuilding = tab.id;
+              this._closeDesktopGC();
+              this._filterGaugesByBuilding(facility, tab.id);
+            }
           }
         });
         tabBar.appendChild(btn);
@@ -412,6 +432,29 @@
           sheet,
           document.getElementById('building-tabs')
         );
+      }
+
+      // GC tab — render chromatograph display
+      if (buildingId === 'gc' && this.gcDisplay) {
+        sheet.innerHTML = '';
+        const closeBar = document.createElement('div');
+        closeBar.className = 'gauge-sheet-header';
+        closeBar.innerHTML = `<span class="gauge-sheet-title">${label}</span>
+          <button class="gauge-sheet-close" id="gauge-sheet-close">&#x2715;</button>`;
+        sheet.appendChild(closeBar);
+        const gcBody = document.createElement('div');
+        gcBody.className = 'gauge-sheet-body';
+        sheet.appendChild(gcBody);
+        this.gcDisplay.render(gcBody);
+        sheet.classList.add('open');
+        document.getElementById('gauge-sheet-close').addEventListener('click', () => {
+          this._closeGaugeSheet();
+          this._activeBuilding = null;
+          document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
+          const first = document.querySelector('.building-tab');
+          if (first) first.classList.add('active');
+        });
+        return;
       }
 
       const config = FACILITY_CONFIGS[facility] ? FACILITY_CONFIGS[facility]() : null;
@@ -436,7 +479,6 @@
         for (const tag of filteredTags) {
           const pvDef = config.processVariables.find(pv => pv.tag === tag);
           if (!pvDef) continue;
-          // Read live value from simulation
           const livePV = this.sim ? this.sim.getPV(tag) : null;
           const val = livePV ? livePV.formatValue() : '----';
           const mode = (pvDef.controllable && livePV) ? livePV.mode : '';
@@ -457,7 +499,6 @@
         this._closeGaugeSheet();
         this._activeBuilding = null;
         document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
-        // Re-activate first tab
         const first = document.querySelector('.building-tab');
         if (first) first.classList.add('active');
       });
@@ -494,6 +535,24 @@
         const modeEl = row.querySelector('.gauge-sheet-mode');
         if (modeEl) modeEl.textContent = pv.mode;
       });
+    },
+
+    _openDesktopGC() {
+      if (!this.gcDisplay) return;
+      let panel = document.getElementById('gc-panel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'gc-panel';
+        panel.className = 'gc-panel';
+        document.getElementById('center-panel').appendChild(panel);
+      }
+      this.gcDisplay.render(panel);
+      panel.style.display = 'block';
+    },
+
+    _closeDesktopGC() {
+      const panel = document.getElementById('gc-panel');
+      if (panel) panel.style.display = 'none';
     },
 
     _filterGaugesByBuilding(facility, buildingId) {
@@ -661,6 +720,11 @@
       this.faceplateManager = new FaceplateManager(this.sim);
       this.alarmManager = new AlarmManager();
       this.pidDiagram = new PidDiagram(this.sim);
+
+      // GC display
+      if (window.GCDisplay) {
+        this.gcDisplay = new GCDisplay(this.sim);
+      }
       this.learnMode = new LearnMode(this);
 
       // Event action panel (interactive event resolution)
@@ -860,6 +924,7 @@
       if (this.gaugeManager) this.gaugeManager.update();
       if (this.faceplateManager) this.faceplateManager.update();
       if (this.pidDiagram) this.pidDiagram.update();
+      if (this.gcDisplay) this.gcDisplay.update();
       this._updateGaugeSheet();
 
       // Update spec board (facility-aware)
