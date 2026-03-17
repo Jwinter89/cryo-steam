@@ -1051,6 +1051,15 @@
       else if (speed === 1) document.getElementById('btn-1x').classList.add('active');
       else if (speed === 2) document.getElementById('btn-2x').classList.add('active');
       else if (speed === 4) document.getElementById('btn-4x').classList.add('active');
+
+      // Animate flow lines based on speed
+      const flowClass = { 0: '', 1: 'flowing', 2: 'flowing-2x', 4: 'flowing-4x' };
+      document.querySelectorAll('.flow-line').forEach(line => {
+        line.classList.remove('flowing', 'flowing-2x', 'flowing-4x');
+        if (speed > 0 && flowClass[speed]) {
+          line.classList.add(flowClass[speed]);
+        }
+      });
     },
 
     // ============================================================

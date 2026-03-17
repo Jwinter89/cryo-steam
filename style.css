@@ -536,9 +536,26 @@ html, body {
   stroke-width: 1.5px;
   fill: none;
 }
+/* Animated flow when sim is running */
+.flow-line.flowing {
+  stroke-dasharray: 6 4;
+  animation: flow-move 0.8s linear infinite;
+}
+.flow-line.flowing-2x {
+  stroke-dasharray: 6 4;
+  animation: flow-move 0.4s linear infinite;
+}
+.flow-line.flowing-4x {
+  stroke-dasharray: 6 4;
+  animation: flow-move 0.2s linear infinite;
+}
+@keyframes flow-move {
+  to { stroke-dashoffset: -10; }
+}
 .flow-line.no-flow {
   stroke: var(--flow-none) !important;
   stroke-width: 1px;
+  animation: none;
 }
 .flow-line.alarm {
   stroke: var(--flow-alarm) !important;
