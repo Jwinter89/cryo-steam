@@ -15,11 +15,34 @@
       <div class="title-content">
         <h1 class="title-logo">COLD CREEK</h1>
         <p class="title-sub">GAS PLANT SIMULATOR</p>
+
+        <!-- Username display / edit -->
+        <div id="username-section" class="username-section">
+          <div id="username-display" class="username-display" style="display:none">
+            <span class="username-label">OPERATOR:</span>
+            <span id="username-name" class="username-name"></span>
+            <button id="username-edit" class="username-edit-btn">&#9998;</button>
+          </div>
+          <div id="username-prompt" class="username-prompt">
+            <input id="username-input" class="username-input" type="text" placeholder="ENTER CALLSIGN" maxlength="20">
+            <button id="username-save" class="menu-btn username-save-btn">SET NAME</button>
+          </div>
+        </div>
+
         <div class="title-menu">
           <button class="menu-btn" data-action="new-game">NEW GAME</button>
           <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
           <button class="menu-btn" data-action="settings">SETTINGS</button>
         </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard-box">
+          <h3 class="leaderboard-title">LEADERBOARD</h3>
+          <div id="leaderboard-list" class="leaderboard-list">
+            <div class="leaderboard-loading">LOADING...</div>
+          </div>
+        </div>
+
         <!-- Feedback Boys -->
         <div class="feedback-box">
           <h3 class="feedback-title">FEEDBACK BOYS</h3>
@@ -96,6 +119,7 @@
       <!-- Top Bar -->
       <div id="topbar">
         <div class="topbar-left">
+          <button id="btn-main-menu" class="topbar-menu-btn" title="Main Menu">&#9776;</button>
           <span id="plant-name">STABILIZER</span>
           <span id="game-mode-label">OPERATE</span>
         </div>
@@ -531,6 +555,9 @@
         </div>
       </div>
 
+      <!-- Objectives Overlay -->
+      <div id="objectives-overlay" class="objectives-overlay" style="display:none"></div>
+
       <!-- Bottom Building Tabs (dynamically populated) -->
       <div id="building-tabs">
         <!-- Populated by game.js based on facility -->
@@ -621,6 +648,25 @@
     </div>
   </div>
 
+  <!-- Firebase (leaderboard) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    // Firebase config — Cold Creek Leaderboard
+    // Replace these with your own Firebase project values
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp({
+        apiKey: "AIzaSyDummyKeyReplaceMe",
+        authDomain: "cold-creek-sim.firebaseapp.com",
+        databaseURL: "https://cold-creek-sim-default-rtdb.firebaseio.com",
+        projectId: "cold-creek-sim",
+        storageBucket: "cold-creek-sim.appspot.com",
+        messagingSenderId: "000000000000",
+        appId: "1:000000000000:web:0000000000000000"
+      });
+    }
+  </script>
+
   <!-- Engine -->
   <script src="src/engine/processVariable.js"></script>
   <script src="src/engine/cascadeEngine.js"></script>
@@ -655,6 +701,8 @@
   <script src="src/ui/multiPlantManager.js"></script>
   <script src="src/ui/fieldNotes.js"></script>
   <script src="src/ui/eventActionPanel.js"></script>
+  <script src="src/ui/leaderboard.js"></script>
+  <script src="src/ui/objectives.js"></script>
   <script src="src/audio/audioManager.js"></script>
 
   <!-- Main game -->

@@ -147,14 +147,17 @@
     // ============================================================
 
     init() {
+      this.leaderboard = new Leaderboard();
       this._loadProgress();
       this._bindScreenNav();
       this._bindTimeControls();
       this._bindSettings();
       this._bindMobileControls();
+      this._bindUsername();
       this._updateUnlockStates();
       this._updateContinueButton();
       this._showScreen('title-screen');
+      this._refreshLeaderboard();
     },
 
     // ============================================================
@@ -178,6 +181,20 @@
           }
         });
       });
+
+      // Main menu button (from game screen)
+      const mainMenuBtn = document.getElementById('btn-main-menu');
+      if (mainMenuBtn) {
+        mainMenuBtn.addEventListener('click', () => {
+          if (this.sim && this.sim.running) {
+            this.sim.pause();
+            this._updateTimeButtons(0);
+          }
+          this.saveGameState();
+          this._showScreen('title-screen');
+          this._updateContinueButton();
+        });
+      }
 
       // Feedback Boys
       const feedbackBtn = document.getElementById('feedback-send');
@@ -299,6 +316,11 @@
       const screen = document.getElementById(screenId);
       if (screen) screen.classList.add('active');
       this.currentScreen = screenId;
+
+      // Refresh leaderboard when returning to title
+      if (screenId === 'title-screen') {
+        this._refreshLeaderboard();
+      }
     },
 
     _updateContinueButton() {
@@ -810,14 +832,20 @@
         this._onShiftEnd();
       };
 
+      // Initialize objectives
+      if (window.Objectives) {
+        this.objectives = new Objectives(this.currentFacility, this.currentMode);
+      }
+
       // Start in appropriate mode
       if (this.currentMode === 'learn') {
         this.learnMode.start(1);
       } else if (this.currentMode === 'crisis' && this.crisisScenario) {
         this._startCrisisScenario();
       } else {
-        // Operate/optimize mode — start paused
+        // Operate/optimize mode — show briefing, start paused
         this.sim.pause();
+        this._showObjectivesBriefing();
       }
     },
 
@@ -1195,6 +1223,93 @@
     },
 
     // ============================================================
+    // USERNAME & LEADERBOARD
+    // ============================================================
+
+    _bindUsername() {
+      const display = document.getElementById('username-display');
+      const prompt = document.getElementById('username-prompt');
+      const nameEl = document.getElementById('username-name');
+      const input = document.getElementById('username-input');
+      const saveBtn = document.getElementById('username-save');
+      const editBtn = document.getElementById('username-edit');
+
+      const showName = () => {
+        const name = this.leaderboard.getUsername();
+        if (name) {
+          nameEl.textContent = name.toUpperCase();
+          display.style.display = '';
+          prompt.style.display = 'none';
+        } else {
+          display.style.display = 'none';
+          prompt.style.display = '';
+        }
+      };
+
+      saveBtn.addEventListener('click', () => {
+        const val = input.value.trim();
+        if (val) {
+          this.leaderboard.setUsername(val);
+          input.value = '';
+          showName();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveBtn.click();
+      });
+
+      editBtn.addEventListener('click', () => {
+        input.value = this.leaderboard.getUsername();
+        display.style.display = 'none';
+        prompt.style.display = '';
+        input.focus();
+      });
+
+      showName();
+    },
+
+    async _refreshLeaderboard() {
+      const listEl = document.getElementById('leaderboard-list');
+      if (!listEl) return;
+
+      try {
+        const scores = await this.leaderboard.getTopScores(10);
+        if (scores.length === 0) {
+          listEl.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — COMPLETE A SHIFT!</div>';
+          return;
+        }
+
+        const currentUser = this.leaderboard.getUsername().toUpperCase();
+        listEl.innerHTML = scores.map((s, i) => {
+          const rank = i + 1;
+          const isSelf = s.username.toUpperCase() === currentUser && currentUser;
+          const rankClass = rank <= 3 ? ` lb-rank-${rank}` : '';
+          const selfClass = isSelf ? ' lb-self' : '';
+          const earnings = s.earnings >= 0
+            ? `$${s.earnings.toLocaleString()}`
+            : `-$${Math.abs(s.earnings).toLocaleString()}`;
+          const scoreClass = s.earnings < 0 ? ' negative' : '';
+          const facility = (s.facility || '').toUpperCase();
+          return `<div class="lb-row${selfClass}">
+            <span class="lb-rank${rankClass}">${rank}</span>
+            <span class="lb-name">${this._escapeHtml(s.username)}</span>
+            <span class="lb-facility">${facility}</span>
+            <span class="lb-score${scoreClass}">${earnings}</span>
+          </div>`;
+        }).join('');
+      } catch (e) {
+        listEl.innerHTML = '<div class="leaderboard-empty">COULD NOT LOAD SCORES</div>';
+      }
+    },
+
+    _escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    },
+
+    // ============================================================
     // SHIFT END
     // ============================================================
 
@@ -1216,6 +1331,11 @@
       this._updateUnlockStates();
       this._addRadioMessage(`SHIFT COMPLETE — Earnings: $${Math.round(earnings).toLocaleString()}`);
 
+      // Submit to leaderboard
+      if (this.leaderboard) {
+        this.leaderboard.submitScore(facility, this.currentMode, earnings);
+      }
+
       // Check for tier unlock messages
       if (facility === 'stabilizer' && this.progress.stabilizerShiftsComplete === 1) {
         this._addRadioMessage('TIER 2 UNLOCKED: Refrigeration Plant now available.');
@@ -1223,6 +1343,38 @@
       if (facility === 'refrigeration' && this.progress.refrigerationShiftsComplete === 1) {
         this._addRadioMessage('TIER 3 UNLOCKED: Garden Creek Cryogenic now available.');
       }
+
+      // Show shift results overlay
+      this._showObjectivesResults(earnings);
+    },
+
+    _showObjectivesBriefing() {
+      if (!this.objectives) return;
+      const overlay = document.getElementById('objectives-overlay');
+      if (!overlay) return;
+
+      overlay.innerHTML = this.objectives.renderBriefing();
+      overlay.style.display = 'flex';
+
+      document.getElementById('obj-start-btn').addEventListener('click', () => {
+        overlay.style.display = 'none';
+      });
+    },
+
+    _showObjectivesResults(earnings) {
+      if (!this.objectives) return;
+      this.objectives.evaluate(this);
+      const overlay = document.getElementById('objectives-overlay');
+      if (!overlay) return;
+
+      overlay.innerHTML = this.objectives.renderResults(earnings);
+      overlay.style.display = 'flex';
+
+      document.getElementById('obj-done-btn').addEventListener('click', () => {
+        overlay.style.display = 'none';
+        this._showScreen('title-screen');
+        this._updateContinueButton();
+      });
     },
 
     // ============================================================
