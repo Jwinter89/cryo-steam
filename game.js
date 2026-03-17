@@ -367,7 +367,7 @@
       tabBar.innerHTML = '';
 
       const tabs = BUILDING_TABS[facility] || [];
-      const buildingTags = BUILDING_TAGS[facility] || {};
+      this._activeBuilding = null;
 
       tabs.forEach((tab, i) => {
         const btn = document.createElement('button');
@@ -375,11 +375,124 @@
         btn.dataset.building = tab.id;
         btn.textContent = tab.label;
         btn.addEventListener('click', () => {
-          tabBar.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
-          btn.classList.add('active');
-          this._filterGaugesByBuilding(facility, tab.id);
+          const isMobile = window.innerWidth <= 768;
+
+          if (isMobile) {
+            // On mobile: toggle bottom sheet with gauges
+            const wasActive = btn.classList.contains('active') && this._activeBuilding === tab.id;
+            tabBar.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
+
+            if (wasActive) {
+              // Close bottom sheet
+              this._closeGaugeSheet();
+              this._activeBuilding = null;
+            } else {
+              btn.classList.add('active');
+              this._activeBuilding = tab.id;
+              this._openGaugeSheet(facility, tab.id, tab.label);
+            }
+          } else {
+            // Desktop: filter left panel
+            tabBar.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            this._filterGaugesByBuilding(facility, tab.id);
+          }
         });
         tabBar.appendChild(btn);
+      });
+    },
+
+    _openGaugeSheet(facility, buildingId, label) {
+      let sheet = document.getElementById('gauge-sheet');
+      if (!sheet) {
+        sheet = document.createElement('div');
+        sheet.id = 'gauge-sheet';
+        sheet.className = 'gauge-sheet';
+        document.getElementById('game-screen').insertBefore(
+          sheet,
+          document.getElementById('building-tabs')
+        );
+      }
+
+      const config = FACILITY_CONFIGS[facility] ? FACILITY_CONFIGS[facility]() : null;
+      if (!config) return;
+
+      const buildingTags = BUILDING_TAGS[facility] || {};
+      const allowedTags = buildingTags[buildingId];
+      const groups = GAUGE_GROUPS[facility] || [];
+
+      let html = `<div class="gauge-sheet-header">
+        <span class="gauge-sheet-title">${label}</span>
+        <button class="gauge-sheet-close" id="gauge-sheet-close">&#x2715;</button>
+      </div><div class="gauge-sheet-body">`;
+
+      for (const group of groups) {
+        const filteredTags = allowedTags
+          ? group.tags.filter(t => allowedTags.includes(t))
+          : group.tags;
+        if (filteredTags.length === 0) continue;
+
+        html += `<div class="gauge-sheet-section">${group.header}</div>`;
+        for (const tag of filteredTags) {
+          const pvDef = config.processVariables.find(pv => pv.tag === tag);
+          if (!pvDef) continue;
+          // Read live value from simulation
+          const livePV = this.sim ? this.sim.getPV(tag) : null;
+          const val = livePV ? livePV.formatValue() : '----';
+          const mode = (pvDef.controllable && livePV) ? livePV.mode : '';
+          html += `<div class="gauge-sheet-row" data-tag="${tag}">
+            <span class="gauge-sheet-tag">${tag}</span>
+            <span class="gauge-sheet-val">${val}</span>
+            <span class="gauge-sheet-unit">${pvDef.unit}</span>
+            ${mode ? `<span class="gauge-sheet-mode">${mode}</span>` : ''}
+          </div>`;
+        }
+      }
+      html += '</div>';
+      sheet.innerHTML = html;
+      sheet.classList.add('open');
+
+      // Bind close button
+      document.getElementById('gauge-sheet-close').addEventListener('click', () => {
+        this._closeGaugeSheet();
+        this._activeBuilding = null;
+        document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
+        // Re-activate first tab
+        const first = document.querySelector('.building-tab');
+        if (first) first.classList.add('active');
+      });
+
+      // Bind row taps to open faceplate
+      sheet.querySelectorAll('.gauge-sheet-row').forEach(row => {
+        row.addEventListener('click', (e) => {
+          const tag = row.dataset.tag;
+          if (tag && this.faceplateManager) {
+            this.faceplateManager.open(tag, e);
+          }
+        });
+      });
+    },
+
+    _closeGaugeSheet() {
+      const sheet = document.getElementById('gauge-sheet');
+      if (sheet) sheet.classList.remove('open');
+    },
+
+    _updateGaugeSheet() {
+      const sheet = document.getElementById('gauge-sheet');
+      if (!sheet || !sheet.classList.contains('open') || !this.sim) return;
+
+      sheet.querySelectorAll('.gauge-sheet-row').forEach(row => {
+        const tag = row.dataset.tag;
+        if (!tag) return;
+        const pv = this.sim.getPV(tag);
+        if (!pv) return;
+
+        const valEl = row.querySelector('.gauge-sheet-val');
+        if (valEl) valEl.textContent = pv.formatValue();
+
+        const modeEl = row.querySelector('.gauge-sheet-mode');
+        if (modeEl) modeEl.textContent = pv.mode;
       });
     },
 
@@ -747,6 +860,7 @@
       if (this.gaugeManager) this.gaugeManager.update();
       if (this.faceplateManager) this.faceplateManager.update();
       if (this.pidDiagram) this.pidDiagram.update();
+      this._updateGaugeSheet();
 
       // Update spec board (facility-aware)
       this._updateSpecBoard();

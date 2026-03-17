@@ -1207,6 +1207,97 @@ g[id^="equip-"]:hover line {
   z-index: 199;
 }
 
+/* ---- GAUGE BOTTOM SHEET (Mobile) ---- */
+.gauge-sheet {
+  display: none;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+.gauge-sheet.open {
+  display: block;
+  max-height: 45vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.gauge-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.gauge-sheet-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-normal);
+  letter-spacing: 0.1em;
+}
+.gauge-sheet-close {
+  background: none;
+  border: none;
+  color: var(--text-unit);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.gauge-sheet-body {
+  padding: 4px 0;
+}
+.gauge-sheet-section {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  color: var(--text-desc);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 10px 2px;
+}
+.gauge-sheet-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  margin: 2px 6px;
+  background: var(--bg-card);
+  cursor: pointer;
+  min-height: 40px;
+}
+.gauge-sheet-row:active {
+  background: var(--bg-input);
+}
+.gauge-sheet-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-tag);
+  min-width: 55px;
+}
+.gauge-sheet-val {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-normal);
+  flex: 1;
+  text-align: right;
+}
+.gauge-sheet-unit {
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  color: var(--text-unit);
+  min-width: 35px;
+}
+.gauge-sheet-mode {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-unit);
+  padding: 1px 4px;
+  border: 1px solid var(--border);
+}
+
 /* ---- SCROLLBAR STYLING ---- */
 ::-webkit-scrollbar {
   width: 6px;
