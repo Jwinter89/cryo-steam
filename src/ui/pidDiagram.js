@@ -26,10 +26,44 @@ class PidDiagram {
   _updateLevelIndicators() {
     // Stabilizer separator level
     this._updateLevelLine('sep-level-line', 'LIC-302', 70);
+    this._updateSepFill('sep-level-fill', 'LIC-302', 68);
     // Product tank level fill
     this._updateTankFill('tank-level-fill', 'LIC-303', 66);
     // Flash drum level (amine)
     this._updateLevelLine('flash-level', 'LIC-A02', 45);
+  }
+
+  _updateSepFill(elementId, pvTag, vesselHeight) {
+    const pv = this.sim.getPV(pvTag);
+    if (!pv) return;
+    const fill = document.getElementById(elementId);
+    if (!fill) return;
+
+    const pct = pv.displayValue() / 100;
+    const fillHeight = pct * vesselHeight;
+    const y = 2 + (vesselHeight - fillHeight);
+    fill.setAttribute('y', y);
+    fill.setAttribute('height', Math.max(0, fillHeight));
+
+    // Color based on alarm state and pig activity
+    const game = window.coldCreekGame;
+    const pigActive = game && game.eventSystem &&
+      game.eventSystem.activeEvents.some(e => e.id.startsWith('pig-') &&
+        (e.data.surgePhase === 'arriving' || e.data.surgePhase === 'peak'));
+
+    if (pv.alarmState === 'HIHI' || pv.alarmState === 'LOLO') {
+      fill.setAttribute('fill', '#8B1A1A');
+      fill.setAttribute('opacity', '0.8');
+    } else if (pv.alarmState === 'HI' || pv.alarmState === 'LO') {
+      fill.setAttribute('fill', '#8B6914');
+      fill.setAttribute('opacity', '0.7');
+    } else if (pigActive) {
+      fill.setAttribute('fill', '#6B5B33');
+      fill.setAttribute('opacity', '0.7');
+    } else {
+      fill.setAttribute('fill', '#3A5A7A');
+      fill.setAttribute('opacity', '0.6');
+    }
   }
 
   _updateLevelLine(elementId, pvTag, vesselHeight) {

@@ -7,6 +7,7 @@ class AlarmManager {
   constructor() {
     this.alarms = []; // Active alarms
     this.alarmHistory = []; // All alarms this shift
+    this.tipsEnabled = localStorage.getItem('coldcreek-tips') !== 'off';
 
     this.barEl = document.getElementById('alarm-bar');
     this.countEl = document.getElementById('alarm-count');
@@ -16,6 +17,11 @@ class AlarmManager {
     this.listEl = document.getElementById('alarm-list');
 
     this._bindEvents();
+  }
+
+  setTipsEnabled(enabled) {
+    this.tipsEnabled = enabled;
+    localStorage.setItem('coldcreek-tips', enabled ? 'on' : 'off');
   }
 
   _bindEvents() {
@@ -162,6 +168,7 @@ class AlarmManager {
     const unacked = this.alarms.find(a => !a.acked);
     if (unacked) {
       unacked.acked = true;
+      this._navigateToTag(unacked.tag, unacked.state);
       this._updateBar();
       this._updateList();
     }
@@ -171,9 +178,107 @@ class AlarmManager {
     const alarm = this.alarms.find(a => a.tag === tag);
     if (alarm) {
       alarm.acked = true;
+      this._navigateToTag(tag, alarm.state);
       this._updateBar();
       this._updateList();
     }
+  }
+
+  _navigateToTag(tag, state) {
+    // Open faceplate for the alarming tag
+    const game = window.coldCreekGame;
+    if (game && game.faceplateManager && !tag.startsWith('evt-')) {
+      // Close alarm list popup so faceplate is visible
+      this.listPopup.style.display = 'none';
+      // Create a synthetic event at center of screen
+      const fakeEvent = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 };
+      game.faceplateManager.open(tag, fakeEvent);
+    }
+
+    // Show contextual tip
+    if (this.tipsEnabled) {
+      this._showTip(tag, state);
+    }
+  }
+
+  _showTip(tag, state) {
+    const tip = this._getTip(tag, state);
+    if (!tip) return;
+
+    // Remove existing tip
+    const existing = document.getElementById('alarm-tip');
+    if (existing) existing.remove();
+
+    const el = document.createElement('div');
+    el.id = 'alarm-tip';
+    el.className = 'alarm-tip';
+    el.innerHTML = `
+      <span class="alarm-tip-icon">&#x1F4A1;</span>
+      <span class="alarm-tip-text">${tip}</span>
+      <button class="alarm-tip-dismiss" id="alarm-tip-dismiss">&#x2715;</button>
+      <button class="alarm-tip-off" id="alarm-tip-off">TURN OFF TIPS</button>
+    `;
+    document.getElementById('game-screen').appendChild(el);
+
+    // Auto-dismiss after 8 seconds
+    const timer = setTimeout(() => el.remove(), 8000);
+
+    document.getElementById('alarm-tip-dismiss').addEventListener('click', () => {
+      clearTimeout(timer);
+      el.remove();
+    });
+
+    document.getElementById('alarm-tip-off').addEventListener('click', () => {
+      clearTimeout(timer);
+      el.remove();
+      this.setTipsEnabled(false);
+    });
+  }
+
+  _getTip(tag, state) {
+    const isHigh = state === 'HI' || state === 'HIHI';
+    const tips = {
+      'LIC-302': isHigh
+        ? 'Separator level rising — ramp up FIC-401 SP to pull more liquid off. Consider pinching XV-101 if a pig is incoming.'
+        : 'Separator level low — check inlet flow. Is XV-101 open? Feed may have dropped.',
+      'LIC-301': isHigh
+        ? 'Tower sump flooding — increase product flow via FV-201. Check reboiler temperature.'
+        : 'Tower sump low — reduce product flow. Check if feed is reaching the tower.',
+      'TIC-102': isHigh
+        ? 'Reboiler too hot — reduce hot oil supply via TIC-104 SP or close TV-102. Risk of over-stripping.'
+        : 'Reboiler too cold — increase TIC-104 SP. Product RVP will rise with insufficient heat.',
+      'TIC-104': isHigh
+        ? 'Hot oil supply too hot — reduce heater firing. Check H-100 status.'
+        : 'Hot oil supply cold — check heater H-100. May have faulted. RVP will drift off-spec.',
+      'PIC-201': isHigh
+        ? 'Tower pressure high — check compressor C-100 status. Overhead may be backing up.'
+        : 'Tower pressure low — check feed flow and reboiler. May be over-stripping.',
+      'PIC-202': isHigh
+        ? 'Compressor discharge high — check downstream restrictions.'
+        : 'Compressor discharge low — compressor may have tripped. Check C-100.',
+      'PIC-203': isHigh
+        ? 'Tank pressure rising — RVP may be off-spec. Light ends in product. Check reboiler temp.'
+        : null,
+      'AI-501': isHigh
+        ? 'RVP high — not enough light ends stripped. Increase reboiler temp (TIC-102 SP).'
+        : 'RVP low — over-stripping. Reduce reboiler temp to save energy and product yield.',
+      'FIC-401': isHigh
+        ? 'Feed flow high — pig surge? Check separator level LIC-302. Manage with XV-101 pinch.'
+        : 'Feed flow low — check inlet. XV-101 may be closed or pipeline issue.',
+      'TIC-103': isHigh
+        ? 'Tower overhead temp high — more light ends flashing overhead. Check reboiler.'
+        : null,
+      'TIC-105': isHigh
+        ? 'Compressor suction hot — check overhead cooling.'
+        : null,
+      'LIC-303': isHigh
+        ? 'Product tank near full — arrange truck loading or reduce product flow.'
+        : 'Product tank low — normal if truck recently loaded.',
+      'GC-C1': isHigh ? 'Methane in product high — increase reboiler temp to strip more lights.' : null,
+      'GC-C2': isHigh ? 'Ethane in product high — increase reboiler temp.' : null,
+      'GC-C3': isHigh ? 'Propane in product high — reboiler may be too cold.' : null,
+    };
+    return tips[tag] || null;
   }
 
   _toggleAlarmList() {

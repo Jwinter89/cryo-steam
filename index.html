@@ -175,6 +175,8 @@
             <!-- INLET SEPARATOR -->
             <g id="equip-inlet-sep" transform="translate(150,160)">
               <rect x="0" y="0" width="50" height="70" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <!-- Live liquid fill (updated by pidDiagram.js) -->
+              <rect id="sep-level-fill" x="2" y="35" width="46" height="33" fill="#3A5A7A" opacity="0.6"/>
               <!-- Level indicator line -->
               <line id="sep-level-line" x1="5" y1="42" x2="45" y2="42" stroke="#707070" stroke-width="1" stroke-dasharray="3,2"/>
               <text x="25" y="90" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">V-100</text>
@@ -563,6 +565,10 @@
         <div class="setting-row">
           <span>Alarm Sounds</span>
           <input type="checkbox" id="setting-alarm-sound" checked>
+        </div>
+        <div class="setting-row">
+          <span>Alarm Tips</span>
+          <input type="checkbox" id="setting-tips" checked>
         </div>
         <div class="setting-row">
           <button class="menu-btn" id="btn-field-notes">FIELD NOTES</button>

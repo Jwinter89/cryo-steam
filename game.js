@@ -1096,6 +1096,15 @@
           if (this.audioManager) this.audioManager.alarmsEnabled = alarmSoundToggle.checked;
         });
       }
+
+      const tipsToggle = document.getElementById('setting-tips');
+      if (tipsToggle) {
+        // Restore saved preference
+        tipsToggle.checked = localStorage.getItem('coldcreek-tips') !== 'off';
+        tipsToggle.addEventListener('change', () => {
+          if (this.alarmManager) this.alarmManager.setTipsEnabled(tipsToggle.checked);
+        });
+      }
     },
 
     // ============================================================
