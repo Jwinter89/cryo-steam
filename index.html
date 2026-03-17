@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Cold Creek — Gas Plant Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Title Screen -->
+    <div id="title-screen" class="screen active">
+      <div class="title-content">
+        <h1 class="title-logo">COLD CREEK</h1>
+        <p class="title-sub">GAS PLANT SIMULATOR</p>
+        <div class="title-menu">
+          <button class="menu-btn" data-action="new-game">NEW GAME</button>
+          <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
+          <button class="menu-btn" data-action="settings">SETTINGS</button>
+        </div>
+        <p class="title-credit">Designed by a decade-experienced cryogenic plant operator</p>
+      </div>
+    </div>
+
+    <!-- Mode Select Screen -->
+    <div id="mode-screen" class="screen">
+      <div class="mode-header">
+        <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
+        <h2>SELECT MODE</h2>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-card" data-mode="learn">
+          <span class="mode-icon">&#9679;</span>
+          <h3>LEARN MODE</h3>
+          <p>Guided walkthrough with P&amp;ID overlays. No failure state. Build your mental model.</p>
+        </div>
+        <div class="mode-card" data-mode="operate">
+          <span class="mode-icon mode-yellow">&#9679;</span>
+          <h3>OPERATE MODE</h3>
+          <p>Real-time plant operation. Manage throughput, respond to upsets, hit P&amp;L targets.</p>
+        </div>
+        <div class="mode-card locked" data-mode="crisis">
+          <span class="mode-icon mode-red">&#9679;</span>
+          <h3>CRISIS MODE</h3>
+          <p>Timed upset scenarios. Leaderboard ranked by recovery time and P&amp;L saved.</p>
+          <span class="lock-label">COMPLETE TIER 1</span>
+        </div>
+        <div class="mode-card locked" data-mode="optimize">
+          <span class="mode-icon mode-gold">&#9670;</span>
+          <h3>OPTIMIZE MODE</h3>
+          <p>Maximize NGL recovery and shift earnings. Pure tuning. Competitive leaderboard.</p>
+          <span class="lock-label">COMPLETE TIER 1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Facility Select Screen -->
+    <div id="facility-screen" class="screen">
+      <div class="mode-header">
+        <button class="back-btn" data-screen="mode-screen">&#9664; BACK</button>
+        <h2>SELECT FACILITY</h2>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-card" data-facility="stabilizer">
+          <h3>STABILIZER SCHOOL</h3>
+          <p>Tutorial facility. Learn the fundamentals: reboiler control, RVP management, pig arrivals.</p>
+          <span class="tier-label">TIER 1</span>
+        </div>
+        <div class="mode-card locked" data-facility="refrigeration">
+          <h3>REFRIGERATION PLANT</h3>
+          <p>TEG dehydration, Kimray glycol pump, BTEX compliance. Intermediate operations.</p>
+          <span class="tier-label">TIER 2</span>
+          <span class="lock-label">COMPLETE TIER 1</span>
+        </div>
+        <div class="mode-card locked" data-facility="cryogenic">
+          <h3>GARDEN CREEK CRYOGENIC</h3>
+          <p>110 MMcfd. Turboexpander, mol sieve, demethanizer. Mode switching. Three-plant endgame.</p>
+          <span class="tier-label">TIER 3</span>
+          <span class="lock-label">COMPLETE TIER 2</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="screen">
+      <!-- Top Bar -->
+      <div id="topbar">
+        <div class="topbar-left">
+          <span id="plant-name">STABILIZER</span>
+          <span id="game-mode-label">OPERATE</span>
+        </div>
+        <div class="topbar-center">
+          <span id="game-time">06:00</span>
+          <span id="shift-label">DAY SHIFT</span>
+        </div>
+        <div class="topbar-right">
+          <span id="pnl-rate" class="pnl-value">$0/hr</span>
+          <span id="shift-earnings" class="pnl-total">SHIFT: $0</span>
+        </div>
+      </div>
+
+      <!-- Alarm Summary Bar -->
+      <div id="alarm-bar">
+        <div id="alarm-count">0 ALARMS</div>
+        <div id="alarm-message">NO ACTIVE ALARMS</div>
+        <button id="alarm-ack-btn" style="display:none">ACK</button>
+      </div>
+
+      <!-- Learn Mode Overlay -->
+      <div id="learn-overlay" style="display:none">
+        <div id="learn-panel">
+          <h3 id="learn-title">LESSON</h3>
+          <p id="learn-text"></p>
+          <div id="learn-highlight" class="learn-highlight-indicator"></div>
+          <button id="learn-next" class="menu-btn">NEXT</button>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div id="main-content">
+        <!-- Left Panel - Process Values -->
+        <div id="left-panel">
+          <div class="panel-section">
+            <h4 class="section-header">TEMPERATURES</h4>
+            <div class="gauge-row" id="g-tic-101" data-tag="TIC-101">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">TIC-101</span>
+                <span class="gauge-desc">INLET LIQ</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">degF</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-tic-102" data-tag="TIC-102">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">TIC-102</span>
+                <span class="gauge-desc">REBOILER</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">degF</span>
+              </div>
+              <span class="gauge-mode">AUTO</span>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-tic-103" data-tag="TIC-103">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">TIC-103</span>
+                <span class="gauge-desc">TWR OVERHEAD</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">degF</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-tic-104" data-tag="TIC-104">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">TIC-104</span>
+                <span class="gauge-desc">HOT OIL SUP</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">degF</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-tic-105" data-tag="TIC-105">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">TIC-105</span>
+                <span class="gauge-desc">COMP SUCT</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">degF</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h4 class="section-header">PRESSURES</h4>
+            <div class="gauge-row" id="g-pic-201" data-tag="PIC-201">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">PIC-201</span>
+                <span class="gauge-desc">TWR PRESS</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">PSI</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-pic-202" data-tag="PIC-202">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">PIC-202</span>
+                <span class="gauge-desc">COMP DISCH</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">PSI</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-pic-203" data-tag="PIC-203">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">PIC-203</span>
+                <span class="gauge-desc">TANK PRESS</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">PSI</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h4 class="section-header">LEVELS &amp; FLOWS</h4>
+            <div class="gauge-row" id="g-lic-301" data-tag="LIC-301">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">LIC-301</span>
+                <span class="gauge-desc">TWR SUMP</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">%</span>
+              </div>
+              <span class="gauge-mode">AUTO</span>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-lic-302" data-tag="LIC-302">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">LIC-302</span>
+                <span class="gauge-desc">SEPARATOR</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">%</span>
+              </div>
+              <span class="gauge-mode">AUTO</span>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-fi-401" data-tag="FI-401">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">FI-401</span>
+                <span class="gauge-desc">LIQ FEED</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">bbl/hr</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-fi-402" data-tag="FI-402">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">FI-402</span>
+                <span class="gauge-desc">PRODUCT</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">bbl/hr</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-ai-501" data-tag="AI-501">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">AI-501</span>
+                <span class="gauge-desc">RVP</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">psi</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+            <div class="gauge-row" id="g-lic-303" data-tag="LIC-303">
+              <div class="gauge-tag-block">
+                <span class="gauge-tag">LIC-303</span>
+                <span class="gauge-desc">PROD TANK</span>
+              </div>
+              <div class="gauge-val-block">
+                <span class="gauge-val">----</span>
+                <span class="gauge-unit">%</span>
+              </div>
+              <span class="gauge-trend">&#8594;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Panel - P&ID / Alerts -->
+        <div id="center-panel">
+          <!-- SVG P&ID Diagram -->
+          <svg id="pid-diagram" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background grid (subtle) -->
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#444444" stroke-width="0.3"/>
+              </pattern>
+              <!-- Flow arrow marker -->
+              <marker id="flow-arrow" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+                <polygon points="0,0 6,2 0,4" fill="#808080"/>
+              </marker>
+              <marker id="flow-arrow-active" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+                <polygon points="0,0 6,2 0,4" fill="#A0A0A0"/>
+              </marker>
+            </defs>
+            <rect width="800" height="500" fill="#3C3C3C"/>
+            <rect width="800" height="500" fill="url(#grid)"/>
+
+            <!-- PIG RECEIVER -->
+            <g id="equip-pig-receiver" transform="translate(30,180)">
+              <rect x="0" y="0" width="60" height="30" rx="15" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <text x="30" y="50" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">PIG RCVR</text>
+              <!-- Pig status indicator -->
+              <circle id="pig-status" cx="30" cy="15" r="4" fill="#505050" stroke="#606060" stroke-width="1"/>
+            </g>
+
+            <!-- Flow line: Pig Receiver to Inlet Separator -->
+            <line class="flow-line active" x1="90" y1="195" x2="150" y2="195" marker-end="url(#flow-arrow-active)"/>
+
+            <!-- INLET SEPARATOR -->
+            <g id="equip-inlet-sep" transform="translate(150,160)">
+              <rect x="0" y="0" width="50" height="70" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <!-- Level indicator line -->
+              <line id="sep-level-line" x1="5" y1="42" x2="45" y2="42" stroke="#707070" stroke-width="1" stroke-dasharray="3,2"/>
+              <text x="25" y="90" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">V-100</text>
+              <!-- Tag bubble -->
+              <circle cx="60" cy="35" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-302"/>
+              <text x="60" y="32" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">LIC</text>
+              <text x="60" y="40" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">302</text>
+            </g>
+
+            <!-- Inlet control valve (XV-101 pinch valve) -->
+            <g id="equip-inlet-valve" transform="translate(110,188)">
+              <polygon points="0,0 12,7 0,14" fill="#787878"/>
+              <polygon points="12,0 0,7 12,14" fill="#787878"/>
+              <line x1="6" y1="7" x2="6" y2="-5" stroke="#A0A0A0" stroke-width="1.5"/>
+              <circle cx="6" cy="-9" r="5" fill="none" stroke="#A0A0A0" stroke-width="1.5"/>
+              <text x="6" y="-7" text-anchor="middle" font-size="5" fill="#E8E8E8" class="valve-pos" data-valve="XV-101">100</text>
+              <text x="6" y="22" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">XV-101</text>
+            </g>
+
+            <!-- Flow line: Separator liquid out to Pre-heat exchanger -->
+            <line class="flow-line active" x1="175" y1="230" x2="175" y2="270" marker-end="url(#flow-arrow-active)"/>
+            <line class="flow-line active" x1="175" y1="270" x2="260" y2="270" marker-end="url(#flow-arrow-active)"/>
+
+            <!-- PRE-HEAT EXCHANGER (inlet liq vs tower overhead gas) -->
+            <g id="equip-preheat" transform="translate(260,250)">
+              <rect x="0" y="0" width="50" height="40" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <!-- X pattern for heat exchanger -->
+              <line x1="5" y1="5" x2="45" y2="35" stroke="#707070" stroke-width="1"/>
+              <line x1="45" y1="5" x2="5" y2="35" stroke="#707070" stroke-width="1"/>
+              <text x="25" y="52" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">E-101</text>
+              <!-- Tag bubble -->
+              <circle cx="-15" cy="20" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-101"/>
+              <text x="-15" y="17" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TIC</text>
+              <text x="-15" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">101</text>
+            </g>
+
+            <!-- Flow line: Pre-heat to Hot Oil Exchanger -->
+            <line class="flow-line active" x1="310" y1="270" x2="380" y2="270" marker-end="url(#flow-arrow-active)"/>
+
+            <!-- HOT OIL EXCHANGER -->
+            <g id="equip-hotoil-exch" transform="translate(380,250)">
+              <rect x="0" y="0" width="50" height="40" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <line x1="5" y1="5" x2="45" y2="35" stroke="#707070" stroke-width="1"/>
+              <line x1="45" y1="5" x2="5" y2="35" stroke="#707070" stroke-width="1"/>
+              <text x="25" y="52" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">E-102</text>
+              <!-- Hot oil supply line in -->
+              <line class="flow-line active" x1="25" y1="-10" x2="25" y2="0" marker-end="url(#flow-arrow-active)"/>
+              <text x="25" y="-14" text-anchor="middle" font-size="7" fill="#808080">HOT OIL</text>
+              <!-- Hot oil control valve -->
+              <circle cx="60" cy="20" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-104"/>
+              <text x="60" y="17" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TIC</text>
+              <text x="60" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">104</text>
+            </g>
+
+            <!-- Flow line: Hot Oil Exch to Reboiler -->
+            <line class="flow-line active" x1="430" y1="270" x2="480" y2="270" marker-end="url(#flow-arrow-active)"/>
+
+            <!-- REBOILER -->
+            <g id="equip-reboiler" transform="translate(480,240)">
+              <rect x="0" y="0" width="55" height="60" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <!-- Heating coil representation -->
+              <path d="M 10,15 Q 20,10 27,15 Q 35,20 45,15" fill="none" stroke="#707070" stroke-width="1"/>
+              <path d="M 10,30 Q 20,25 27,30 Q 35,35 45,30" fill="none" stroke="#707070" stroke-width="1"/>
+              <path d="M 10,45 Q 20,40 27,45 Q 35,50 45,45" fill="none" stroke="#707070" stroke-width="1"/>
+              <text x="27" y="75" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">E-103</text>
+              <!-- Tag bubble -->
+              <circle cx="65" cy="30" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-102"/>
+              <text x="65" y="27" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TIC</text>
+              <text x="65" y="35" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">102</text>
+            </g>
+
+            <!-- Hot oil control valve TV-102 -->
+            <g id="equip-hotoil-valve" transform="translate(467,230)">
+              <polygon points="0,0 10,6 0,12" fill="#787878"/>
+              <polygon points="10,0 0,6 10,12" fill="#787878"/>
+              <line x1="5" y1="6" x2="5" y2="-4" stroke="#A0A0A0" stroke-width="1.2"/>
+              <circle cx="5" cy="-7" r="4" fill="none" stroke="#A0A0A0" stroke-width="1.2"/>
+              <text x="5" y="-5" text-anchor="middle" font-size="4.5" fill="#E8E8E8" class="valve-pos" data-valve="TV-102">50</text>
+              <text x="5" y="20" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TV-102</text>
+            </g>
+
+            <!-- Flow line: Reboiler up to Tower -->
+            <line class="flow-line active" x1="507" y1="240" x2="507" y2="195" marker-end="url(#flow-arrow-active)"/>
+            <line class="flow-line active" x1="507" y1="195" x2="560" y2="195"/>
+
+            <!-- PACKED TOWER -->
+            <g id="equip-tower" transform="translate(560,60)">
+              <!-- Tower body with dome top/bottom -->
+              <path d="M 0,30 Q 0,0 25,0 Q 50,0 50,30 L 50,280 Q 50,310 25,310 Q 0,310 0,280 Z" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <!-- Packed bed sections -->
+              <rect x="5" y="50" width="40" height="40" fill="none" stroke="#606060" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <rect x="5" y="100" width="40" height="40" fill="none" stroke="#606060" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <rect x="5" y="150" width="40" height="40" fill="none" stroke="#606060" stroke-width="0.8" stroke-dasharray="2,2"/>
+              <!-- Liquid distributors -->
+              <line x1="8" y1="48" x2="42" y2="48" stroke="#707070" stroke-width="1"/>
+              <line x1="8" y1="98" x2="42" y2="98" stroke="#707070" stroke-width="1"/>
+              <line x1="8" y1="148" x2="42" y2="148" stroke="#707070" stroke-width="1"/>
+              <text x="25" y="325" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">T-100</text>
+              <!-- Tower pressure tag -->
+              <circle cx="60" cy="25" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="PIC-201"/>
+              <text x="60" y="22" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">PIC</text>
+              <text x="60" y="30" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">201</text>
+              <!-- Sump level tag -->
+              <circle cx="60" cy="280" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-301"/>
+              <text x="60" y="277" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">LIC</text>
+              <text x="60" y="285" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">301</text>
+              <!-- Tower overhead temp -->
+              <circle cx="60" cy="60" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-103"/>
+              <text x="60" y="57" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TIC</text>
+              <text x="60" y="65" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">103</text>
+            </g>
+
+            <!-- Feed enters tower mid-section -->
+            <line class="flow-line active" x1="555" y1="195" x2="560" y2="195"/>
+
+            <!-- Tower overhead gas out to pre-heat exchanger (return) -->
+            <line class="flow-line active" x1="585" y1="55" x2="585" y2="40" marker-end="url(#flow-arrow-active)"/>
+            <line class="flow-line active" x1="585" y1="40" x2="700" y2="40"/>
+
+            <!-- OVERHEAD COMPRESSOR -->
+            <g id="equip-comp" transform="translate(690,25)">
+              <circle cx="20" cy="20" r="18" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <text x="20" y="24" text-anchor="middle" font-size="12" fill="#707070" font-family="Courier New">C</text>
+              <text x="20" y="55" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">C-100</text>
+              <!-- Comp suction temp tag -->
+              <circle cx="-15" cy="20" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-105"/>
+              <text x="-15" y="17" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TIC</text>
+              <text x="-15" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">105</text>
+              <!-- Discharge pressure -->
+              <circle cx="50" cy="5" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="PIC-202"/>
+              <text x="50" y="2" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">PIC</text>
+              <text x="50" y="10" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">202</text>
+            </g>
+
+            <!-- Tower bottoms out (NGL product) -->
+            <line class="flow-line active" x1="585" y1="370" x2="585" y2="400" marker-end="url(#flow-arrow-active)"/>
+
+            <!-- Product flow control valve FV-201 -->
+            <g id="equip-product-valve" transform="translate(579,400)">
+              <polygon points="0,0 10,6 0,12" fill="#787878"/>
+              <polygon points="10,0 0,6 10,12" fill="#787878"/>
+              <line x1="5" y1="6" x2="5" y2="-4" stroke="#A0A0A0" stroke-width="1.2"/>
+              <circle cx="5" cy="-7" r="4" fill="none" stroke="#A0A0A0" stroke-width="1.2"/>
+              <text x="5" y="-5" text-anchor="middle" font-size="4.5" fill="#E8E8E8" class="valve-pos" data-valve="FV-201">50</text>
+              <text x="5" y="20" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">FV-201</text>
+            </g>
+
+            <!-- Flow to product tank -->
+            <line class="flow-line active" x1="585" y1="420" x2="585" y2="440"/>
+            <line class="flow-line active" x1="585" y1="440" x2="700" y2="440" marker-end="url(#flow-arrow-active)"/>
+
+            <!-- PRODUCT TANK -->
+            <g id="equip-tank" transform="translate(700,400)">
+              <rect x="0" y="0" width="60" height="70" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <!-- Tank level visual -->
+              <rect id="tank-level-fill" x="2" y="35" width="56" height="33" fill="#484848" stroke="none"/>
+              <!-- Pop-off valve symbol -->
+              <polygon points="25,-5 30,-12 35,-5" fill="none" stroke="#808080" stroke-width="1"/>
+              <text x="30" y="85" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">TK-100</text>
+              <!-- Tank pressure + level tags -->
+              <circle cx="70" cy="20" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="PIC-203"/>
+              <text x="70" y="17" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">PIC</text>
+              <text x="70" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">203</text>
+              <circle cx="70" cy="50" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-303"/>
+              <text x="70" y="47" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">LIC</text>
+              <text x="70" y="55" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">303</text>
+            </g>
+
+            <!-- RVP analyzer tag near product output -->
+            <g transform="translate(630,430)">
+              <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-501"/>
+              <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
+              <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">501</text>
+            </g>
+
+            <!-- Feed flow tag -->
+            <g transform="translate(215,270)">
+              <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="FI-401"/>
+              <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">FI</text>
+              <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">401</text>
+            </g>
+
+            <!-- Product flow tag -->
+            <g transform="translate(640,405)">
+              <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="FI-402"/>
+              <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">FI</text>
+              <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">402</text>
+            </g>
+
+            <!-- Truck loading connection -->
+            <g id="equip-truck" transform="translate(700,480)">
+              <rect x="0" y="0" width="50" height="15" rx="2" fill="#383838" stroke="#606060" stroke-width="1"/>
+              <text x="25" y="11" text-anchor="middle" font-size="7" fill="#606060" font-family="Courier New">TRUCK</text>
+            </g>
+            <line class="flow-line" x1="730" y1="470" x2="730" y2="480" stroke="#505050" stroke-width="1" stroke-dasharray="3,2"/>
+
+            <!-- HOT OIL SYSTEM (upper left) -->
+            <g id="equip-hotoil-sys" transform="translate(30,30)">
+              <rect x="0" y="0" width="80" height="50" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+              <text x="40" y="20" text-anchor="middle" font-size="8" fill="#A0A0A0" font-family="Courier New">HOT OIL</text>
+              <text x="40" y="32" text-anchor="middle" font-size="8" fill="#A0A0A0" font-family="Courier New">SYSTEM</text>
+              <!-- Status indicator -->
+              <circle id="hotoil-status" cx="70" cy="10" r="4" fill="#505050" stroke="#606060" stroke-width="1"/>
+              <text x="40" y="65" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">H-100</text>
+            </g>
+            <!-- Hot oil supply line down -->
+            <line class="flow-line active" x1="70" y1="80" x2="70" y2="120"/>
+            <line class="flow-line active" x1="70" y1="120" x2="405" y2="120"/>
+            <line class="flow-line active" x1="405" y1="120" x2="405" y2="240" marker-end="url(#flow-arrow-active)"/>
+          </svg>
+
+          <!-- Faceplate Popup (hidden by default) -->
+          <div id="faceplate" class="faceplate" style="display:none">
+            <div class="fp-header">
+              <span id="fp-tag">TIC-102</span>
+              <span id="fp-desc">REBOILER TEMP</span>
+              <button id="fp-close" class="fp-close-btn">X</button>
+            </div>
+            <div class="fp-body">
+              <div class="fp-row">
+                <span class="fp-label">PV:</span>
+                <span id="fp-pv" class="fp-value">295.4</span>
+                <span id="fp-pv-unit" class="fp-unit">degF</span>
+                <span id="fp-mode-display" class="fp-mode">AUTO</span>
+              </div>
+              <div class="fp-row">
+                <span class="fp-label">SP:</span>
+                <input id="fp-sp" class="fp-input" type="number" step="0.1" value="300.0">
+                <span id="fp-sp-unit" class="fp-unit">degF</span>
+              </div>
+              <div class="fp-row">
+                <span class="fp-label">OUT:</span>
+                <span id="fp-out" class="fp-value">55.2</span>
+                <span class="fp-unit">%</span>
+              </div>
+              <div class="fp-limits">
+                <span>HH:<span id="fp-hh">330</span></span>
+                <span>HI:<span id="fp-hi">320</span></span>
+                <span>LO:<span id="fp-lo">270</span></span>
+                <span>LL:<span id="fp-ll">260</span></span>
+              </div>
+              <div class="fp-bar">
+                <div id="fp-bar-fill" class="fp-bar-fill"></div>
+                <div id="fp-bar-sp" class="fp-bar-sp"></div>
+              </div>
+              <div class="fp-trend">
+                <canvas id="fp-trend-canvas" width="240" height="60"></canvas>
+              </div>
+              <div class="fp-buttons">
+                <button class="fp-mode-btn" data-mode="AUTO">AUTO</button>
+                <button class="fp-mode-btn" data-mode="MAN">MAN</button>
+                <button class="fp-mode-btn fp-apply-btn" id="fp-apply">APPLY</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel - Quick Controls & Events -->
+        <div id="right-panel">
+          <div class="panel-section">
+            <h4 class="section-header">SPEC BOARD</h4>
+            <div class="spec-row" id="spec-rvp">
+              <span class="spec-label">RVP</span>
+              <span class="spec-val">----</span>
+              <span class="spec-range">9.0 - 11.5</span>
+              <span class="spec-status">----</span>
+            </div>
+            <div class="spec-row" id="spec-btu">
+              <span class="spec-label">RES BTU</span>
+              <span class="spec-val">----</span>
+              <span class="spec-range">1005 - 1015</span>
+              <span class="spec-status">----</span>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h4 class="section-header">P&amp;L</h4>
+            <div class="pnl-block">
+              <div class="pnl-row">
+                <span class="pnl-label">REVENUE</span>
+                <span id="pnl-revenue" class="pnl-val">$0/hr</span>
+              </div>
+              <div class="pnl-row">
+                <span class="pnl-label">PENALTIES</span>
+                <span id="pnl-penalties" class="pnl-val pnl-penalty">-$0/hr</span>
+              </div>
+              <div class="pnl-row pnl-total-row">
+                <span class="pnl-label">NET</span>
+                <span id="pnl-net" class="pnl-val">$0/hr</span>
+              </div>
+              <div class="pnl-row">
+                <span class="pnl-label">SHIFT</span>
+                <span id="pnl-shift" class="pnl-val">$0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h4 class="section-header">EVENTS</h4>
+            <div id="event-status" class="event-block">
+              <span class="event-item">NO ACTIVE EVENTS</span>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h4 class="section-header">WEATHER</h4>
+            <div class="weather-block">
+              <div class="weather-row">
+                <span class="weather-label">AMBIENT</span>
+                <span id="weather-temp" class="weather-val">72 degF</span>
+              </div>
+              <div class="weather-row">
+                <span class="weather-label">WIND</span>
+                <span id="weather-wind" class="weather-val">SW 8 mph</span>
+              </div>
+              <div class="weather-row">
+                <span class="weather-label">PRECIP</span>
+                <span id="weather-precip" class="weather-val">CLEAR</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h4 class="section-header">NPC RADIO</h4>
+            <div id="radio-log" class="radio-block">
+              <span class="radio-msg">Ready for shift.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Building Tabs -->
+      <div id="building-tabs">
+        <button class="building-tab active" data-building="stabilizer">STABILIZER</button>
+        <button class="building-tab" data-building="inlet">INLET SEP</button>
+        <button class="building-tab" data-building="hotoil">HOT OIL</button>
+        <button class="building-tab" data-building="compression">COMPRESSION</button>
+        <button class="building-tab" data-building="tanks">TANKS</button>
+      </div>
+
+      <!-- Time Control Bar -->
+      <div id="time-controls">
+        <button id="btn-pause" class="time-btn active">&#9646;&#9646;</button>
+        <button id="btn-1x" class="time-btn">1x</button>
+        <button id="btn-2x" class="time-btn">2x</button>
+        <button id="btn-4x" class="time-btn">4x</button>
+        <span id="time-speed-label">PAUSED</span>
+      </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settings-screen" class="screen">
+      <div class="mode-header">
+        <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
+        <h2>SETTINGS</h2>
+      </div>
+      <div class="settings-panel">
+        <div class="setting-row">
+          <span>Time Compression</span>
+          <select id="setting-timecomp">
+            <option value="1">1:1 (Real Time)</option>
+            <option value="2" selected>1:2 (Default)</option>
+            <option value="4">1:4 (Fast)</option>
+            <option value="8">1:8 (Very Fast)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <span>Sound Effects</span>
+          <input type="checkbox" id="setting-sound" checked>
+        </div>
+        <div class="setting-row">
+          <span>Alarm Sounds</span>
+          <input type="checkbox" id="setting-alarm-sound" checked>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alarm List Popup -->
+    <div id="alarm-list-popup" class="popup" style="display:none">
+      <div class="popup-header">
+        <h3>ALARM SUMMARY</h3>
+        <button class="popup-close" data-popup="alarm-list-popup">X</button>
+      </div>
+      <div id="alarm-list" class="alarm-list">
+        <div class="alarm-empty">NO ALARMS</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="src/engine/processVariable.js"></script>
+  <script src="src/engine/cascadeEngine.js"></script>
+  <script src="src/engine/simulationTick.js"></script>
+  <script src="src/data/stabilizerConfig.js"></script>
+  <script src="src/events/eventSystem.js"></script>
+  <script src="src/events/pigEvents.js"></script>
+  <script src="src/events/equipmentEvents.js"></script>
+  <script src="src/ui/gaugeManager.js"></script>
+  <script src="src/ui/faceplateManager.js"></script>
+  <script src="src/ui/alarmManager.js"></script>
+  <script src="src/ui/pnlManager.js"></script>
+  <script src="src/ui/pidDiagram.js"></script>
+  <script src="src/ui/trendManager.js"></script>
+  <script src="src/ui/learnMode.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
