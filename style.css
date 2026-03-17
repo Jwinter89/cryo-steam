@@ -552,11 +552,38 @@ html, body {
 /* Tag bubbles on P&ID — clickable */
 .tag-bubble {
   cursor: pointer;
-  transition: stroke 0.15s;
+  transition: stroke 0.2s, filter 0.2s;
+  stroke: #5A9FD4 !important;
+  stroke-width: 1.2;
+  fill: rgba(90, 159, 212, 0.08);
+  animation: tag-pulse 3s ease-in-out infinite;
 }
 .tag-bubble:hover {
-  stroke: var(--text-normal);
-  stroke-width: 1.5;
+  stroke: #7BC0FF !important;
+  stroke-width: 2;
+  fill: rgba(90, 159, 212, 0.15);
+  filter: drop-shadow(0 0 4px rgba(90, 159, 212, 0.5));
+}
+@keyframes tag-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Valve groups — clickable */
+g[id^="equip-"] {
+  cursor: pointer;
+}
+g[id^="equip-"] polygon {
+  transition: fill 0.2s;
+}
+g[id^="equip-"]:hover polygon {
+  fill: #5A9FD4;
+}
+g[id^="equip-"]:hover circle {
+  stroke: #5A9FD4;
+}
+g[id^="equip-"]:hover line {
+  stroke: #5A9FD4;
 }
 
 /* ---- FACEPLATE POPUP ---- */

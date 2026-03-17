@@ -76,7 +76,7 @@
   // First tab in each facility shows ALL tags
   const BUILDING_TAGS = {
     stabilizer: {
-      stabilizer: ['TIC-101', 'TIC-102', 'TIC-103', 'TIC-104', 'TIC-105', 'LIC-301', 'LIC-302'],
+      stabilizer: null, // first tab shows all
       inlet: ['PIC-201', 'LIC-303', 'TIC-101'],
       hotoil: ['TIC-104', 'TIC-105'],
       compression: ['PIC-202', 'PIC-203'],
