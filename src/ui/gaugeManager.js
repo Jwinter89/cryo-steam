@@ -1,6 +1,7 @@
 /**
  * GaugeManager — Updates all gauge rows in the left panel with current PV data.
- * Handles alarm states, trend arrows, and sparkline mini-trends.
+ * Handles alarm states, trend arrows, and mode badges.
+ * Dynamically discovers gauge rows after facility switch.
  */
 
 class GaugeManager {
@@ -11,6 +12,7 @@ class GaugeManager {
   }
 
   _initGauges() {
+    this.gaugeElements = {};
     const rows = document.querySelectorAll('.gauge-row');
     rows.forEach(row => {
       const tag = row.dataset.tag;
@@ -25,6 +27,13 @@ class GaugeManager {
         unitEl: row.querySelector('.gauge-unit')
       };
     });
+  }
+
+  /**
+   * Re-scan DOM for gauge rows (call after dynamic generation)
+   */
+  refresh() {
+    this._initGauges();
   }
 
   update() {
