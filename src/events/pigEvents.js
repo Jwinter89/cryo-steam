@@ -28,20 +28,39 @@ function registerPigEvents(eventSystem) {
       event.data.arrivalDelay = 15 + Math.random() * 10;
       event.data.surgePhase = 'approaching';
       event.data.liquidSurge = 0;
+      event.data.warningsSent = 0;
+      event.data.arrivalAnnounced = false;
     },
 
     onTick: (event, dt, pvMap) => {
       const d = event.data;
 
       if (d.surgePhase === 'approaching') {
+        // Progressive radio warnings during approach
+        const timeLeft = d.arrivalDelay - event.elapsed;
+        if (timeLeft <= 10 && d.warningsSent < 1) {
+          d.warningsSent = 1;
+          if (event.onRadio) event.onRadio('Pipeline: Pig 10 minutes out. Ramp up FIC-401 now.');
+        }
+        if (timeLeft <= 5 && d.warningsSent < 2) {
+          d.warningsSent = 2;
+          if (event.onRadio) event.onRadio('Pipeline: Pig 5 minutes out! Check separator level!');
+        }
+        if (timeLeft <= 2 && d.warningsSent < 3) {
+          d.warningsSent = 3;
+          if (event.onRadio) event.onRadio('Pipeline: PIG AT THE DOOR!');
+        }
         if (event.elapsed >= d.arrivalDelay) {
           d.surgePhase = 'arriving';
+          if (!d.arrivalAnnounced && event.onRadio) {
+            event.onRadio('Pipeline: Pig in receiver. Liquid surge hitting separator.');
+            d.arrivalAnnounced = true;
+          }
         }
         return;
       }
 
       if (d.surgePhase === 'arriving') {
-        // Liquid surge ramps up
         d.liquidSurge = Math.min(d.peakSurge, d.liquidSurge + d.peakSurge * 0.1 * dt);
         if (d.liquidSurge >= d.peakSurge * 0.95) {
           d.surgePhase = 'peak';
@@ -49,7 +68,6 @@ function registerPigEvents(eventSystem) {
       }
 
       if (d.surgePhase === 'peak') {
-        // Hold peak briefly
         d.liquidSurge = d.peakSurge;
         if (event.elapsed > d.arrivalDelay + 8) {
           d.surgePhase = 'trailing';
@@ -57,21 +75,24 @@ function registerPigEvents(eventSystem) {
       }
 
       if (d.surgePhase === 'trailing') {
-        // Surge tapers off
         d.liquidSurge = Math.max(0, d.liquidSurge - d.peakSurge * 0.05 * dt);
       }
 
-      // Apply liquid surge to feed flow
-      const feedPV = pvMap['FI-401'];
+      // Apply liquid surge to feed flow — higher FIC-401 SP = better handling
+      const feedPV = pvMap['FIC-401'];
       if (feedPV) {
-        feedPV.externalForce += d.liquidSurge * 0.05;
+        // If operator ramped up FIC-401 SP, they can absorb surge better
+        const spRatio = feedPV.sp / 120; // 1.0 = normal, >1 = ramped up
+        const dampening = Math.min(1.0, 1.0 / spRatio);
+        feedPV.externalForce += d.liquidSurge * 0.05 * dampening;
       }
 
-      // Pinch valve effect: if XV-101 is partially closed, reduce gas flow impact
-      // but still allow liquid through (liquid flows through pig receiver regardless)
       const sepPV = pvMap['LIC-302'];
       if (sepPV && d.liquidSurge > 0) {
-        sepPV.externalForce += d.liquidSurge * 0.03;
+        // Higher FIC-401 SP = pulling more liquid off separator = less level rise
+        const feedSP = feedPV ? feedPV.sp : 120;
+        const pullFactor = Math.max(0.5, 1.0 - (feedSP - 120) / 300);
+        sepPV.externalForce += d.liquidSurge * 0.03 * pullFactor;
       }
     },
 
@@ -82,7 +103,7 @@ function registerPigEvents(eventSystem) {
 
     onEnd: (event, pvMap) => {
       // Cleanup — remove surge forces
-      const feedPV = pvMap['FI-401'];
+      const feedPV = pvMap['FIC-401'];
       if (feedPV) feedPV.externalForce = 0;
     }
   });
@@ -111,20 +132,34 @@ function registerPigEvents(eventSystem) {
       event.data.arrivalDelay = 5 + Math.random() * 5;
       event.data.surgePhase = 'approaching';
       event.data.liquidSurge = 0;
+      event.data.warningsSent = 0;
+      event.data.arrivalAnnounced = false;
     },
 
     onTick: (event, dt, pvMap) => {
       const d = event.data;
 
       if (d.surgePhase === 'approaching') {
+        const timeLeft = d.arrivalDelay - event.elapsed;
+        if (timeLeft <= 3 && d.warningsSent < 1) {
+          d.warningsSent = 1;
+          if (event.onRadio) event.onRadio('Pipeline: FAST PIG — 3 minutes! Ramp FIC-401 NOW!');
+        }
+        if (timeLeft <= 1 && d.warningsSent < 2) {
+          d.warningsSent = 2;
+          if (event.onRadio) event.onRadio('Pipeline: PIG AT THE DOOR!');
+        }
         if (event.elapsed >= d.arrivalDelay) {
           d.surgePhase = 'arriving';
+          if (!d.arrivalAnnounced && event.onRadio) {
+            event.onRadio('Pipeline: Pig in receiver. Heavy surge!');
+            d.arrivalAnnounced = true;
+          }
         }
         return;
       }
 
       if (d.surgePhase === 'arriving') {
-        // Faster ramp
         d.liquidSurge = Math.min(d.peakSurge, d.liquidSurge + d.peakSurge * 0.2 * dt);
         if (d.liquidSurge >= d.peakSurge * 0.95) {
           d.surgePhase = 'peak';
@@ -142,12 +177,18 @@ function registerPigEvents(eventSystem) {
         d.liquidSurge = Math.max(0, d.liquidSurge - d.peakSurge * 0.07 * dt);
       }
 
-      const feedPV = pvMap['FI-401'];
-      if (feedPV) feedPV.externalForce += d.liquidSurge * 0.06;
+      const feedPV = pvMap['FIC-401'];
+      if (feedPV) {
+        const spRatio = feedPV.sp / 120;
+        const dampening = Math.min(1.0, 1.0 / spRatio);
+        feedPV.externalForce += d.liquidSurge * 0.06 * dampening;
+      }
 
       const sepPV = pvMap['LIC-302'];
       if (sepPV && d.liquidSurge > 0) {
-        sepPV.externalForce += d.liquidSurge * 0.04;
+        const feedSP = feedPV ? feedPV.sp : 120;
+        const pullFactor = Math.max(0.5, 1.0 - (feedSP - 120) / 300);
+        sepPV.externalForce += d.liquidSurge * 0.04 * pullFactor;
       }
     },
 
@@ -156,7 +197,7 @@ function registerPigEvents(eventSystem) {
     },
 
     onEnd: (event, pvMap) => {
-      const feedPV = pvMap['FI-401'];
+      const feedPV = pvMap['FIC-401'];
       if (feedPV) feedPV.externalForce = 0;
     }
   });
@@ -205,7 +246,7 @@ function registerPigEvents(eventSystem) {
         totalSurge += pig.surge;
       }
 
-      const feedPV = pvMap['FI-401'];
+      const feedPV = pvMap['FIC-401'];
       if (feedPV) feedPV.externalForce += totalSurge * 0.05;
 
       const sepPV = pvMap['LIC-302'];

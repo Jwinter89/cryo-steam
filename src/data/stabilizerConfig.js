@@ -86,10 +86,10 @@ const StabilizerConfig = {
 
     // ---- FLOWS ----
     {
-      tag: 'FI-401', desc: 'LIQUID FEED FLOW', unit: 'bbl/hr',
+      tag: 'FIC-401', desc: 'LIQUID FEED FLOW', unit: 'bbl/hr',
       value: 120, sp: 120, min: 0, max: 500,
       hi: 350, hh: 400, lo: 30, ll: 10,
-      controllable: false, noise: 2.0, responseRate: 0.08
+      controllable: true, mode: 'AUTO', noise: 2.0, responseRate: 0.08
     },
     {
       tag: 'FI-402', desc: 'PRODUCT FLOW', unit: 'bbl/hr',
@@ -190,12 +190,12 @@ const StabilizerConfig = {
     },
     // Feed flow affects separator level
     {
-      source: 'FI-401', target: 'LIC-302', type: 'proportional',
+      source: 'FIC-401', target: 'LIC-302', type: 'proportional',
       gain: 0.02, id: 'feed-to-seplevel'
     },
     // Feed flow affects tower sump level
     {
-      source: 'FI-401', target: 'LIC-301', type: 'proportional',
+      source: 'FIC-401', target: 'LIC-301', type: 'proportional',
       gain: 0.015, id: 'feed-to-sumplevel'
     },
     // Product flow drains tower sump
@@ -224,7 +224,7 @@ const StabilizerConfig = {
     },
     // Separator HiHi = overflow into stabilizer (feed surge)
     {
-      source: 'LIC-302', target: 'FI-401', type: 'threshold',
+      source: 'LIC-302', target: 'FIC-401', type: 'threshold',
       threshold: 80, condition: 'above', gain: 3.0,
       id: 'sep-overflow-to-feed'
     },

@@ -151,7 +151,7 @@ class AlarmManager {
       'LIC-301': 'TOWER SUMP LEVEL',
       'LIC-302': 'SEPARATOR LEVEL',
       'LIC-303': 'PRODUCT TANK LEVEL',
-      'FI-401': 'LIQUID FEED FLOW',
+      'FIC-401': 'LIQUID FEED FLOW',
       'FI-402': 'PRODUCT FLOW',
       'AI-501': 'RVP'
     };

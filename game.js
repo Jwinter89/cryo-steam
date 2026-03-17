@@ -55,7 +55,7 @@
     stabilizer: [
       { header: 'TEMPERATURES', tags: ['TIC-101', 'TIC-102', 'TIC-103', 'TIC-104', 'TIC-105'] },
       { header: 'PRESSURES', tags: ['PIC-201', 'PIC-202', 'PIC-203'] },
-      { header: 'LEVELS & FLOWS', tags: ['LIC-301', 'LIC-302', 'FI-401', 'FI-402', 'AI-501', 'LIC-303'] }
+      { header: 'LEVELS & FLOWS', tags: ['LIC-301', 'LIC-302', 'FIC-401', 'FI-402', 'AI-501', 'LIC-303'] }
     ],
     refrigeration: [
       { header: 'INLET / COMP', tags: ['PIC-101', 'PIC-102', 'TIC-110', 'TIC-111'] },
@@ -81,7 +81,7 @@
       inlet: ['PIC-201', 'LIC-303', 'TIC-101'],
       hotoil: ['TIC-104', 'TIC-105'],
       compression: ['PIC-202', 'PIC-203'],
-      tanks: ['FI-401', 'FI-402', 'AI-501']
+      tanks: ['FIC-401', 'FI-402', 'AI-501']
     },
     refrigeration: {
       overview: null, // null = show all

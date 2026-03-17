@@ -137,6 +137,7 @@ class EventSystem {
       duration: eventDef.duration || null,
       onTick: eventDef.onTick || null,
       checkResolved: eventDef.checkResolved || null,
+      onRadio: this.onRadioMessage ? (msg) => this.onRadioMessage(msg) : null,
       data: { ...(eventDef.data || {}), ...(extraData || {}) }
     };
 
