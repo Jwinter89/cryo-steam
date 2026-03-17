@@ -72,6 +72,37 @@
     ]
   };
 
+  // Building-to-tags mapping for tab filtering
+  // First tab in each facility shows ALL tags
+  const BUILDING_TAGS = {
+    stabilizer: {
+      stabilizer: ['TIC-101', 'TIC-102', 'TIC-103', 'TIC-104', 'TIC-105', 'LIC-301', 'LIC-302'],
+      inlet: ['PIC-201', 'LIC-303', 'TIC-101'],
+      hotoil: ['TIC-104', 'TIC-105'],
+      compression: ['PIC-202', 'PIC-203'],
+      tanks: ['FI-401', 'FI-402', 'AI-501']
+    },
+    refrigeration: {
+      overview: null, // null = show all
+      'inlet-comp': ['PIC-101', 'PIC-102', 'TIC-110', 'TIC-111'],
+      teg: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201'],
+      btex: ['XI-210', 'PIC-401', 'AI-401'],
+      refrig: ['TIC-301', 'TIC-302', 'TIC-303'],
+      residue: ['AI-502', 'AI-503', 'FI-501'],
+      product: ['AI-601']
+    },
+    cryogenic: {
+      overview: null,
+      molsieve: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'],
+      coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
+      expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'],
+      demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
+      residue: ['PIC-601', 'PIC-602'],
+      product: ['AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701'],
+      hotoil: ['TIC-201', 'TIC-202', 'TIC-203']
+    }
+  };
+
   // ============================================================
   // GAME STATE
   // ============================================================
@@ -118,6 +149,7 @@
       this._bindScreenNav();
       this._bindTimeControls();
       this._bindSettings();
+      this._bindMobileControls();
       this._updateUnlockStates();
       this._updateContinueButton();
       this._showScreen('title-screen');
@@ -212,6 +244,28 @@
             this._updateUnlockStates();
             this._updateContinueButton();
           }
+        });
+      }
+    },
+
+    _bindMobileControls() {
+      const toggle = document.getElementById('panel-toggle');
+      const leftPanel = document.getElementById('left-panel');
+      const backdrop = document.getElementById('faceplate-backdrop');
+
+      if (toggle && leftPanel) {
+        toggle.addEventListener('click', () => {
+          leftPanel.classList.toggle('collapsed');
+          toggle.textContent = leftPanel.classList.contains('collapsed') ? '\u2630' : '\u2715';
+        });
+      }
+
+      // Backdrop closes faceplate on mobile
+      if (backdrop) {
+        backdrop.addEventListener('click', () => {
+          const fp = document.getElementById('faceplate');
+          if (fp) fp.style.display = 'none';
+          backdrop.style.display = 'none';
         });
       }
     },
@@ -313,6 +367,8 @@
       tabBar.innerHTML = '';
 
       const tabs = BUILDING_TABS[facility] || [];
+      const buildingTags = BUILDING_TAGS[facility] || {};
+
       tabs.forEach((tab, i) => {
         const btn = document.createElement('button');
         btn.className = 'building-tab' + (i === 0 ? ' active' : '');
@@ -321,8 +377,36 @@
         btn.addEventListener('click', () => {
           tabBar.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
           btn.classList.add('active');
+          this._filterGaugesByBuilding(facility, tab.id);
         });
         tabBar.appendChild(btn);
+      });
+    },
+
+    _filterGaugesByBuilding(facility, buildingId) {
+      const buildingTags = BUILDING_TAGS[facility] || {};
+      const allowedTags = buildingTags[buildingId];
+      const allRows = document.querySelectorAll('#left-panel .gauge-row');
+      const allSections = document.querySelectorAll('#left-panel .panel-section');
+
+      if (!allowedTags) {
+        // null or first tab = show all
+        allRows.forEach(r => r.style.display = '');
+        allSections.forEach(s => s.style.display = '');
+        return;
+      }
+
+      // Hide/show individual gauge rows
+      allRows.forEach(row => {
+        const tag = row.dataset.tag;
+        row.style.display = allowedTags.includes(tag) ? '' : 'none';
+      });
+
+      // Hide sections where all gauges are hidden
+      allSections.forEach(section => {
+        const rows = section.querySelectorAll('.gauge-row');
+        const anyVisible = Array.from(rows).some(r => r.style.display !== 'none');
+        section.style.display = anyVisible ? '' : 'none';
       });
     },
 
@@ -449,6 +533,12 @@
       this._buildBuildingTabs(this.currentFacility);
       this._buildSpecBoard(config);
       this._loadFacilityPID(this.currentFacility);
+
+      // On small mobile, start with left panel collapsed
+      if (window.innerWidth <= 480) {
+        const lp = document.getElementById('left-panel');
+        if (lp) lp.classList.add('collapsed');
+      }
 
       // Initialize simulation
       this._initSimulation(config);

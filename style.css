@@ -851,6 +851,8 @@ html, body {
   background: var(--bg-deep);
   border-top: 1px solid var(--border);
   flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .building-tab {
   font-family: var(--font-mono);
@@ -863,6 +865,8 @@ html, body {
   cursor: pointer;
   letter-spacing: 0.05em;
   transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .building-tab:hover {
   background: var(--bg-card);
@@ -1067,11 +1071,44 @@ html, body {
   .mode-grid {
     grid-template-columns: 1fr;
   }
+  /* Faceplate as fixed overlay on mobile */
+  .faceplate {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+    width: min(300px, 90vw);
+    z-index: 200;
+  }
+  /* Dim background when faceplate open */
+  .faceplate-backdrop {
+    display: block;
+  }
 }
 
 @media (max-width: 480px) {
   #left-panel {
-    width: 140px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 180px;
+    z-index: 50;
+    transform: translateX(0);
+    transition: transform 0.2s ease;
+  }
+  #left-panel.collapsed {
+    transform: translateX(-100%);
+  }
+  #main-content {
+    position: relative;
+  }
+  #center-panel {
+    margin-left: 0;
+  }
+  /* Panel toggle button */
+  #panel-toggle {
+    display: flex;
   }
   .gauge-row {
     padding: 2px 2px;
@@ -1092,10 +1129,6 @@ html, body {
     font-size: 9px;
     padding: 0 8px;
   }
-  .faceplate {
-    width: 95vw;
-    left: 2.5vw;
-  }
 }
 
 /* Touch targets */
@@ -1114,6 +1147,37 @@ html, body {
   .tag-bubble {
     cursor: pointer;
   }
+}
+
+/* ---- MOBILE PANEL TOGGLE ---- */
+#panel-toggle {
+  display: none;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 60;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-label);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Faceplate backdrop for mobile */
+.faceplate-backdrop {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 199;
 }
 
 /* ---- SCROLLBAR STYLING ---- */

@@ -78,19 +78,28 @@ class FaceplateManager {
     this.currentTag = tag;
     this.el.style.display = 'block';
 
-    // Position near click but keep on screen
-    const rect = this.el.parentElement.getBoundingClientRect();
-    let x = (event.clientX || rect.width / 2) - rect.left;
-    let y = (event.clientY || rect.height / 2) - rect.top;
+    // On mobile (<= 768px), use fixed centering (CSS handles it) + show backdrop
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      this.el.style.left = '';
+      this.el.style.top = '';
+      const backdrop = document.getElementById('faceplate-backdrop');
+      if (backdrop) backdrop.style.display = 'block';
+    } else {
+      // Position near click but keep on screen
+      const rect = this.el.parentElement.getBoundingClientRect();
+      let x = (event.clientX || rect.width / 2) - rect.left;
+      let y = (event.clientY || rect.height / 2) - rect.top;
 
-    // Keep faceplate within bounds
-    x = Math.min(x, rect.width - 270);
-    x = Math.max(x, 10);
-    y = Math.min(y, rect.height - 300);
-    y = Math.max(y, 10);
+      // Keep faceplate within bounds
+      x = Math.min(x, rect.width - 270);
+      x = Math.max(x, 10);
+      y = Math.min(y, rect.height - 300);
+      y = Math.max(y, 10);
 
-    this.el.style.left = x + 'px';
-    this.el.style.top = y + 'px';
+      this.el.style.left = x + 'px';
+      this.el.style.top = y + 'px';
+    }
 
     // Populate
     document.getElementById('fp-tag').textContent = pv.tag;
@@ -131,6 +140,8 @@ class FaceplateManager {
   close() {
     this.el.style.display = 'none';
     this.currentTag = null;
+    const backdrop = document.getElementById('faceplate-backdrop');
+    if (backdrop) backdrop.style.display = 'none';
   }
 
   update() {
