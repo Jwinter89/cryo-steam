@@ -531,21 +531,17 @@ html, body {
   max-height: 100%;
 }
 
-/* SVG flow lines */
+/* SVG flow lines — colors set via inline stroke attributes per stream type */
 .flow-line {
-  stroke: var(--flow-normal);
   stroke-width: 1.5px;
   fill: none;
 }
-.flow-line.active {
-  stroke: var(--flow-active);
-}
 .flow-line.no-flow {
-  stroke: var(--flow-none);
+  stroke: var(--flow-none) !important;
   stroke-width: 1px;
 }
 .flow-line.alarm {
-  stroke: var(--flow-alarm);
+  stroke: var(--flow-alarm) !important;
   stroke-width: 2px;
 }
 

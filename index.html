@@ -140,12 +140,22 @@
               <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                 <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#444444" stroke-width="0.3"/>
               </pattern>
-              <!-- Flow arrow marker -->
+              <!-- Flow arrow markers -->
               <marker id="flow-arrow" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
                 <polygon points="0,0 6,2 0,4" fill="#808080"/>
               </marker>
               <marker id="flow-arrow-active" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
                 <polygon points="0,0 6,2 0,4" fill="#A0A0A0"/>
+              </marker>
+              <!-- Colored flow arrow markers -->
+              <marker id="arrow-liquid" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+                <polygon points="0,0 6,2 0,4" fill="#4A9BD9"/>
+              </marker>
+              <marker id="arrow-gas" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+                <polygon points="0,0 6,2 0,4" fill="#D4A843"/>
+              </marker>
+              <marker id="arrow-hotoil" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+                <polygon points="0,0 6,2 0,4" fill="#C05040"/>
               </marker>
             </defs>
             <rect width="800" height="500" fill="#3C3C3C"/>
@@ -159,8 +169,8 @@
               <circle id="pig-status" cx="30" cy="15" r="4" fill="#505050" stroke="#606060" stroke-width="1"/>
             </g>
 
-            <!-- Flow line: Pig Receiver to Inlet Separator -->
-            <line class="flow-line active" x1="90" y1="195" x2="150" y2="195" marker-end="url(#flow-arrow-active)"/>
+            <!-- Flow line: Pig Receiver to Inlet Separator (liquid - blue) -->
+            <line class="flow-line active" x1="90" y1="195" x2="150" y2="195" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
 
             <!-- INLET SEPARATOR -->
             <g id="equip-inlet-sep" transform="translate(150,160)">
@@ -184,9 +194,9 @@
               <text x="6" y="22" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">XV-101</text>
             </g>
 
-            <!-- Flow line: Separator liquid out to Pre-heat exchanger -->
-            <line class="flow-line active" x1="175" y1="230" x2="175" y2="270" marker-end="url(#flow-arrow-active)"/>
-            <line class="flow-line active" x1="175" y1="270" x2="260" y2="270" marker-end="url(#flow-arrow-active)"/>
+            <!-- Flow line: Separator liquid out to Pre-heat exchanger (liquid - blue) -->
+            <line class="flow-line active" x1="175" y1="230" x2="175" y2="270" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
+            <line class="flow-line active" x1="175" y1="270" x2="260" y2="270" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
 
             <!-- PRE-HEAT EXCHANGER (inlet liq vs tower overhead gas) -->
             <g id="equip-preheat" transform="translate(260,250)">
@@ -201,8 +211,8 @@
               <text x="-15" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">101</text>
             </g>
 
-            <!-- Flow line: Pre-heat to Hot Oil Exchanger -->
-            <line class="flow-line active" x1="310" y1="270" x2="380" y2="270" marker-end="url(#flow-arrow-active)"/>
+            <!-- Flow line: Pre-heat to Hot Oil Exchanger (liquid - blue) -->
+            <line class="flow-line active" x1="310" y1="270" x2="380" y2="270" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
 
             <!-- HOT OIL EXCHANGER -->
             <g id="equip-hotoil-exch" transform="translate(380,250)">
@@ -210,17 +220,17 @@
               <line x1="5" y1="5" x2="45" y2="35" stroke="#707070" stroke-width="1"/>
               <line x1="45" y1="5" x2="5" y2="35" stroke="#707070" stroke-width="1"/>
               <text x="25" y="52" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">E-102</text>
-              <!-- Hot oil supply line in -->
-              <line class="flow-line active" x1="25" y1="-10" x2="25" y2="0" marker-end="url(#flow-arrow-active)"/>
-              <text x="25" y="-14" text-anchor="middle" font-size="7" fill="#808080">HOT OIL</text>
+              <!-- Hot oil supply line in (red) -->
+              <line class="flow-line active" x1="25" y1="-10" x2="25" y2="0" stroke="#C05040" marker-end="url(#arrow-hotoil)"/>
+              <text x="25" y="-14" text-anchor="middle" font-size="7" fill="#C05040">HOT OIL</text>
               <!-- Hot oil control valve -->
               <circle cx="60" cy="20" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-104"/>
               <text x="60" y="17" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TIC</text>
               <text x="60" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">104</text>
             </g>
 
-            <!-- Flow line: Hot Oil Exch to Reboiler -->
-            <line class="flow-line active" x1="430" y1="270" x2="480" y2="270" marker-end="url(#flow-arrow-active)"/>
+            <!-- Flow line: Hot Oil Exch to Reboiler (liquid - blue) -->
+            <line class="flow-line active" x1="430" y1="270" x2="480" y2="270" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
 
             <!-- REBOILER -->
             <g id="equip-reboiler" transform="translate(480,240)">
@@ -246,9 +256,9 @@
               <text x="5" y="20" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">TV-102</text>
             </g>
 
-            <!-- Flow line: Reboiler up to Tower -->
-            <line class="flow-line active" x1="507" y1="240" x2="507" y2="195" marker-end="url(#flow-arrow-active)"/>
-            <line class="flow-line active" x1="507" y1="195" x2="560" y2="195"/>
+            <!-- Flow line: Reboiler up to Tower (liquid/vapor - blue) -->
+            <line class="flow-line active" x1="507" y1="240" x2="507" y2="195" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
+            <line class="flow-line active" x1="507" y1="195" x2="560" y2="195" stroke="#4A9BD9"/>
 
             <!-- PACKED TOWER -->
             <g id="equip-tower" transform="translate(560,60)">
@@ -277,12 +287,23 @@
               <text x="60" y="65" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">103</text>
             </g>
 
-            <!-- Feed enters tower mid-section -->
-            <line class="flow-line active" x1="555" y1="195" x2="560" y2="195"/>
+            <!-- Feed enters tower mid-section (liquid - blue) -->
+            <line class="flow-line active" x1="555" y1="195" x2="560" y2="195" stroke="#4A9BD9"/>
 
-            <!-- Tower overhead gas out to pre-heat exchanger (return) -->
-            <line class="flow-line active" x1="585" y1="55" x2="585" y2="40" marker-end="url(#flow-arrow-active)"/>
-            <line class="flow-line active" x1="585" y1="40" x2="700" y2="40"/>
+            <!-- Tower overhead gas out (yellow) → down to E-101 pre-heat exchanger -->
+            <line class="flow-line active" x1="585" y1="55" x2="585" y2="40" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
+            <line class="flow-line active" x1="585" y1="40" x2="700" y2="40" stroke="#D4A843"/>
+            <!-- Gas continues down from tower overhead to E-101 (shell side) -->
+            <line class="flow-line active" x1="285" y1="40" x2="585" y2="40" stroke="#D4A843"/>
+            <line class="flow-line active" x1="285" y1="40" x2="285" y2="250" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
+            <!-- Gas exits E-101 up to compressor -->
+            <line class="flow-line active" x1="285" y1="290" x2="285" y2="310" stroke="#D4A843"/>
+            <line class="flow-line active" x1="285" y1="310" x2="700" y2="310" stroke="#D4A843"/>
+            <line class="flow-line active" x1="700" y1="310" x2="700" y2="60" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
+            <!-- Compressor discharge to sales gas (yellow) -->
+            <line class="flow-line active" x1="728" y1="45" x2="780" y2="45" stroke="#D4A843" marker-end="url(#arrow-gas)"/>
+            <text x="780" y="40" font-size="7" fill="#D4A843" font-family="Courier New">SALES</text>
+            <text x="780" y="50" font-size="7" fill="#D4A843" font-family="Courier New">GAS</text>
 
             <!-- OVERHEAD COMPRESSOR -->
             <g id="equip-comp" transform="translate(690,25)">
@@ -299,8 +320,8 @@
               <text x="50" y="10" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">202</text>
             </g>
 
-            <!-- Tower bottoms out (NGL product) -->
-            <line class="flow-line active" x1="585" y1="370" x2="585" y2="400" marker-end="url(#flow-arrow-active)"/>
+            <!-- Tower bottoms out (NGL product - blue) -->
+            <line class="flow-line active" x1="585" y1="370" x2="585" y2="400" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
 
             <!-- Product flow control valve FV-201 -->
             <g id="equip-product-valve" transform="translate(579,400)">
@@ -312,9 +333,9 @@
               <text x="5" y="20" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">FV-201</text>
             </g>
 
-            <!-- Flow to product tank -->
-            <line class="flow-line active" x1="585" y1="420" x2="585" y2="440"/>
-            <line class="flow-line active" x1="585" y1="440" x2="700" y2="440" marker-end="url(#flow-arrow-active)"/>
+            <!-- Flow to product tank (liquid - blue) -->
+            <line class="flow-line active" x1="585" y1="420" x2="585" y2="440" stroke="#4A9BD9"/>
+            <line class="flow-line active" x1="585" y1="440" x2="700" y2="440" stroke="#4A9BD9" marker-end="url(#arrow-liquid)"/>
 
             <!-- PRODUCT TANK -->
             <g id="equip-tank" transform="translate(700,400)">
@@ -361,6 +382,16 @@
             </g>
             <line class="flow-line" x1="730" y1="470" x2="730" y2="480" stroke="#505050" stroke-width="1" stroke-dasharray="3,2"/>
 
+            <!-- Flow line legend -->
+            <g transform="translate(10,460)">
+              <line x1="0" y1="5" x2="18" y2="5" stroke="#4A9BD9" stroke-width="2"/>
+              <text x="22" y="8" font-size="7" fill="#4A9BD9" font-family="Courier New">LIQUID</text>
+              <line x1="70" y1="5" x2="88" y2="5" stroke="#D4A843" stroke-width="2"/>
+              <text x="92" y="8" font-size="7" fill="#D4A843" font-family="Courier New">GAS</text>
+              <line x1="125" y1="5" x2="143" y2="5" stroke="#C05040" stroke-width="2"/>
+              <text x="147" y="8" font-size="7" fill="#C05040" font-family="Courier New">HOT OIL</text>
+            </g>
+
             <!-- HOT OIL SYSTEM (upper left) -->
             <g id="equip-hotoil-sys" transform="translate(30,30)">
               <rect x="0" y="0" width="80" height="50" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
@@ -370,10 +401,14 @@
               <circle id="hotoil-status" cx="70" cy="10" r="4" fill="#505050" stroke="#606060" stroke-width="1"/>
               <text x="40" y="65" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">H-100</text>
             </g>
-            <!-- Hot oil supply line down -->
-            <line class="flow-line active" x1="70" y1="80" x2="70" y2="120"/>
-            <line class="flow-line active" x1="70" y1="120" x2="405" y2="120"/>
-            <line class="flow-line active" x1="405" y1="120" x2="405" y2="240" marker-end="url(#flow-arrow-active)"/>
+            <!-- Hot oil supply line (red) -->
+            <line class="flow-line active" x1="70" y1="80" x2="70" y2="120" stroke="#C05040"/>
+            <line class="flow-line active" x1="70" y1="120" x2="405" y2="120" stroke="#C05040"/>
+            <line class="flow-line active" x1="405" y1="120" x2="405" y2="240" stroke="#C05040" marker-end="url(#arrow-hotoil)"/>
+            <!-- Hot oil return line (darker red, dashed) -->
+            <line class="flow-line active" x1="405" y1="290" x2="405" y2="340" stroke="#904030" stroke-dasharray="4,2"/>
+            <line class="flow-line active" x1="405" y1="340" x2="40" y2="340" stroke="#904030" stroke-dasharray="4,2"/>
+            <line class="flow-line active" x1="40" y1="340" x2="40" y2="80" stroke="#904030" stroke-dasharray="4,2" marker-end="url(#arrow-hotoil)"/>
           </svg>
 
           <!-- Faceplate Popup (hidden by default) -->
