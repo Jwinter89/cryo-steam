@@ -182,34 +182,42 @@ class PnlManager {
       return val < 0 ? `-${str}/hr` : `${str}/hr`;
     };
 
+    const moneyColor = (val, hasPenalties) => {
+      if (val < 0) return '#E04040';           // red — losing money
+      if (hasPenalties) return '#D4A843';       // yellow — making money but with penalties
+      return '#4CAF50';                         // green — clean profit
+    };
+
     if (this.rateEl) {
       this.rateEl.textContent = fmtRate(this.netPerHour);
-      this.rateEl.style.color = this.netPerHour > 0
-        ? (this.penaltiesPerHour > 0 ? 'var(--alarm-lo)' : 'var(--text-normal)')
-        : 'var(--alarm-crit)';
+      this.rateEl.style.color = moneyColor(this.netPerHour, this.penaltiesPerHour > 0);
     }
 
     if (this.shiftEl) {
       this.shiftEl.textContent = `SHIFT: ${fmt(this.shiftEarnings)}`;
+      this.shiftEl.style.color = this.shiftEarnings >= 0 ? '#4CAF50' : '#E04040';
     }
 
     if (this.revEl) {
       this.revEl.textContent = fmtRate(this.revenuePerHour);
+      this.revEl.style.color = '#4CAF50';
     }
 
     if (this.penEl) {
       this.penEl.textContent = this.penaltiesPerHour > 0
         ? `-${fmtRate(this.penaltiesPerHour)}`
         : '-$0/hr';
+      this.penEl.style.color = this.penaltiesPerHour > 0 ? '#E04040' : 'var(--text-unit)';
     }
 
     if (this.netEl) {
       this.netEl.textContent = fmtRate(this.netPerHour);
-      this.netEl.style.color = this.netPerHour >= 0 ? 'var(--text-normal)' : 'var(--alarm-crit)';
+      this.netEl.style.color = moneyColor(this.netPerHour, this.penaltiesPerHour > 0);
     }
 
     if (this.shiftPnlEl) {
       this.shiftPnlEl.textContent = fmt(this.shiftEarnings);
+      this.shiftPnlEl.style.color = this.shiftEarnings >= 0 ? '#4CAF50' : '#E04040';
     }
   }
 
