@@ -35,7 +35,7 @@ class PnlManager {
 
     // ---- UNIVERSAL CHECKS ----
 
-    // RVP in-spec check (stabilizer, refrig, cryogenic all produce NGL)
+    // RVP in-spec check (stabilizer produces condensate; refrig/cryo produce NGL)
     const rvp = pvMap['AI-501'] || pvMap['AI-704'];
     if (rvp) {
       const rvpVal = rvp.displayValue();

@@ -45,15 +45,15 @@ class LearnMode {
             highlight: 'equip-preheat'
           },
           {
-            text: 'The heated liquid enters the REBOILER (E-103) — this is your primary control point. The reboiler applies heat to flash off light ends (methane, ethane) from the heavier NGL product.',
+            text: 'The heated liquid enters the REBOILER (E-103) — this is your primary control point. The reboiler applies heat to flash off light ends (methane, ethane) from the heavier condensate product.',
             highlight: 'equip-reboiler'
           },
           {
-            text: 'The PACKED TOWER (T-100) is where separation happens. Hot vapor rises through packed bed sections while liquid falls. Light ends exit the top as overhead gas. Heavy NGL product exits the bottom.',
+            text: 'The PACKED TOWER (T-100) is where separation happens. Hot vapor rises through packed bed sections while liquid falls. Light ends exit the top as overhead gas. Heavy condensate product exits the bottom.',
             highlight: 'equip-tower'
           },
           {
-            text: 'Overhead gas goes to the COMPRESSOR (C-100), which sends it to the sales gas pipeline. NGL product flows to the PRODUCT TANK (TK-100) for truck loading.',
+            text: 'Overhead gas goes to the COMPRESSOR (C-100), which sends it to the sales gas pipeline. Condensate product flows to the PRODUCT TANK (TK-100) for truck loading.',
             highlight: 'equip-comp'
           },
           {
