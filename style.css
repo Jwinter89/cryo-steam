@@ -154,6 +154,66 @@ html, body {
   font-style: italic;
 }
 
+/* Feedback Boys */
+.feedback-box {
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+.feedback-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  color: var(--text-label);
+  margin-bottom: 10px;
+  text-align: center;
+}
+.feedback-textarea {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-input);
+  color: var(--text-normal);
+  border: 1px solid var(--border-lite);
+  padding: 8px;
+  resize: vertical;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+.feedback-textarea::placeholder,
+.feedback-input::placeholder {
+  color: var(--text-unit);
+}
+.feedback-input {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--bg-input);
+  color: var(--text-normal);
+  border: 1px solid var(--border-lite);
+  padding: 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.feedback-btn {
+  width: 100%;
+  min-width: unset;
+  padding: 10px;
+  font-size: 13px;
+}
+.feedback-sent {
+  color: var(--alarm-rtn);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-align: center;
+  margin-top: 8px;
+}
+
 /* ============================================================
    MODE / FACILITY SELECT
    ============================================================ */

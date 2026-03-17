@@ -179,6 +179,28 @@
         });
       });
 
+      // Feedback Boys
+      const feedbackBtn = document.getElementById('feedback-send');
+      if (feedbackBtn) {
+        feedbackBtn.addEventListener('click', () => {
+          const text = document.getElementById('feedback-text').value.trim();
+          const name = document.getElementById('feedback-name').value.trim();
+          if (!text) return;
+          const subject = encodeURIComponent('Cold Creek Feedback' + (name ? ' from ' + name : ''));
+          const body = encodeURIComponent((name ? 'From: ' + name + '\n\n' : '') + text);
+          window.open(`mailto:Josh.winter5276@gmail.com?subject=${subject}&body=${body}`, '_blank');
+          // Show confirmation
+          const box = document.querySelector('.feedback-box');
+          const msg = document.createElement('p');
+          msg.className = 'feedback-sent';
+          msg.textContent = 'MAIL CLIENT OPENED — THANKS!';
+          box.appendChild(msg);
+          document.getElementById('feedback-text').value = '';
+          document.getElementById('feedback-name').value = '';
+          setTimeout(() => msg.remove(), 4000);
+        });
+      }
+
       // Back buttons
       document.querySelectorAll('.back-btn').forEach(btn => {
         btn.addEventListener('click', () => {
