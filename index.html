@@ -45,7 +45,7 @@
 
         <!-- Feedback Boys -->
         <div class="feedback-box">
-          <h3 class="feedback-title">FEEDBACK BOYS</h3>
+          <h3 class="feedback-title">SEND FEEDBACK</h3>
           <textarea id="feedback-text" class="feedback-textarea" rows="3" placeholder="Tell us what you think..."></textarea>
           <input id="feedback-name" class="feedback-input" type="text" placeholder="Your name (optional)">
           <button id="feedback-send" class="menu-btn feedback-btn">SEND FEEDBACK</button>
@@ -561,6 +561,25 @@
       <!-- Bottom Building Tabs (dynamically populated) -->
       <div id="building-tabs">
         <!-- Populated by game.js based on facility -->
+      </div>
+
+      <!-- Mobile P&L Strip (visible on ≤768px) -->
+      <div id="mobile-pnl-strip" class="mobile-pnl-strip" style="display:none">
+        <span class="mpnl-rate" id="mpnl-rate">$0/hr</span>
+        <span class="mpnl-shift" id="mpnl-shift">SHIFT: $0</span>
+        <span class="mpnl-penalties" id="mpnl-penalties"></span>
+        <button class="mpnl-btn" id="mpnl-expand">INFO &#9650;</button>
+      </div>
+
+      <!-- Mobile Info Drawer (P&L, Events, Radio on mobile) -->
+      <div id="mobile-info-drawer" class="mobile-info-drawer">
+        <div class="mobile-info-handle" id="mobile-info-handle"><span></span></div>
+        <div class="mobile-info-tabs">
+          <button class="mobile-info-tab active" data-info-tab="pnl">P&amp;L</button>
+          <button class="mobile-info-tab" data-info-tab="events">EVENTS</button>
+          <button class="mobile-info-tab" data-info-tab="radio">RADIO</button>
+        </div>
+        <div class="mobile-info-content" id="mobile-info-content"></div>
       </div>
 
       <!-- Time Control Bar -->

@@ -162,92 +162,113 @@ const StabilizerConfig = {
 
   // Cascade rules — how process variables affect each other
   cascadeRules: [
-    // Hot oil supply temp affects reboiler temp (with lag)
+    // Hot oil supply temp affects reboiler temp — strong thermal coupling
     {
       source: 'TIC-104', target: 'TIC-102', type: 'proportional',
-      gain: 0.3, id: 'hotoil-to-reboiler'
+      gain: 0.7, id: 'hotoil-to-reboiler'
     },
-    // Reboiler temp affects tower overhead temp (inverse — hotter reboiler = more light ends flashed = hotter overhead)
+    // Reboiler temp affects tower overhead temp
     {
       source: 'TIC-102', target: 'TIC-103', type: 'proportional',
-      gain: 0.2, id: 'reboiler-to-overhead'
+      gain: 0.4, id: 'reboiler-to-overhead'
     },
     // Tower overhead temp affects compressor suction temp
     {
       source: 'TIC-103', target: 'TIC-105', type: 'proportional',
       gain: 0.6, id: 'overhead-to-compsuct'
     },
-    // Reboiler temp affects RVP (higher reboiler = lower RVP — more light ends removed)
+    // Compressor suction temp affects discharge pressure
+    {
+      source: 'TIC-105', target: 'PIC-202', type: 'proportional',
+      gain: 0.3, id: 'compsuct-to-compdisch'
+    },
+    // Reboiler temp affects RVP — strong effect, main control lever
     {
       source: 'TIC-102', target: 'AI-501', type: 'custom',
       id: 'reboiler-to-rvp',
       fn: (sourceVal, targetPV, dt) => {
-        // RVP decreases when reboiler is above SP, increases when below
-        const reboilerSP = 300;
-        const error = sourceVal - reboilerSP;
-        return -error * 0.002;
+        const error = sourceVal - 300;
+        return -error * 0.01; // 10x stronger — 10°F change = 0.1 psi RVP shift
       }
     },
     // Feed flow affects separator level
     {
       source: 'FIC-401', target: 'LIC-302', type: 'proportional',
-      gain: 0.02, id: 'feed-to-seplevel'
+      gain: 0.04, id: 'feed-to-seplevel'
     },
     // Feed flow affects tower sump level
     {
       source: 'FIC-401', target: 'LIC-301', type: 'proportional',
-      gain: 0.015, id: 'feed-to-sumplevel'
+      gain: 0.03, id: 'feed-to-sumplevel'
     },
     // Product flow drains tower sump
     {
       source: 'FI-402', target: 'LIC-301', type: 'inverse',
-      gain: 0.015, id: 'product-to-sumplevel'
+      gain: 0.03, id: 'product-to-sumplevel'
     },
     // Product flow fills tank
     {
       source: 'FI-402', target: 'LIC-303', type: 'proportional',
-      gain: 0.008, id: 'product-to-tanklevel'
+      gain: 0.015, id: 'product-to-tanklevel'
     },
     // Tower pressure affects comp discharge
     {
       source: 'PIC-201', target: 'PIC-202', type: 'proportional',
       gain: 0.5, id: 'twrpress-to-compdisch'
     },
+    // Tower pressure affects separation — higher pressure = lower RVP
+    {
+      source: 'PIC-201', target: 'AI-501', type: 'custom',
+      id: 'pressure-to-rvp',
+      fn: (pressure, targetPV, dt) => {
+        const error = pressure - 275; // Normal operating pressure
+        return -error * 0.002; // Higher pressure helps condensation
+      }
+    },
     // RVP too high = tank pressure rises (light ends in product)
     {
       source: 'AI-501', target: 'PIC-203', type: 'custom',
       id: 'rvp-to-tankpress',
       fn: (rvp, targetPV, dt) => {
-        if (rvp > 12.0) return (rvp - 12.0) * 0.5;
-        return 0;
+        if (rvp > 11.5) return (rvp - 11.5) * 1.0; // Trigger at HI alarm, stronger
+        return -0.1; // Slowly decay toward normal
       }
     },
-    // Separator HiHi = overflow into stabilizer (feed surge)
+    // Separator overflow = feed surge (dampened)
     {
       source: 'LIC-302', target: 'FIC-401', type: 'threshold',
-      threshold: 80, condition: 'above', gain: 3.0,
+      threshold: 80, condition: 'above', gain: 1.0,
       id: 'sep-overflow-to-feed'
     },
-    // Inlet liquid temp affected by ambient (slow)
+    // Inlet liquid temp affected by weather ambient
     {
       source: 'TIC-101', target: 'TIC-101', type: 'custom',
       id: 'ambient-drift',
       fn: (val, pv, dt) => {
-        // Slowly drift toward ambient (simulated)
-        const ambient = 85; // Will be replaced by weather system
-        return (ambient - val) * 0.001;
+        const game = window.coldCreekGame;
+        const ambient = (game && game.weather) ? game.weather.ambientTemp : 85;
+        return (ambient - val) * 0.005; // 5x faster drift
+      }
+    },
+    // Inlet temp affects reboiler duty — colder inlet needs more heat
+    {
+      source: 'TIC-101', target: 'TIC-102', type: 'custom',
+      id: 'inlet-to-reboiler',
+      fn: (inletTemp, targetPV, dt) => {
+        // Colder feed absorbs reboiler heat → reboiler drops
+        return (inletTemp - 85) * 0.003;
       }
     },
 
     // ---- GC CASCADE RULES ----
+    // Material-balanced: C1+C2+C3+C4+C5 must always sum to ~100%
     // Reboiler temp drives composition — higher temp strips more lights
     {
       source: 'TIC-102', target: 'GC-C1', type: 'custom',
       id: 'reboiler-to-gc-c1',
       fn: (reboilerTemp, pv, dt) => {
-        // C1 should be near 0.5% at SP=300F. Below SP = more C1 in product
         const target = 0.5 + Math.max(0, (300 - reboilerTemp) * 0.04);
-        return (target - pv.value) * 0.008;
+        return (target - pv.value) * 0.015;
       }
     },
     {
@@ -255,7 +276,7 @@ const StabilizerConfig = {
       id: 'reboiler-to-gc-c2',
       fn: (reboilerTemp, pv, dt) => {
         const target = 1.5 + Math.max(0, (300 - reboilerTemp) * 0.08);
-        return (target - pv.value) * 0.008;
+        return (target - pv.value) * 0.015;
       }
     },
     {
@@ -263,25 +284,31 @@ const StabilizerConfig = {
       id: 'reboiler-to-gc-c3',
       fn: (reboilerTemp, pv, dt) => {
         const target = 7.0 + Math.max(0, (300 - reboilerTemp) * 0.15);
-        return (target - pv.value) * 0.006;
+        return (target - pv.value) * 0.012;
       }
     },
     {
       source: 'TIC-102', target: 'GC-C4', type: 'custom',
       id: 'reboiler-to-gc-c4',
       fn: (reboilerTemp, pv, dt) => {
-        // C4 increases slightly when too hot (over-stripping pulls some C4 overhead)
         const target = 22.0 - Math.max(0, (reboilerTemp - 320) * 0.1);
-        return (target - pv.value) * 0.005;
+        return (target - pv.value) * 0.01;
       }
     },
     {
       source: 'TIC-102', target: 'GC-C5', type: 'custom',
       id: 'reboiler-to-gc-c5',
       fn: (reboilerTemp, pv, dt) => {
-        // C5+ is the remainder — increases as lights are stripped out
-        const target = 69.0 + Math.min(8, Math.max(-10, (reboilerTemp - 300) * 0.12));
-        return (target - pv.value) * 0.005;
+        // C5+ is the remainder — material balance: 100 - (C1+C2+C3+C4)
+        const game = window.coldCreekGame;
+        if (!game || !game.sim) return 0;
+        const pvMap = game.sim.getAllPVs();
+        const c1 = pvMap['GC-C1'] ? pvMap['GC-C1'].value : 0.5;
+        const c2 = pvMap['GC-C2'] ? pvMap['GC-C2'].value : 1.5;
+        const c3 = pvMap['GC-C3'] ? pvMap['GC-C3'].value : 7.0;
+        const c4 = pvMap['GC-C4'] ? pvMap['GC-C4'].value : 22.0;
+        const target = 100 - c1 - c2 - c3 - c4;
+        return (target - pv.value) * 0.01;
       }
     }
   ],

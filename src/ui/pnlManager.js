@@ -29,9 +29,30 @@ class PnlManager {
    */
   tick(dt, pvMap) {
     const econ = this.economics;
-    let revenue = econ.baseRevenuePerHour || 1800;
+    let revenue = 0;
     let penalties = 0;
     this.penaltyReasons = [];
+
+    // ---- THROUGHPUT-BASED REVENUE ----
+    // Revenue scales with product flow — no flow, no money
+    const productFlow = pvMap['FI-402'] || pvMap['FI-702'];
+    const baseRate = econ.baseRevenuePerHour || 1800;
+    if (productFlow) {
+      // Normalize: 100 bbl/hr is nominal. Revenue scales linearly.
+      const flowRatio = Math.max(0, productFlow.value / 100);
+      revenue = baseRate * Math.min(flowRatio, 2.0); // Cap at 2x
+    } else {
+      revenue = baseRate;
+    }
+
+    // ---- UTILITY COSTS ----
+    // Heater fuel cost scales with hot oil temp
+    const hotOil = pvMap['TIC-104'];
+    if (hotOil) {
+      const fuelCost = Math.max(0, (hotOil.value - 200) * 0.8); // ~$120/hr at 350F
+      penalties += fuelCost;
+      if (fuelCost > 150) this.penaltyReasons.push('HIGH FUEL COST');
+    }
 
     // ---- UNIVERSAL CHECKS ----
 

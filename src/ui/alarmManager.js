@@ -159,7 +159,12 @@ class AlarmManager {
       'LIC-303': 'PRODUCT TANK LEVEL',
       'FIC-401': 'LIQUID FEED FLOW',
       'FI-402': 'PRODUCT FLOW',
-      'AI-501': 'RVP'
+      'AI-501': 'RVP',
+      'GC-C1': 'METHANE IN PRODUCT',
+      'GC-C2': 'ETHANE IN PRODUCT',
+      'GC-C3': 'PROPANE IN PRODUCT',
+      'GC-C4': 'BUTANES IN PRODUCT',
+      'GC-C5': 'PENTANES+ IN PRODUCT'
     };
     return descs[tag] || tag;
   }

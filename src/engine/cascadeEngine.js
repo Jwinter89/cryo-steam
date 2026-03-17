@@ -142,7 +142,7 @@ class CascadeEngine {
 
       // Apply force (accumulates with other forces on target)
       if (force !== 0) {
-        target.externalForce += force * 0.1; // Scale down for stability
+        target.externalForce += force;
       }
     }
 
@@ -150,7 +150,7 @@ class CascadeEngine {
     for (const ae of this.activeEffects) {
       const target = pvMap[ae.target];
       if (target) {
-        target.externalForce += ae.force * 0.1;
+        target.externalForce += ae.force;
       }
     }
   }

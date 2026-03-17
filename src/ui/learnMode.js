@@ -113,19 +113,19 @@ class LearnMode {
             highlight: null
           },
           {
-            text: 'Listen for the NPC RADIO message — pipeline control will tell you a pig has been launched. You will have 15-25 minutes to prepare. Watch LIC-302 (separator level) — it will spike when the pig arrives.',
+            text: 'Listen for the NPC RADIO panel (bottom right). Pipeline control will warn you a pig has been launched. You will have about 20 minutes to prepare. Watch LIC-302 (separator level) — it will spike when the pig arrives.',
             highlight: 'g-lic-302'
           },
           {
-            text: 'Your job: Ramp the reboiler heat UP with the liquid rate. More liquid entering the tower needs more heat to maintain RVP. If you are too slow, RVP will spike. If you overshoot, you risk overheating the compressor suction.',
-            highlight: null
+            text: 'When alarms fire, click the ACK button on the alarm bar at the top. This acknowledges the alarm and opens the faceplate for that tag so you can take action immediately.',
+            highlight: 'alarm-bar'
           },
           {
-            text: 'The inlet valve XV-101 is your pinch valve. During a pig, you can partially close it to slow the surge. AGGRESSIVE PINCH = separator protected, but gas flow craters and P&L drops. CONSERVATIVE PINCH = gas flow maintained, but flood risk.',
-            highlight: 'equip-inlet-valve'
+            text: 'Your job: Ramp up FIC-401 (liquid feed flow) setpoint to pull liquid off the separator faster. Also ramp reboiler heat UP — more liquid needs more heat to maintain RVP. If you are too slow, RVP will spike.',
+            highlight: 'g-fic-401'
           },
           {
-            text: 'The simulation is now running. A pig will arrive shortly. Unpause the game and manage it. Hold RVP in spec (9.0-11.5 psi) through the entire event. Good luck.',
+            text: 'The simulation is now running. A pig will arrive in about 20 minutes. Unpause the game (hit 1x) and manage it. Hold RVP in spec (9.0-11.5 psi) through the entire event. Good luck.',
             highlight: null,
             action: 'start-pig-scenario'
           }
@@ -151,7 +151,11 @@ class LearnMode {
             highlight: null
           },
           {
-            text: 'The simulation will now run a pig + hot oil fault scenario. Find the problem. Fix it. Recover. Use the event panel on the right to resolve active events.',
+            text: 'Look at the EVENTS section in the right panel (or tap INFO on mobile). Active events show action buttons — REPAIR HEATER, RESTART COMP, ISSUE PERMIT. These are your tools to resolve equipment faults.',
+            highlight: 'event-status'
+          },
+          {
+            text: 'The simulation will now run a pig + hot oil fault scenario. Find the problem. Fix it. Recover. Click REPAIR HEATER in the event panel when you find the hot oil fault. Good luck.',
             highlight: null,
             action: 'start-fault-scenario'
           }
@@ -263,10 +267,10 @@ class LearnMode {
         break;
 
       case 'start-pig-scenario':
-        // Unpause and schedule a pig
+        // Unpause and schedule a pig — give player ~20 minutes to prepare
         if (this.game.sim) this.game.sim.setSpeed(1);
         if (this.game.eventSystem) {
-          this.game.eventSystem.scheduleEvent('pig-single', this.game.sim.gameTimeMinutes + 5);
+          this.game.eventSystem.scheduleEvent('pig-single', this.game.sim.gameTimeMinutes + 20);
         }
         this.overlay.style.display = 'none';
         break;

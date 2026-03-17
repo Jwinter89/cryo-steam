@@ -309,6 +309,110 @@
           backdrop.style.display = 'none';
         });
       }
+
+      // Mobile info drawer
+      this._bindMobileInfoDrawer();
+    },
+
+    _bindMobileInfoDrawer() {
+      const strip = document.getElementById('mobile-pnl-strip');
+      const drawer = document.getElementById('mobile-info-drawer');
+      const expandBtn = document.getElementById('mpnl-expand');
+      const handle = document.getElementById('mobile-info-handle');
+      const content = document.getElementById('mobile-info-content');
+
+      if (!strip || !drawer) return;
+
+      // Show strip on mobile
+      const checkMobile = () => {
+        strip.style.display = window.innerWidth <= 768 ? '' : 'none';
+      };
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+
+      // Toggle drawer
+      const toggleDrawer = () => {
+        drawer.classList.toggle('open');
+        expandBtn.innerHTML = drawer.classList.contains('open') ? 'INFO &#9660;' : 'INFO &#9650;';
+        if (drawer.classList.contains('open')) this._updateMobileInfoContent('pnl');
+      };
+      expandBtn.addEventListener('click', toggleDrawer);
+      handle.addEventListener('click', toggleDrawer);
+
+      // Tab switching
+      drawer.querySelectorAll('.mobile-info-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          drawer.querySelectorAll('.mobile-info-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          this._updateMobileInfoContent(tab.dataset.infoTab);
+        });
+      });
+    },
+
+    _updateMobileInfoContent(tab) {
+      const content = document.getElementById('mobile-info-content');
+      if (!content) return;
+
+      if (tab === 'pnl') {
+        const rev = this.pnlSystem ? Math.round(this.pnlSystem.revenuePerHour) : 0;
+        const pen = this.pnlSystem ? Math.round(this.pnlSystem.penaltiesPerHour) : 0;
+        const net = this.pnlSystem ? Math.round(this.pnlSystem.netPerHour) : 0;
+        const shift = this.pnlSystem ? Math.round(this.pnlSystem.shiftEarnings) : 0;
+        const reasons = this.pnlSystem ? this.pnlSystem.penaltyReasons : [];
+        const target = this._getShiftTarget();
+        const pct = target > 0 ? Math.min(100, Math.round((shift / target) * 100)) : 0;
+
+        content.innerHTML = `
+          <div class="panel-section">
+            <div class="pnl-block" style="padding:4px 8px">
+              <div class="pnl-row"><span class="pnl-label">REVENUE</span><span class="pnl-val" style="color:#4CAF50">$${rev.toLocaleString()}/hr</span></div>
+              <div class="pnl-row"><span class="pnl-label">PENALTIES</span><span class="pnl-val" style="color:${pen > 0 ? '#E04040' : 'var(--text-unit)'}">-$${pen.toLocaleString()}/hr</span></div>
+              <div class="pnl-row pnl-total-row"><span class="pnl-label">NET</span><span class="pnl-val" style="color:${net >= 0 ? '#4CAF50' : '#E04040'}">$${net.toLocaleString()}/hr</span></div>
+              <div class="pnl-row"><span class="pnl-label">SHIFT</span><span class="pnl-val" style="color:${shift >= 0 ? '#4CAF50' : '#E04040'}">$${shift.toLocaleString()}</span></div>
+              <div class="pnl-row"><span class="pnl-label">TARGET</span><span class="pnl-val" style="color:var(--text-label)">$${target.toLocaleString()} (${pct}%)</span></div>
+              ${reasons.length > 0 ? `<div style="margin-top:4px;font-size:9px;color:#E04040;font-family:var(--font-mono)">${reasons.join(' | ')}</div>` : ''}
+            </div>
+          </div>`;
+      } else if (tab === 'events') {
+        const eventBlock = document.getElementById('event-status');
+        content.innerHTML = `<div class="panel-section"><h4 class="section-header">EVENTS</h4>${eventBlock ? eventBlock.innerHTML : 'NO EVENTS'}</div>`;
+        // Re-bind action buttons in mobile drawer
+        content.querySelectorAll('.event-action-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (this.eventActionPanel) {
+              this.eventActionPanel._executeAction(btn.dataset.event, btn.dataset.action);
+            }
+          });
+        });
+      } else if (tab === 'radio') {
+        const radioLog = document.getElementById('radio-log');
+        content.innerHTML = `<div class="panel-section"><h4 class="section-header">NPC RADIO</h4><div class="radio-block">${radioLog ? radioLog.innerHTML : ''}</div></div>`;
+      }
+    },
+
+    _updateMobilePnlStrip() {
+      if (window.innerWidth > 768 || !this.pnlSystem) return;
+      const rateEl = document.getElementById('mpnl-rate');
+      const shiftEl = document.getElementById('mpnl-shift');
+      const penEl = document.getElementById('mpnl-penalties');
+      if (rateEl) {
+        const net = Math.round(this.pnlSystem.netPerHour);
+        rateEl.textContent = `$${net.toLocaleString()}/hr`;
+        rateEl.style.color = net >= 0 ? '#4CAF50' : '#E04040';
+      }
+      if (shiftEl) {
+        shiftEl.textContent = `SHIFT: $${Math.round(this.pnlSystem.shiftEarnings).toLocaleString()}`;
+      }
+      if (penEl) {
+        const reasons = this.pnlSystem.penaltyReasons;
+        penEl.textContent = reasons.length > 0 ? reasons[0] : '';
+      }
+    },
+
+    _getShiftTarget() {
+      // Shift target based on facility
+      const targets = { stabilizer: 12000, refrigeration: 18000, cryogenic: 25000 };
+      return targets[this.currentFacility] || 12000;
     },
 
     _showScreen(screenId) {
@@ -654,6 +758,19 @@
         `;
         board.appendChild(row);
       }
+
+      // Add shift target row
+      const targetRow = document.createElement('div');
+      targetRow.className = 'spec-row';
+      targetRow.id = 'spec-shift-target';
+      const target = this._getShiftTarget();
+      targetRow.innerHTML = `
+        <span class="spec-label">SHIFT TARGET</span>
+        <span class="spec-val" id="spec-shift-val">$0</span>
+        <span class="spec-range">$${target.toLocaleString()}</span>
+        <span class="spec-status" id="spec-shift-status">----</span>
+      `;
+      board.appendChild(targetRow);
     },
 
     // ============================================================
@@ -995,6 +1112,42 @@
       if (window.FieldNotes && this.sim.totalTicks % 50 === 0) {
         this._checkFieldNoteUnlocks();
       }
+
+      // Safety interlocks — HIHI/LOLO triggers consequences
+      if (this.sim.totalTicks % 20 === 0) {
+        this._checkSafetyInterlocks();
+      }
+    },
+
+    _checkSafetyInterlocks() {
+      const pvMap = this.sim.getAllPVs();
+
+      // Separator HIHI → compressor trip (liquid carryover)
+      const sep = pvMap['LIC-302'];
+      if (sep && sep.alarmState === 'HIHI' && this.equipment && this.equipment['C-100']) {
+        if (this.equipment['C-100'].status === 'running') {
+          this.equipment['C-100'].status = 'tripped';
+          this._addRadioMessage('ESD: Compressor C-100 tripped on separator HIHI level — liquid carryover protection.');
+          if (this.pnlSystem) this.pnlSystem.applyEventCost(800, 'COMP ESD TRIP');
+        }
+      }
+
+      // Tank HIHI pressure → pop-off relief
+      const tankP = pvMap['PIC-203'];
+      if (tankP && tankP.alarmState === 'HIHI') {
+        if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
+          this.pnlSystem.applyEventCost(500, 'TANK POP-OFF');
+          this._addRadioMessage('WARNING: Tank TK-100 pop-off valve lifting — venting product!');
+        }
+      }
+
+      // Tower sump HIHI → flooding damages packing
+      const sump = pvMap['LIC-301'];
+      if (sump && sump.alarmState === 'HIHI') {
+        if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
+          this.pnlSystem.applyEventCost(200, 'TOWER FLOODING');
+        }
+      }
     },
 
     // ============================================================
@@ -1063,9 +1216,23 @@
         }
       }
 
+      // Update shift target in spec board
+      const shiftValEl = document.getElementById('spec-shift-val');
+      const shiftStatusEl = document.getElementById('spec-shift-status');
+      if (shiftValEl && this.pnlSystem) {
+        const earnings = Math.round(this.pnlSystem.shiftEarnings);
+        shiftValEl.textContent = `$${earnings.toLocaleString()}`;
+        const target = this._getShiftTarget();
+        const pct = target > 0 ? Math.round((earnings / target) * 100) : 0;
+        shiftStatusEl.textContent = `${pct}%`;
+        const row = document.getElementById('spec-shift-target');
+        if (row) row.className = 'spec-row ' + (earnings >= target ? 'in-spec' : earnings >= 0 ? '' : 'off-spec');
+      }
+
       // P&L spec board update from pnlSystem
       if (this.pnlSystem) {
         this.pnlSystem._updateUI();
+        this._updateMobilePnlStrip();
       }
     },
 
@@ -1273,8 +1440,12 @@
       const listEl = document.getElementById('leaderboard-list');
       if (!listEl) return;
 
+      // Timeout after 5 seconds
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 5000));
+
       try {
-        const scores = await this.leaderboard.getTopScores(10);
+        const scores = await Promise.race([this.leaderboard.getTopScores(10), timeout]);
         if (scores.length === 0) {
           listEl.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — COMPLETE A SHIFT!</div>';
           return;
