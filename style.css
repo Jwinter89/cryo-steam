@@ -1486,7 +1486,7 @@ g[id^="equip-"]:hover line {
     max-height: 55vh;
     background: var(--bg-panel);
     border-top: 2px solid var(--border);
-    z-index: 150;
+    z-index: 200;
     transform: translateY(100%);
     transition: transform 0.25s ease;
     overflow-y: auto;

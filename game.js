@@ -301,16 +301,7 @@
         });
       }
 
-      // Backdrop closes faceplate on mobile
-      if (backdrop) {
-        backdrop.addEventListener('click', () => {
-          const fp = document.getElementById('faceplate');
-          if (fp) fp.style.display = 'none';
-          backdrop.style.display = 'none';
-        });
-      }
-
-      // Mobile info drawer
+      // Mobile info drawer (also handles backdrop)
       this._bindMobileInfoDrawer();
     },
 
@@ -330,19 +321,53 @@
       checkMobile();
       window.addEventListener('resize', checkMobile);
 
-      // Toggle drawer
-      const toggleDrawer = () => {
-        drawer.classList.toggle('open');
-        expandBtn.innerHTML = drawer.classList.contains('open') ? 'INFO &#9660;' : 'INFO &#9650;';
-        if (drawer.classList.contains('open')) this._updateMobileInfoContent('pnl');
+      const closeDrawer = () => {
+        drawer.classList.remove('open');
+        expandBtn.innerHTML = 'INFO &#9650;';
+        backdrop.style.display = 'none';
       };
+      const openDrawer = () => {
+        drawer.classList.add('open');
+        expandBtn.innerHTML = 'INFO &#9660;';
+        backdrop.style.display = 'block';
+        this._updateMobileInfoContent('pnl');
+      };
+      const toggleDrawer = () => {
+        if (drawer.classList.contains('open')) closeDrawer();
+        else openDrawer();
+      };
+
+      // Use the faceplate backdrop to dim and close on tap-outside
+      const backdrop = document.getElementById('faceplate-backdrop');
+
       expandBtn.addEventListener('click', toggleDrawer);
-      handle.addEventListener('click', toggleDrawer);
+      handle.addEventListener('click', closeDrawer);
+
+      // Add close button inside drawer
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = '\u2715 CLOSE';
+      closeBtn.className = 'mobile-info-tab';
+      closeBtn.style.cssText = 'flex:0; padding:6px 10px; color:var(--text-label);';
+      const tabBar = drawer.querySelector('.mobile-info-tabs');
+      if (tabBar) tabBar.appendChild(closeBtn);
+      closeBtn.addEventListener('click', closeDrawer);
+
+      // Tap backdrop to close drawer and/or faceplate
+      if (backdrop) {
+        backdrop.addEventListener('click', () => {
+          if (drawer.classList.contains('open')) closeDrawer();
+          const fp = document.getElementById('faceplate');
+          if (fp) fp.style.display = 'none';
+        });
+      }
 
       // Tab switching
       drawer.querySelectorAll('.mobile-info-tab').forEach(tab => {
+        if (tab === closeBtn) return;
         tab.addEventListener('click', () => {
-          drawer.querySelectorAll('.mobile-info-tab').forEach(t => t.classList.remove('active'));
+          drawer.querySelectorAll('.mobile-info-tab').forEach(t => {
+            if (t !== closeBtn) t.classList.remove('active');
+          });
           tab.classList.add('active');
           this._updateMobileInfoContent(tab.dataset.infoTab);
         });
