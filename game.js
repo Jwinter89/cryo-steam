@@ -999,7 +999,7 @@
             const facilityTips = {
               stabilizer: "Stabilizer. Check your reboiler temp and separator level before you start the clock. Plan ahead.",
               refrigeration: "Refrigeration plant. Watch your TEG contactor level and keep an eye on BTEX compliance. EPA doesn't give second chances.",
-              cryogenic: "Garden Creek Cryogenic — 110 million a day. Watch the cold box, don't let moisture through the mol sieve, and keep that expander running."
+              cryogenic: "Cryo Plant — 110 million a day. Watch the cold box, don't let moisture through the mol sieve, and keep that expander running."
             };
             this.henry.show({
               text: facilityTips[this.currentFacility] || "New shift. Read your board before you touch anything.",
@@ -1576,8 +1576,8 @@
         this.showToast('REFRIGERATION PLANT', 'Tier 2 facility now available', 'FACILITY UNLOCKED');
       }
       if (facility === 'refrigeration' && this.progress.refrigerationShiftsComplete === 1) {
-        this._addRadioMessage('TIER 3 UNLOCKED: Garden Creek Cryogenic now available.');
-        this.showToast('GARDEN CREEK CRYOGENIC', 'Tier 3 facility now available', 'FACILITY UNLOCKED');
+        this._addRadioMessage('TIER 3 UNLOCKED: Cryo Plant now available.');
+        this.showToast('CRYO PLANT', 'Tier 3 facility now available', 'FACILITY UNLOCKED');
       }
 
       // Show shift results overlay
@@ -1926,7 +1926,7 @@
       const facilityNames = {
         stabilizer: 'COLD CREEK STABILIZER',
         refrigeration: 'COLD CREEK REFRIGERATION',
-        cryogenic: 'GARDEN CREEK CRYOGENIC'
+        cryogenic: 'CRYO PLANT'
       };
       const name = facilityNames[this.currentFacility] || 'COLD CREEK';
 
