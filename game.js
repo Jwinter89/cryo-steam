@@ -228,7 +228,6 @@
       // Mode selection
       document.querySelectorAll('.mode-card[data-mode]').forEach(card => {
         card.addEventListener('click', () => {
-          if (card.classList.contains('locked')) return;
           this.currentMode = card.dataset.mode;
           if (this.currentMode === 'crisis') {
             this._populateCrisisScreen();
@@ -242,7 +241,6 @@
       // Facility selection
       document.querySelectorAll('.mode-card[data-facility]').forEach(card => {
         card.addEventListener('click', () => {
-          if (card.classList.contains('locked')) return;
           this.currentFacility = card.dataset.facility;
           this._startGame();
         });
@@ -464,27 +462,7 @@
     // ============================================================
 
     _updateUnlockStates() {
-      const p = this.progress;
-
-      // Tier 1 complete = stabilizer operated for a full shift
-      const tier1Done = p.stabilizerShiftsComplete >= 1;
-      const tier2Done = p.refrigerationShiftsComplete >= 1;
-
-      // Mode unlocks
-      document.querySelectorAll('.mode-card[data-mode="crisis"]').forEach(c => {
-        c.classList.toggle('locked', !tier1Done);
-      });
-      document.querySelectorAll('.mode-card[data-mode="optimize"]').forEach(c => {
-        c.classList.toggle('locked', !tier1Done);
-      });
-
-      // Facility unlocks
-      document.querySelectorAll('.mode-card[data-facility="refrigeration"]').forEach(c => {
-        c.classList.toggle('locked', !tier1Done);
-      });
-      document.querySelectorAll('.mode-card[data-facility="cryogenic"]').forEach(c => {
-        c.classList.toggle('locked', !tier2Done);
-      });
+      // All modes and facilities are unlocked in the web version
     },
 
     // ============================================================
@@ -839,12 +817,8 @@
 
       const scenarios = CrisisScenarios.scenarios || [];
       for (const s of scenarios) {
-        // Check if player has unlocked this tier
-        const tierOk = s.tier <= 1 || (s.tier <= 2 && this.progress.stabilizerShiftsComplete >= 1)
-          || (s.tier <= 3 && this.progress.refrigerationShiftsComplete >= 1);
-
         const card = document.createElement('div');
-        card.className = 'crisis-card mode-card' + (tierOk ? '' : ' locked');
+        card.className = 'crisis-card mode-card';
         card.innerHTML = `
           <div class="crisis-card-name">${s.name}</div>
           <div class="crisis-card-desc">${s.description}</div>
@@ -855,13 +829,11 @@
           </div>
         `;
 
-        if (tierOk) {
-          card.addEventListener('click', () => {
-            this.crisisScenario = s.id;
-            this.currentFacility = s.facility;
-            this._startGame();
-          });
-        }
+        card.addEventListener('click', () => {
+          this.crisisScenario = s.id;
+          this.currentFacility = s.facility;
+          this._startGame();
+        });
 
         list.appendChild(card);
       }
