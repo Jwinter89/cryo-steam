@@ -41,6 +41,9 @@ class FaceplateManager {
           const newSP = parseFloat(spInput.value);
           if (!isNaN(newSP) && newSP >= pv.min && newSP <= pv.max) {
             pv.sp = newSP;
+            document.dispatchEvent(new CustomEvent('faceplate:apply', {
+              detail: { tag: this.currentTag, sp: newSP }
+            }));
           }
         }
       }
@@ -77,6 +80,10 @@ class FaceplateManager {
 
     this.currentTag = tag;
     this.el.style.display = 'block';
+
+    document.dispatchEvent(new CustomEvent('faceplate:open', {
+      detail: { tag }
+    }));
 
     // On mobile (<= 768px), use fixed centering (CSS handles it) + show backdrop
     const isMobile = window.innerWidth <= 768;

@@ -34,6 +34,7 @@
         <div class="title-menu">
           <button class="menu-btn" data-action="new-game">NEW GAME</button>
           <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
+          <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
           <button class="menu-btn" data-action="settings">SETTINGS</button>
         </div>
 
@@ -55,7 +56,13 @@
 
         <div class="cta-banner">
           <div class="cta-text">Like what you see? The full version includes advanced scenarios, detailed analytics, mobile app, and more.</div>
-          <button class="cta-btn" id="cta-btn">LEARN MORE ABOUT THE FULL VERSION</button>
+          <span class="cta-label">FULL VERSION COMING TO APP STORE SOON</span>
+        </div>
+
+        <div class="title-footer-links">
+          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="donate-link">Support the Developer</a>
+          <span class="title-footer-sep">|</span>
+          <a href="https://winterhowlers.com" target="_blank" rel="noopener" class="donate-link">Built by Winter Howlers</a>
         </div>
 
         <p class="title-credit">Designed by a decade-experienced cryogenic plant operator</p>
@@ -110,7 +117,7 @@
           <span class="tier-label">TIER 2</span>
         </div>
         <div class="mode-card" data-facility="cryogenic">
-          <h3>GARDEN CREEK CRYOGENIC</h3>
+          <h3>CRYO PLANT</h3>
           <p>110 MMcfd. Turboexpander, mol sieve, demethanizer. Mode switching. Three-plant endgame.</p>
           <span class="tier-label">TIER 3</span>
         </div>
@@ -592,6 +599,7 @@
         <button id="btn-2x" class="time-btn">2x</button>
         <button id="btn-4x" class="time-btn">4x</button>
         <span id="time-speed-label">PAUSED</span>
+        <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="game-support-link">&#9734; SUPPORT</a>
       </div>
     </div>
 
@@ -626,6 +634,18 @@
         <div class="setting-row">
           <span>Alarm Tips</span>
           <input type="checkbox" id="setting-tips" checked>
+        </div>
+        <div class="setting-row">
+          <span>Color Blind Mode</span>
+          <select id="setting-colorblind">
+            <option value="off">Normal</option>
+            <option value="deuteranopia">Deuteranopia (Red/Green)</option>
+            <option value="protanopia">Protanopia (Red Weak)</option>
+            <option value="tritanopia">Tritanopia (Blue/Yellow)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <button class="menu-btn" id="btn-glossary">GLOSSARY</button>
         </div>
         <div class="setting-row">
           <button class="menu-btn" id="btn-field-notes">FIELD NOTES</button>
@@ -668,7 +688,54 @@
         <!-- Populated dynamically -->
       </div>
     </div>
+
+    <!-- Operator Profile Screen -->
+    <div id="profile-screen" class="screen">
+      <div class="mode-header">
+        <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
+        <h2>OPERATOR PROFILE</h2>
+      </div>
+      <div id="profile-content">
+        <!-- Populated by operatorProfile.js -->
+      </div>
+    </div>
+
+    <!-- Glossary Popup -->
+    <div id="glossary-popup" class="popup" style="display:none">
+      <div class="popup-header">
+        <h3>OPERATOR GLOSSARY</h3>
+        <button class="popup-close" data-popup="glossary-popup">X</button>
+      </div>
+      <div id="glossary-content">
+        <!-- Populated by glossary.js -->
+      </div>
+    </div>
+
+    <!-- Debrief Overlay (post-shift) -->
+    <div id="debrief-overlay" class="screen-overlay" style="display:none">
+      <!-- Populated by debriefScreen.js -->
+    </div>
+
+    <!-- Challenges Sidebar (in-game) -->
+    <div id="challenges-panel-container" class="challenges-container" style="display:none">
+      <!-- Populated by challenges.js -->
+    </div>
+
+    <!-- Promotion Toast Overlay -->
+    <div id="promotion-overlay" class="promotion-overlay" style="display:none">
+      <div class="promotion-content">
+        <div class="promotion-icon">&#9733;</div>
+        <div class="promotion-title" id="promotion-title">PROMOTED</div>
+        <div class="promotion-rank" id="promotion-rank">BOARD OPERATOR</div>
+        <div class="promotion-line" id="promotion-line"></div>
+        <button class="menu-btn" id="promotion-dismiss">CONTINUE</button>
+      </div>
+    </div>
   </div>
+
+  <footer id="site-footer">
+    <a href="https://winterhowlers.com" target="_blank" rel="noopener">Built by Winter Howlers</a>
+  </footer>
 
   <!-- Firebase (leaderboard) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -726,6 +793,16 @@
   <script src="src/ui/objectives.js"></script>
   <script src="src/ui/henry.js"></script>
   <script src="src/audio/audioManager.js"></script>
+
+  <!-- New systems -->
+  <script src="src/ui/achievements.js"></script>
+  <script src="src/ui/careerProgression.js"></script>
+  <script src="src/ui/operatorProfile.js"></script>
+  <script src="src/ui/challenges.js"></script>
+  <script src="src/ui/debriefScreen.js"></script>
+  <script src="src/ui/glossary.js"></script>
+  <script src="src/ui/colorBlindMode.js"></script>
+  <script src="src/ui/pidZoom.js"></script>
 
   <!-- Main game -->
   <script src="game.js"></script>

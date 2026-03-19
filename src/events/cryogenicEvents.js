@@ -1,5 +1,5 @@
 /**
- * CryogenicEvents — Events specific to Garden Creek Cryogenic Plant (Tier 3).
+ * CryogenicEvents — Events specific to Cryo Plant (Tier 3).
  * Expander trips, mol sieve breakthrough, cold box freeze-up,
  * mode switch scenarios, three-plant simultaneous operation.
  */

@@ -15,6 +15,9 @@ class LearnMode {
     this.textEl = document.getElementById('learn-text');
     this.nextBtn = document.getElementById('learn-next');
 
+    // Active waitFor listener cleanup
+    this._waitCleanup = null;
+
     this.lessons = this._buildLessons();
 
     this.nextBtn.addEventListener('click', () => this._nextStep());
@@ -88,7 +91,8 @@ class LearnMode {
           {
             text: "Today you learn the most important control in this plant: reboiler temperature, TIC-102.\n\nClick any instrument tag — left panel or P&ID — to open its FACEPLATE.",
             highlight: 'g-tic-102',
-            mood: 'teaching'
+            mood: 'teaching',
+            waitFor: { event: 'faceplate:open', match: { tag: 'TIC-102' } }
           },
           {
             text: "Faceplate shows: PV (what it reads now), SP (your target), OUT (how open the control valve is), and MODE (AUTO or MAN).\n\nThis is your cockpit for each loop.",
@@ -104,7 +108,8 @@ class LearnMode {
             text: "Try it. Click TIC-102, change SP to 305, hit APPLY.\n\nWatch the PV trend up. Notice the RVP start to drop — more heat means more light ends flashed off. That's the cause and effect.",
             highlight: 'g-tic-102',
             action: 'enable-controls',
-            mood: 'teaching'
+            mood: 'teaching',
+            waitFor: { event: 'faceplate:apply', match: { tag: 'TIC-102', sp: 305, tolerance: 3 } }
           },
           {
             text: "See the TREND ARROW next to each value? Rising arrow means going up. Double arrow means going fast. Rate of change matters more than current value — it tells you WHERE things are heading.",
@@ -114,7 +119,8 @@ class LearnMode {
           {
             text: "Set reboiler SP back to 300. Watch the lag — there's always a delay between your move and the result. During an upset, this lag is the difference between a good operator and a plant trip.",
             highlight: null,
-            mood: 'alert'
+            mood: 'alert',
+            waitFor: { event: 'faceplate:apply', match: { tag: 'TIC-102', sp: 300, tolerance: 3 } }
           },
           {
             text: "Good work. You can control the reboiler now.\n\nTomorrow... your first pig arrives. That's where it gets interesting.",
@@ -234,6 +240,7 @@ class LearnMode {
   }
 
   stop() {
+    this._clearWaitFor();
     this.active = false;
     this.overlay.style.display = 'none';
     // Hide Henry if he's showing a tutorial
@@ -243,6 +250,9 @@ class LearnMode {
   }
 
   _showStep() {
+    // Clean up any previous waitFor listener
+    this._clearWaitFor();
+
     const dayData = this.lessons[this.currentDay];
     if (!dayData) {
       this.stop();
@@ -274,16 +284,28 @@ class LearnMode {
       const isLast = this.currentStep >= dayData.steps.length - 1;
       const btnLabel = isLast ? (step.action ? 'START' : 'COMPLETE') : 'NEXT';
 
+      // Build button list: main action + skip
+      const buttons = [
+        { label: btnLabel, callback: () => this._nextStep(), action: 'dismiss' }
+      ];
+      // Add SKIP button (unless this is the very last step of the last day)
+      if (!(this.currentDay === 5 && isLast)) {
+        buttons.push({ label: 'SKIP TUTORIAL', callback: () => this._skipTutorial(), action: 'dismiss' });
+      }
+
       this.game.henry.show({
         text: step.text,
         mood: step.mood || 'teaching',
         position: 'right',
         duration: 0,
         type: 'tutorial',
-        buttons: [
-          { label: btnLabel, callback: () => this._nextStep(), action: 'dismiss' }
-        ]
+        buttons: buttons
       });
+
+      // Set up waitFor auto-advance if this step has a condition
+      if (step.waitFor) {
+        this._setupWaitFor(step.waitFor);
+      }
     } else {
       // Fallback: original overlay
       this.overlay.style.display = 'flex';
@@ -308,7 +330,80 @@ class LearnMode {
     }
   }
 
+  /**
+   * Set up a DOM event listener that auto-advances the tutorial when the
+   * player completes the requested action.
+   */
+  _setupWaitFor(waitFor) {
+    const handler = (e) => {
+      const detail = e.detail || {};
+      const match = waitFor.match || {};
+      let matched = true;
+
+      // Check tag match
+      if (match.tag && detail.tag !== match.tag) matched = false;
+
+      // Check SP match with optional tolerance
+      if (match.sp != null && detail.sp != null) {
+        const tolerance = match.tolerance || 0;
+        if (Math.abs(detail.sp - match.sp) > tolerance) matched = false;
+      }
+
+      if (matched) {
+        // Henry nods to acknowledge the player's action
+        if (this.game.henry) {
+          this.game.henry.nod();
+        }
+        // Small delay so the player sees the nod before advancing
+        setTimeout(() => this._nextStep(), 600);
+      }
+    };
+
+    document.addEventListener(waitFor.event, handler);
+    this._waitCleanup = () => {
+      document.removeEventListener(waitFor.event, handler);
+    };
+  }
+
+  /**
+   * Remove any active waitFor listener.
+   */
+  _clearWaitFor() {
+    if (this._waitCleanup) {
+      this._waitCleanup();
+      this._waitCleanup = null;
+    }
+  }
+
+  /**
+   * Skip the entire tutorial — unpause sim and clean up.
+   */
+  _skipTutorial() {
+    this._clearWaitFor();
+    this._clearHighlights();
+    this.overlay.style.display = 'none';
+    this.active = false;
+
+    // Unpause the simulation so the player can play freely
+    if (this.game.sim) this.game.sim.setSpeed(1);
+
+    if (this.game.henry) {
+      this.game.henry.hide();
+      setTimeout(() => {
+        this.game.henry.show({
+          text: "Alright, you want to learn the hard way. I respect that.\n\nI'll still be around if things go sideways.",
+          mood: 'happy',
+          position: 'right',
+          duration: 8000,
+          type: 'tip'
+        });
+      }, 400);
+    }
+  }
+
   _nextStep() {
+    this._clearWaitFor();
+
     const dayData = this.lessons[this.currentDay];
     const step = dayData ? dayData.steps[this.currentStep] : null;
 

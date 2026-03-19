@@ -1,6 +1,6 @@
 /**
  * CryogenicConfig — Complete process variable definitions and cascade rules
- * for the Garden Creek Cryogenic Plant (Tier 3).
+ * for the Cryo Plant (Tier 3).
  *
  * 110 MMcfd design, up to 130 MMcfd operational.
  * Mol sieve dehydration, turboexpander/recompressor, demethanizer tower,
@@ -10,7 +10,7 @@
  */
 
 const CryogenicConfig = {
-  name: 'GARDEN CREEK',
+  name: 'CRYO PLANT',
   tier: 3,
 
   processVariables: [
