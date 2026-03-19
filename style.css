@@ -95,6 +95,7 @@ html, body {
   position: absolute;
   top: 0;
   left: 0;
+  overflow-y: auto;
 }
 .screen.active {
   display: flex;
@@ -530,7 +531,7 @@ html, body {
 .back-btn:hover {
   background: var(--bg-input);
 }
-#mode-screen, #facility-screen, #settings-screen {
+#mode-screen, #facility-screen, #settings-screen, #crisis-screen, #profile-screen {
   flex-direction: column;
   background: var(--bg-panel);
 }
