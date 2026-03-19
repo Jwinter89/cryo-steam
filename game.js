@@ -41,6 +41,7 @@
     cryogenic: [
       { id: 'overview', label: 'OVERVIEW' },
       { id: 'molsieve', label: 'MOL SIEVE' },
+      { id: 'amine', label: 'AMINE' },
       { id: 'coldbox', label: 'COLD BOX' },
       { id: 'expander', label: 'EXPANDER' },
       { id: 'demet', label: 'DEMET' },
@@ -66,6 +67,7 @@
     ],
     cryogenic: [
       { header: 'INLET / MOL SIEVE', tags: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'] },
+      { header: 'AMINE / H2S', tags: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'LIC-A03', 'AI-A04', 'AI-A05', 'CI-A01'] },
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
       { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'] },
       { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
@@ -95,6 +97,7 @@
     cryogenic: {
       overview: null,
       molsieve: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'],
+      amine: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'TIC-A04', 'PIC-A03', 'LIC-A03', 'LIC-A02', 'PIC-A02', 'AI-A04', 'AI-A05', 'CI-A01', 'LIC-A04'],
       coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
       expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'],
       demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
@@ -862,7 +865,7 @@
           this._stabilizerSVG = svgEl.innerHTML;
         }
         svgEl.innerHTML = FacilityViews.cryogenicPID();
-        svgEl.setAttribute('viewBox', '0 0 1000 700');
+        svgEl.setAttribute('viewBox', '0 0 1000 850');
       }
     },
 
@@ -953,6 +956,17 @@
       if (window.PidZoom) {
         this.pidZoom = new PidZoom();
         this.pidZoom.resetForFacility();
+      }
+
+      // Bind mol sieve switch button (cryo only)
+      if (this.currentFacility === 'cryogenic') {
+        const switchBtn = document.getElementById('ms-switch-btn');
+        if (switchBtn) {
+          switchBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._switchMolSieveBeds();
+          });
+        }
       }
 
       // GC display
@@ -1103,8 +1117,9 @@
         this.sim.registerPV(pv);
       }
 
-      // Also register amine PVs if amine DLC is active
-      if (this.progress.amineDLC && window.AmineConfig) {
+      // Register amine PVs — built into cryo, DLC for other facilities
+      const loadAmine = (this.currentFacility === 'cryogenic' || this.progress.amineDLC) && window.AmineConfig;
+      if (loadAmine) {
         for (const pvConfig of AmineConfig.processVariables) {
           const pv = new ProcessVariable(pvConfig);
           this.sim.registerPV(pv);
@@ -1115,7 +1130,7 @@
       for (const rule of config.cascadeRules) {
         this.sim.cascadeEngine.addRule(rule);
       }
-      if (this.progress.amineDLC && window.AmineConfig) {
+      if (loadAmine) {
         for (const rule of AmineConfig.cascadeRules) {
           this.sim.cascadeEngine.addRule(rule);
         }
@@ -1128,7 +1143,7 @@
           this.valves[id] = { ...v };
         }
       }
-      if (this.progress.amineDLC && window.AmineConfig && AmineConfig.valves) {
+      if (loadAmine && AmineConfig.valves) {
         for (const [id, v] of Object.entries(AmineConfig.valves)) {
           this.valves[id] = { ...v };
         }
@@ -1141,7 +1156,7 @@
           this.equipment[id] = { ...e };
         }
       }
-      if (this.progress.amineDLC && window.AmineConfig && AmineConfig.equipment) {
+      if (loadAmine && AmineConfig.equipment) {
         for (const [id, e] of Object.entries(AmineConfig.equipment)) {
           this.equipment[id] = { ...e };
         }
@@ -1163,7 +1178,7 @@
       if (this.currentFacility === 'cryogenic' && window.registerCryogenicEvents) {
         registerCryogenicEvents(this.eventSystem);
       }
-      if (this.progress.amineDLC && window.registerAmineEvents) {
+      if ((this.currentFacility === 'cryogenic' || this.progress.amineDLC) && window.registerAmineEvents) {
         registerAmineEvents(this.eventSystem);
       }
 
@@ -1221,6 +1236,11 @@
       if (this.gcDisplay) this.gcDisplay.update();
       this._updateGaugeSheet();
 
+      // Mol sieve cycle tracking (cryo only)
+      if (this.currentFacility === 'cryogenic') {
+        this._tickMolSieveCycle(dt);
+      }
+
       // Update spec board (facility-aware)
       this._updateSpecBoard();
 
@@ -1263,6 +1283,130 @@
 
       // Track achievement flags
       this._trackAchievementFlags();
+    },
+
+    // ============================================================
+    // MOL SIEVE 3-BED CYCLE MANAGEMENT
+    // ============================================================
+
+    _tickMolSieveCycle(dt) {
+      const config = window.CryogenicConfig;
+      if (!config || !config.molSieve) return;
+
+      const ms = config.molSieve;
+      const beds = [
+        { key: 'bedA', label: 'A' },
+        { key: 'bedB', label: 'B' },
+        { key: 'bedC', label: 'C' }
+      ];
+
+      // Advance cycle timers
+      for (const bed of beds) {
+        const b = ms[bed.key];
+        b.cycleTime += dt;
+
+        // Auto-advance from regen to standby after regen time
+        if (b.state === 'regenerating' && b.cycleTime >= b.maxCycleTime) {
+          b.state = 'standby';
+          b.cycleTime = 0;
+        }
+      }
+
+      // Update P&ID bed status indicators
+      this._updateMolSievePID(ms);
+    },
+
+    _switchMolSieveBeds() {
+      const config = window.CryogenicConfig;
+      if (!config || !config.molSieve) return;
+
+      const ms = config.molSieve;
+      const beds = ['bedA', 'bedB', 'bedC'];
+
+      // Find the bed that's been adsorbing longest
+      let longestAdsorb = null;
+      let longestTime = -1;
+      for (const key of beds) {
+        if (ms[key].state === 'adsorbing' && ms[key].cycleTime > longestTime) {
+          longestTime = ms[key].cycleTime;
+          longestAdsorb = key;
+        }
+      }
+
+      // Find the standby bed to bring online
+      let standbyBed = null;
+      for (const key of beds) {
+        if (ms[key].state === 'standby') {
+          standbyBed = key;
+          break;
+        }
+      }
+
+      if (longestAdsorb && standbyBed) {
+        // Swap: longest adsorber goes to regen, standby goes to adsorb
+        ms[longestAdsorb].state = 'regenerating';
+        ms[longestAdsorb].cycleTime = 0;
+        ms[standbyBed].state = 'adsorbing';
+        ms[standbyBed].cycleTime = 0;
+
+        if (this.henry) {
+          const bedLabel = longestAdsorb.replace('bed', '');
+          const newLabel = standbyBed.replace('bed', '');
+          this.henry.tip(`Mol sieve switch: Bed ${bedLabel} to regen, Bed ${newLabel} online.`, 4000);
+        }
+      } else if (longestAdsorb && !standbyBed) {
+        // No standby available — force the regen bed
+        if (this.henry) {
+          this.henry.tip("No standby bed available. Wait for regen to complete.", 3000);
+        }
+      }
+
+      this._updateMolSievePID(ms);
+    },
+
+    _updateMolSievePID(ms) {
+      const stateColors = {
+        adsorbing: '#4CAF50',  // green
+        regenerating: '#FF9800', // orange
+        standby: '#607D8B'     // grey-blue
+      };
+      const stateLabels = {
+        adsorbing: 'ADSORB',
+        regenerating: 'REGEN',
+        standby: 'STANDBY'
+      };
+      const bedFills = {
+        adsorbing: '#505050',
+        regenerating: '#4A3A20',
+        standby: '#383838'
+      };
+
+      for (const [key, label] of [['bedA', 'a'], ['bedB', 'b'], ['bedC', 'c']]) {
+        const bed = ms[key];
+        const color = stateColors[bed.state] || '#606060';
+        const statusDot = document.getElementById('ms-status-' + label);
+        const stateText = document.getElementById('ms-state-' + label);
+        const bedRect = document.getElementById('ms-bed-' + label);
+
+        if (statusDot) statusDot.setAttribute('fill', color);
+        if (stateText) {
+          stateText.textContent = stateLabels[bed.state] || bed.state.toUpperCase();
+          stateText.setAttribute('fill', color);
+        }
+        if (bedRect) {
+          bedRect.setAttribute('fill', bedFills[bed.state] || '#505050');
+          bedRect.setAttribute('stroke', bed.state === 'adsorbing' ? '#808080' : '#606060');
+        }
+      }
+
+      // Update equipment status too
+      if (this.equipment) {
+        for (const [key, equipId] of [['bedA', 'MS-A'], ['bedB', 'MS-B'], ['bedC', 'MS-C']]) {
+          if (this.equipment[equipId]) {
+            this.equipment[equipId].status = ms[key].state;
+          }
+        }
+      }
     },
 
     _checkSafetyInterlocks() {

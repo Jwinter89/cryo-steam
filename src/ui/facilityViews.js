@@ -268,9 +268,12 @@ const FacilityViews = {
       <marker id="arrow-residue" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
         <polygon points="0,0 6,2 0,4" fill="#90D060"/>
       </marker>
+      <marker id="arrow-amine" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#C77DFF"/>
+      </marker>
     </defs>
-    <rect width="1000" height="650" fill="#3C3C3C"/>
-    <rect width="1000" height="650" fill="url(#grid)"/>
+    <rect width="1000" height="850" fill="#3C3C3C"/>
+    <rect width="1000" height="850" fill="url(#grid)"/>
 
     <!-- INLET SECTION -->
     <g transform="translate(20,80)">
@@ -281,18 +284,36 @@ const FacilityViews = {
       <text x="30" y="-10" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">100</text>
     </g>
 
-    <!-- MOL SIEVE (3 vessels) -->
-    <g transform="translate(80,30)">
-      <rect x="0" y="0" width="30" height="60" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+    <!-- MOL SIEVE (3 vessels with status indicators) -->
+    <g transform="translate(80,20)">
+      <!-- Bed A -->
+      <rect id="ms-bed-a" x="0" y="0" width="30" height="60" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+      <circle id="ms-status-a" cx="15" cy="-8" r="4" fill="#4CAF50" stroke="none"/>
       <text x="15" y="75" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">MS-A</text>
-      <rect x="40" y="0" width="30" height="60" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+      <text id="ms-state-a" x="15" y="85" text-anchor="middle" font-size="5" fill="#4CAF50" font-family="Courier New">ADSORB</text>
+      <circle cx="15" cy="30" r="10" fill="none" stroke="#606060" stroke-width="0.8" class="tag-bubble" data-tag="TIC-201"/>
+      <text x="15" y="27" text-anchor="middle" font-size="5" fill="#808080" font-family="Courier New">TIC</text>
+      <text x="15" y="34" text-anchor="middle" font-size="5" fill="#808080" font-family="Courier New">201</text>
+      <!-- Bed B -->
+      <rect id="ms-bed-b" x="40" y="0" width="30" height="60" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
+      <circle id="ms-status-b" cx="55" cy="-8" r="4" fill="#4CAF50" stroke="none"/>
       <text x="55" y="75" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">MS-B</text>
-      <rect x="80" y="0" width="30" height="60" rx="3" fill="#383838" stroke="#606060" stroke-width="1"/>
+      <text id="ms-state-b" x="55" y="85" text-anchor="middle" font-size="5" fill="#4CAF50" font-family="Courier New">ADSORB</text>
+      <circle cx="55" cy="30" r="10" fill="none" stroke="#606060" stroke-width="0.8" class="tag-bubble" data-tag="TIC-202"/>
+      <text x="55" y="27" text-anchor="middle" font-size="5" fill="#808080" font-family="Courier New">TIC</text>
+      <text x="55" y="34" text-anchor="middle" font-size="5" fill="#808080" font-family="Courier New">202</text>
+      <!-- Bed C -->
+      <rect id="ms-bed-c" x="80" y="0" width="30" height="60" rx="3" fill="#383838" stroke="#606060" stroke-width="1"/>
+      <circle id="ms-status-c" cx="95" cy="-8" r="4" fill="#FF9800" stroke="none"/>
       <text x="95" y="75" text-anchor="middle" font-size="7" fill="#606060" font-family="Courier New">MS-C</text>
-      <text x="55" y="88" text-anchor="middle" font-size="7" fill="#606060" font-family="Arial">REGEN</text>
-      <circle cx="120" cy="30" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-201"/>
-      <text x="120" y="27" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
-      <text x="120" y="35" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">201</text>
+      <text id="ms-state-c" x="95" y="85" text-anchor="middle" font-size="5" fill="#FF9800" font-family="Courier New">REGEN</text>
+      <!-- Moisture outlet -->
+      <circle cx="125" cy="15" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-201"/>
+      <text x="125" y="12" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="125" y="20" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">201</text>
+      <!-- Switch beds button area -->
+      <rect id="ms-switch-btn" x="118" y="40" width="45" height="18" rx="2" fill="#2A4A2A" stroke="#4A7A4A" stroke-width="1" cursor="pointer"/>
+      <text x="140" y="52" text-anchor="middle" font-size="6" fill="#C8D8C8" font-family="Courier New" pointer-events="none">SWITCH</text>
     </g>
 
     <!-- REGEN HEATER -->
@@ -505,6 +526,153 @@ const FacilityViews = {
       <text x="80" y="23" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">801</text>
     </g>
 
+    <!-- ═══════════════════════════════════════════════════════
+         AMINE / H2S TREATMENT SYSTEM
+         ═══════════════════════════════════════════════════════ -->
+    <g transform="translate(20,430)">
+      <text x="0" y="0" font-size="9" fill="#C77DFF" font-family="Courier New" font-weight="bold">AMINE TREATING UNIT</text>
+      <line x1="0" y1="4" x2="160" y2="4" stroke="#C77DFF" stroke-width="0.5" opacity="0.5"/>
+    </g>
+
+    <!-- Sour gas from inlet to absorber (amine purple) -->
+    <line class="flow-line active" x1="80" y1="100" x2="80" y2="440" stroke="#C77DFF" stroke-dasharray="4,2" opacity="0.6"/>
+    <line class="flow-line active" x1="80" y1="440" x2="130" y2="440" stroke="#C77DFF" marker-end="url(#arrow-amine)"/>
+    <text x="45" y="438" font-size="6" fill="#C77DFF" font-family="Courier New" opacity="0.7">SOUR</text>
+
+    <!-- AMINE ABSORBER -->
+    <g id="equip-absorber" transform="translate(130,445)">
+      <path d="M 0,15 Q 0,0 18,0 Q 36,0 36,15 L 36,160 Q 36,175 18,175 Q 0,175 0,160 Z" fill="#505050" stroke="#C77DFF" stroke-width="1.2" opacity="0.9"/>
+      <line x1="4" y1="35" x2="32" y2="35" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="60" x2="32" y2="60" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="85" x2="32" y2="85" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="110" x2="32" y2="110" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="135" x2="32" y2="135" stroke="#606060" stroke-width="0.6"/>
+      <text x="18" y="188" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">T-A01</text>
+      <text x="18" y="198" text-anchor="middle" font-size="6" fill="#606060" font-family="Arial">ABSORBER</text>
+      <circle cx="46" cy="60" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-A01"/>
+      <text x="46" y="57" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">TIC</text>
+      <text x="46" y="64" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A01</text>
+      <circle cx="46" cy="140" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-A01"/>
+      <text x="46" y="137" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="46" y="144" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A01</text>
+    </g>
+
+    <!-- Sweet gas out top of absorber -->
+    <line class="flow-line active" x1="148" y1="443" x2="148" y2="430" stroke="#D4A843"/>
+    <line class="flow-line active" x1="148" y1="430" x2="230" y2="430" stroke="#D4A843" marker-end="url(#arrow-gas-c)"/>
+    <text x="195" y="427" text-anchor="middle" font-size="6" fill="#D4A843" font-family="Courier New">SWEET GAS</text>
+
+    <!-- Lean amine flow tag -->
+    <g transform="translate(85,465)">
+      <circle cx="0" cy="0" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="FI-A01"/>
+      <text x="0" y="-3" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">FI</text>
+      <text x="0" y="4" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A01</text>
+    </g>
+
+    <!-- Rich amine out to flash drum (amine purple) -->
+    <line class="flow-line active" x1="148" y1="620" x2="148" y2="650" stroke="#C77DFF"/>
+    <line class="flow-line active" x1="148" y1="650" x2="240" y2="650" stroke="#C77DFF" marker-end="url(#arrow-amine)"/>
+
+    <!-- FLASH DRUM -->
+    <g transform="translate(240,635)">
+      <rect x="0" y="0" width="45" height="30" rx="8" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <text x="22" y="42" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">V-A01</text>
+      <circle cx="55" cy="15" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-A02"/>
+      <text x="55" y="12" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="55" y="19" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A02</text>
+    </g>
+
+    <!-- Flash to regenerator (amine purple) -->
+    <line class="flow-line active" x1="285" y1="650" x2="350" y2="650" stroke="#C77DFF" marker-end="url(#arrow-amine)"/>
+
+    <!-- AMINE REGENERATOR -->
+    <g id="equip-regen" transform="translate(350,460)">
+      <path d="M 0,15 Q 0,0 18,0 Q 36,0 36,15 L 36,200 Q 36,215 18,215 Q 0,215 0,200 Z" fill="#505050" stroke="#C77DFF" stroke-width="1.2" opacity="0.9"/>
+      <line x1="4" y1="40" x2="32" y2="40" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="70" x2="32" y2="70" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="100" x2="32" y2="100" stroke="#606060" stroke-width="0.6"/>
+      <line x1="4" y1="130" x2="32" y2="130" stroke="#606060" stroke-width="0.6"/>
+      <text x="18" y="228" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">T-A02</text>
+      <text x="18" y="238" text-anchor="middle" font-size="6" fill="#606060" font-family="Arial">REGEN</text>
+      <circle cx="46" cy="30" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="TIC-A03"/>
+      <text x="46" y="27" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">TIC</text>
+      <text x="46" y="34" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A03</text>
+      <circle cx="46" cy="190" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-A03"/>
+      <text x="46" y="187" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="46" y="194" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A03</text>
+    </g>
+
+    <!-- REGEN REBOILER -->
+    <g transform="translate(400,700)">
+      <rect x="0" y="0" width="40" height="30" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <path d="M 5,8 Q 12,5 20,8 Q 28,11 35,8" fill="none" stroke="#707070" stroke-width="1"/>
+      <path d="M 5,20 Q 12,17 20,20 Q 28,23 35,20" fill="none" stroke="#707070" stroke-width="1"/>
+      <text x="20" y="42" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">H-A01</text>
+    </g>
+
+    <!-- Lean amine return (regen sump back to absorber top via pumps) -->
+    <line class="flow-line active" x1="368" y1="460" x2="368" y2="440" stroke="#C77DFF"/>
+    <line class="flow-line active" x1="368" y1="440" x2="500" y2="440" stroke="#C77DFF"/>
+
+    <!-- AMINE PUMPS -->
+    <g transform="translate(500,455)">
+      <circle cx="12" cy="12" r="10" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <polygon points="5,6 19,12 5,18" fill="none" stroke="#707070" stroke-width="0.8"/>
+      <text x="12" y="32" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">P-A01</text>
+      <circle cx="40" cy="12" r="10" fill="#484848" stroke="#606060" stroke-width="1"/>
+      <polygon points="33,6 47,12 33,18" fill="none" stroke="#555" stroke-width="0.8"/>
+      <text x="40" y="32" text-anchor="middle" font-size="5" fill="#555" font-family="Courier New">P-A02</text>
+      <text x="40" y="40" text-anchor="middle" font-size="5" fill="#555" font-family="Courier New">STBY</text>
+    </g>
+
+    <!-- Lean amine back to absorber top -->
+    <line class="flow-line active" x1="500" y1="467" x2="500" y2="450" stroke="#C77DFF"/>
+    <line class="flow-line active" x1="500" y1="450" x2="500" y2="445" stroke="#C77DFF"/>
+    <line class="flow-line active" x1="550" y1="467" x2="550" y2="770" stroke="#C77DFF"/>
+    <line class="flow-line active" x1="550" y1="770" x2="100" y2="770" stroke="#C77DFF"/>
+    <line class="flow-line active" x1="100" y1="770" x2="100" y2="465" stroke="#C77DFF" marker-end="url(#arrow-amine)"/>
+
+    <!-- H2S MONITORS -->
+    <g transform="translate(500,520)">
+      <rect x="0" y="0" width="120" height="75" rx="3" fill="#404040" stroke="#C77DFF" stroke-width="0.8" opacity="0.7"/>
+      <text x="60" y="14" text-anchor="middle" font-size="7" fill="#C77DFF" font-family="Courier New">H2S MONITORS</text>
+      <circle cx="25" cy="35" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-A01"/>
+      <text x="25" y="32" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="25" y="39" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A01</text>
+      <text x="25" y="52" text-anchor="middle" font-size="5" fill="#606060">OUTLET</text>
+      <circle cx="60" cy="35" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-A02"/>
+      <text x="60" y="32" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="60" y="39" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A02</text>
+      <text x="60" y="52" text-anchor="middle" font-size="5" fill="#606060">AREA</text>
+      <circle cx="95" cy="35" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-A03"/>
+      <text x="95" y="32" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="95" y="39" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A03</text>
+      <text x="95" y="52" text-anchor="middle" font-size="5" fill="#606060">PERIM</text>
+      <text x="60" y="68" text-anchor="middle" font-size="6" fill="#808080" font-family="Courier New" id="amine-wind">WIND: SW</text>
+    </g>
+
+    <!-- AMINE CHEMISTRY -->
+    <g transform="translate(500,620)">
+      <circle cx="0" cy="0" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-A04"/>
+      <text x="0" y="-3" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">AI-A04</text>
+      <text x="0" y="14" text-anchor="middle" font-size="5" fill="#606060">STRENGTH</text>
+      <circle cx="40" cy="0" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-A05"/>
+      <text x="40" y="-3" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">AI-A05</text>
+      <text x="40" y="14" text-anchor="middle" font-size="5" fill="#606060">pH</text>
+      <circle cx="80" cy="0" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="CI-A01"/>
+      <text x="80" y="-3" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">CI-A01</text>
+      <text x="80" y="14" text-anchor="middle" font-size="5" fill="#606060">CORR</text>
+    </g>
+
+    <!-- AMINE STORAGE -->
+    <g transform="translate(500,660)">
+      <rect x="0" y="0" width="45" height="35" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <text x="22" y="48" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">TK-A01</text>
+      <circle cx="55" cy="18" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="LIC-A04"/>
+      <text x="55" y="15" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="55" y="22" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">A04</text>
+    </g>
+
     <!-- MODE SWITCH INDICATOR -->
     <g transform="translate(800,20)">
       <rect x="0" y="0" width="100" height="40" rx="3" fill="#404040" stroke="#606060" stroke-width="1"/>
@@ -513,33 +681,40 @@ const FacilityViews = {
     </g>
 
     <!-- Recovery & spec tags at bottom -->
-    <g transform="translate(20,610)">
-      <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-701"/>
-      <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
-      <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">701</text>
-      <text x="0" y="18" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">ETH REC</text>
+    <g transform="translate(700,460)">
+      <text x="60" y="-10" text-anchor="middle" font-size="7" fill="#606060" font-family="Courier New">PRODUCT SPECS</text>
+      <circle cx="0" cy="10" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-701"/>
+      <text x="0" y="7" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="0" y="15" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">701</text>
+      <text x="0" y="28" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">ETH REC</text>
     </g>
-    <g transform="translate(60,610)">
-      <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-702"/>
-      <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
-      <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">702</text>
-      <text x="0" y="18" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">C3 REC</text>
+    <g transform="translate(740,460)">
+      <circle cx="0" cy="10" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-702"/>
+      <text x="0" y="7" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="0" y="15" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">702</text>
+      <text x="0" y="28" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">C3 REC</text>
     </g>
-    <g transform="translate(100,610)">
-      <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-703"/>
-      <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
-      <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">703</text>
-      <text x="0" y="18" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">RES BTU</text>
+    <g transform="translate(780,460)">
+      <circle cx="0" cy="10" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-703"/>
+      <text x="0" y="7" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="0" y="15" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">703</text>
+      <text x="0" y="28" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">RES BTU</text>
     </g>
-    <g transform="translate(140,610)">
-      <circle cx="0" cy="0" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-704"/>
-      <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
-      <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">704</text>
-      <text x="0" y="18" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">RVP</text>
+    <g transform="translate(820,460)">
+      <circle cx="0" cy="10" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="AI-704"/>
+      <text x="0" y="7" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
+      <text x="0" y="15" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">704</text>
+      <text x="0" y="28" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">RVP</text>
+    </g>
+    <g transform="translate(860,460)">
+      <circle cx="0" cy="10" r="12" fill="none" stroke="#C77DFF" stroke-width="1" class="tag-bubble" data-tag="AI-705"/>
+      <text x="0" y="7" text-anchor="middle" font-size="6" fill="#C77DFF" font-family="Courier New">AI</text>
+      <text x="0" y="15" text-anchor="middle" font-size="6" fill="#C77DFF" font-family="Courier New">705</text>
+      <text x="0" y="28" text-anchor="middle" font-size="5" fill="#C77DFF" font-family="Arial">H2S</text>
     </g>
 
     <!-- Flow line legend -->
-    <g transform="translate(400,630)">
+    <g transform="translate(20,810)">
       <line x1="0" y1="5" x2="18" y2="5" stroke="#D4A843" stroke-width="2"/>
       <text x="22" y="8" font-size="7" fill="#D4A843" font-family="Courier New">INLET GAS</text>
       <line x1="90" y1="5" x2="108" y2="5" stroke="#00CED1" stroke-width="2"/>
@@ -548,6 +723,8 @@ const FacilityViews = {
       <text x="202" y="8" font-size="7" fill="#90D060" font-family="Courier New">RESIDUE</text>
       <line x1="260" y1="5" x2="278" y2="5" stroke="#4A9BD9" stroke-width="2"/>
       <text x="282" y="8" font-size="7" fill="#4A9BD9" font-family="Courier New">NGL PRODUCT</text>
+      <line x1="370" y1="5" x2="388" y2="5" stroke="#C77DFF" stroke-width="2"/>
+      <text x="392" y="8" font-size="7" fill="#C77DFF" font-family="Courier New">AMINE</text>
     </g>
     `;
   },
