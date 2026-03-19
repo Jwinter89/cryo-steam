@@ -34,6 +34,7 @@
         <div class="title-menu">
           <button class="menu-btn" data-action="new-game">NEW GAME</button>
           <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
+          <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
           <button class="menu-btn" data-action="settings">SETTINGS</button>
         </div>
 
@@ -628,6 +629,18 @@
           <input type="checkbox" id="setting-tips" checked>
         </div>
         <div class="setting-row">
+          <span>Color Blind Mode</span>
+          <select id="setting-colorblind">
+            <option value="off">Normal</option>
+            <option value="deuteranopia">Deuteranopia (Red/Green)</option>
+            <option value="protanopia">Protanopia (Red Weak)</option>
+            <option value="tritanopia">Tritanopia (Blue/Yellow)</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <button class="menu-btn" id="btn-glossary">GLOSSARY</button>
+        </div>
+        <div class="setting-row">
           <button class="menu-btn" id="btn-field-notes">FIELD NOTES</button>
         </div>
         <div class="setting-row">
@@ -666,6 +679,49 @@
       </div>
       <div id="field-notes-list" class="field-notes-list">
         <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <!-- Operator Profile Screen -->
+    <div id="profile-screen" class="screen">
+      <div class="mode-header">
+        <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
+        <h2>OPERATOR PROFILE</h2>
+      </div>
+      <div id="profile-content">
+        <!-- Populated by operatorProfile.js -->
+      </div>
+    </div>
+
+    <!-- Glossary Popup -->
+    <div id="glossary-popup" class="popup" style="display:none">
+      <div class="popup-header">
+        <h3>OPERATOR GLOSSARY</h3>
+        <button class="popup-close" data-popup="glossary-popup">X</button>
+      </div>
+      <div id="glossary-content">
+        <!-- Populated by glossary.js -->
+      </div>
+    </div>
+
+    <!-- Debrief Overlay (post-shift) -->
+    <div id="debrief-overlay" class="screen-overlay" style="display:none">
+      <!-- Populated by debriefScreen.js -->
+    </div>
+
+    <!-- Challenges Sidebar (in-game) -->
+    <div id="challenges-panel-container" class="challenges-container" style="display:none">
+      <!-- Populated by challenges.js -->
+    </div>
+
+    <!-- Promotion Toast Overlay -->
+    <div id="promotion-overlay" class="promotion-overlay" style="display:none">
+      <div class="promotion-content">
+        <div class="promotion-icon">&#9733;</div>
+        <div class="promotion-title" id="promotion-title">PROMOTED</div>
+        <div class="promotion-rank" id="promotion-rank">BOARD OPERATOR</div>
+        <div class="promotion-line" id="promotion-line"></div>
+        <button class="menu-btn" id="promotion-dismiss">CONTINUE</button>
       </div>
     </div>
   </div>
@@ -730,6 +786,16 @@
   <script src="src/ui/objectives.js"></script>
   <script src="src/ui/henry.js"></script>
   <script src="src/audio/audioManager.js"></script>
+
+  <!-- New systems -->
+  <script src="src/ui/achievements.js"></script>
+  <script src="src/ui/careerProgression.js"></script>
+  <script src="src/ui/operatorProfile.js"></script>
+  <script src="src/ui/challenges.js"></script>
+  <script src="src/ui/debriefScreen.js"></script>
+  <script src="src/ui/glossary.js"></script>
+  <script src="src/ui/colorBlindMode.js"></script>
+  <script src="src/ui/pidZoom.js"></script>
 
   <!-- Main game -->
   <script src="game.js"></script>

@@ -125,6 +125,28 @@
     gcDisplay: null,
     henry: null,
 
+    // New systems
+    achievements: null,
+    career: null,
+    operatorProfile: null,
+    challenges: null,
+    debriefScreen: null,
+    glossary: null,
+    colorBlindMode: null,
+    pidZoom: null,
+
+    // Shift tracking flags for achievements
+    _rvpInSpecEntireShift: true,
+    _noBtexPenalties: true,
+    _expanderTamed: false,
+    _highRecoveryEntireShift: true,
+    _crisisRecoveryTime: null,
+    _compRecoveredUnder8Min: false,
+    _truckLoadsClean: 0,
+    _molsieveCycleComplete: false,
+    _shiftAchievements: [],
+    _shiftChallenges: [],
+
     currentScreen: 'title-screen',
     currentMode: null,    // learn, operate, crisis, optimize
     currentFacility: null, // stabilizer, refrigeration, cryogenic
@@ -162,6 +184,22 @@
       this._initHenry();
       this._checkBuildingTabOverflow();
       window.addEventListener('resize', () => this._checkBuildingTabOverflow());
+
+      // Initialize new systems
+      if (window.Achievements) this.achievements = new Achievements();
+      if (window.CareerProgression) this.career = new CareerProgression();
+      if (window.OperatorProfile) this.operatorProfile = new OperatorProfile(this.achievements, this.career);
+      if (window.Challenges) this.challenges = new Challenges();
+      if (window.DebriefScreen) this.debriefScreen = new DebriefScreen();
+      if (window.Glossary) this.glossary = new Glossary();
+      if (window.ColorBlindMode) {
+        this.colorBlindMode = new ColorBlindMode();
+        // Restore saved setting
+        const cbSelect = document.getElementById('setting-colorblind');
+        if (cbSelect) {
+          cbSelect.value = this.colorBlindMode.getMode();
+        }
+      }
     },
 
     // ============================================================
@@ -178,6 +216,9 @@
               break;
             case 'continue':
               this._continueGame();
+              break;
+            case 'profile':
+              this._showProfileScreen();
               break;
             case 'settings':
               this._showScreen('settings-screen');
@@ -283,7 +324,15 @@
             localStorage.removeItem('coldcreek-progress');
             localStorage.removeItem('coldcreek-gamestate');
             localStorage.removeItem('coldcreek-fieldnotes');
+            localStorage.removeItem('coldcreek-achievements');
+            localStorage.removeItem('coldcreek-career');
+            localStorage.removeItem('coldcreek-profile-stats');
+            localStorage.removeItem('coldcreek-challenges');
             this.progress = {};
+            if (this.achievements) this.achievements.reset();
+            if (this.career) this.career.reset();
+            if (this.operatorProfile) this.operatorProfile.reset();
+            if (this.challenges) this.challenges.reset();
             this._updateUnlockStates();
             this._updateContinueButton();
           }
@@ -900,6 +949,12 @@
       this.alarmManager = new AlarmManager();
       this.pidDiagram = new PidDiagram(this.sim);
 
+      // P&ID zoom/pan
+      if (window.PidZoom) {
+        this.pidZoom = new PidZoom();
+        this.pidZoom.resetForFacility();
+      }
+
       // GC display
       if (window.GCDisplay) {
         this.gcDisplay = new GCDisplay(this.sim);
@@ -970,6 +1025,28 @@
       // Initialize objectives
       if (window.Objectives) {
         this.objectives = new Objectives(this.currentFacility, this.currentMode);
+      }
+
+      // Reset debrief recorder for new shift
+      if (this.debriefScreen) this.debriefScreen.reset();
+
+      // Reset shift tracking flags
+      this._rvpInSpecEntireShift = true;
+      this._noBtexPenalties = true;
+      this._expanderTamed = false;
+      this._highRecoveryEntireShift = true;
+      this._crisisRecoveryTime = null;
+      this._compRecoveredUnder8Min = false;
+      this._truckLoadsClean = 0;
+      this._molsieveCycleComplete = false;
+      this._shiftAchievements = [];
+      this._shiftChallenges = [];
+
+      // Show challenges panel
+      const chPanel = document.getElementById('challenges-panel-container');
+      if (chPanel && this.challenges) {
+        chPanel.innerHTML = this.challenges.renderPanel();
+        chPanel.style.display = '';
       }
 
       // Start in appropriate mode
@@ -1178,6 +1255,14 @@
 
       // Mobile P&L strip
       this._updateMobilePnlStrip();
+
+      // Record debrief data every 10 ticks
+      if (this.debriefScreen && this.sim.totalTicks % 10 === 0) {
+        this.debriefScreen.recordTick(gameTime, this.pnlSystem);
+      }
+
+      // Track achievement flags
+      this._trackAchievementFlags();
     },
 
     _checkSafetyInterlocks() {
@@ -1383,6 +1468,22 @@
           if (this.alarmManager) this.alarmManager.setTipsEnabled(tipsToggle.checked);
         });
       }
+
+      // Color-blind mode
+      const cbSelect = document.getElementById('setting-colorblind');
+      if (cbSelect) {
+        cbSelect.addEventListener('change', () => {
+          if (this.colorBlindMode) this.colorBlindMode.setMode(cbSelect.value);
+        });
+      }
+
+      // Glossary button
+      const glossaryBtn = document.getElementById('btn-glossary');
+      if (glossaryBtn) {
+        glossaryBtn.addEventListener('click', () => {
+          this._showGlossaryPopup();
+        });
+      }
     },
 
     // ============================================================
@@ -1570,6 +1671,52 @@
         this.leaderboard.submitScore(facility, this.currentMode, earnings);
       }
 
+      // Evaluate objectives
+      if (this.objectives) this.objectives.evaluate(this);
+      const grade = this.objectives ? this.objectives.getGrade() : { letter: 'C' };
+
+      // Evaluate achievements
+      if (this.achievements) {
+        this._shiftAchievements = this.achievements.evaluateShiftEnd(this);
+        for (const achId of this._shiftAchievements) {
+          const def = Achievements.DEFINITIONS.find(d => d.id === achId);
+          if (def) {
+            const tier = Achievements.TIERS[def.tier];
+            this.showToast(def.name, def.desc, `${tier.label} ACHIEVEMENT`);
+            this._addRadioMessage(`ACHIEVEMENT UNLOCKED: ${def.name}`);
+          }
+        }
+      }
+
+      // Evaluate challenges
+      if (this.challenges) {
+        this._shiftChallenges = this.challenges.evaluateShiftEnd(this);
+        for (const c of this._shiftChallenges) {
+          this.showToast(c.challenge.name, `+${c.challenge.reward} pts`, 'CHALLENGE COMPLETE');
+        }
+      }
+
+      // Award career XP
+      if (this.career) {
+        const xpResult = this.career.awardShiftXP(this);
+        if (xpResult.newRank) {
+          setTimeout(() => this._showPromotionOverlay(xpResult.newRank), 1500);
+          this._addRadioMessage(`PROMOTED: ${xpResult.newRank.title}`);
+        }
+      }
+
+      // Record to operator profile
+      if (this.operatorProfile) {
+        this.operatorProfile.recordShift({
+          facility,
+          mode: this.currentMode,
+          earnings,
+          grade: grade.letter,
+          alarms: this.alarmManager ? (this.alarmManager.alarmHistory || []).length : 0,
+          pigs: this.eventSystem ? this.eventSystem.eventHistory.filter(e => e.id.startsWith('pig-')).length : 0
+        });
+      }
+
       // Check for tier unlock messages
       if (facility === 'stabilizer' && this.progress.stabilizerShiftsComplete === 1) {
         this._addRadioMessage('TIER 2 UNLOCKED: Refrigeration Plant now available.');
@@ -1580,8 +1727,12 @@
         this.showToast('CRYO PLANT', 'Tier 3 facility now available', 'FACILITY UNLOCKED');
       }
 
-      // Show shift results overlay
-      this._showObjectivesResults(earnings);
+      // Hide challenges panel
+      const chPanel = document.getElementById('challenges-panel-container');
+      if (chPanel) chPanel.style.display = 'none';
+
+      // Show debrief screen (replaces old objectives results)
+      this._showDebriefScreen(earnings);
     },
 
     _showObjectivesBriefing() {
@@ -1751,6 +1902,16 @@
       try {
         localStorage.setItem('coldcreek-progress', JSON.stringify(this.progress));
       } catch (e) { /* Storage unavailable */ }
+
+      // Sync progress to Firebase
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        try {
+          const username = localStorage.getItem('coldcreek-username');
+          if (username) {
+            firebase.database().ref('profiles/' + username + '/progress').set(this.progress);
+          }
+        } catch (e) { /* ok */ }
+      }
     },
 
     _loadProgress() {
@@ -2086,6 +2247,130 @@
         shiftEl.classList.toggle('pnl-positive', shift >= 0);
         shiftEl.classList.toggle('pnl-negative', shift < 0);
       }
+    },
+
+    // ============================================================
+    // ACHIEVEMENT TRACKING (per-tick flags)
+    // ============================================================
+
+    _trackAchievementFlags() {
+      if (!this.sim || !this.pnlSystem) return;
+      const pvMap = this.sim.getAllPVs();
+
+      // RVP tracking
+      const rvp = pvMap['AI-501'] || pvMap['AI-704'];
+      if (rvp) {
+        const val = rvp.displayValue();
+        if (val < 9.0 || val > 11.5) this._rvpInSpecEntireShift = false;
+      }
+
+      // BTEX tracking
+      if (this.pnlSystem.penaltyReasons.includes('BTEX VIOLATION')) {
+        this._noBtexPenalties = false;
+      }
+
+      // NGL recovery tracking (98%+ for Cryo God)
+      const eth = pvMap['AI-701'] || pvMap['AI-502'];
+      if (eth && eth.displayValue() < 98) {
+        this._highRecoveryEntireShift = false;
+      }
+    },
+
+    // ============================================================
+    // NEW SCREEN METHODS
+    // ============================================================
+
+    _showProfileScreen() {
+      if (!this.operatorProfile) return;
+      const content = document.getElementById('profile-content');
+      if (content) {
+        content.innerHTML = this.operatorProfile.render();
+        const closeBtn = document.getElementById('profile-close-btn');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => this._showScreen('title-screen'));
+        }
+      }
+      this._showScreen('profile-screen');
+    },
+
+    _showGlossaryPopup() {
+      if (!this.glossary) return;
+      const content = document.getElementById('glossary-content');
+      if (content) content.innerHTML = this.glossary.renderFullGlossary();
+      const popup = document.getElementById('glossary-popup');
+      if (popup) popup.style.display = '';
+    },
+
+    _showDebriefScreen(earnings) {
+      if (!this.debriefScreen) {
+        // Fallback to original objectives results
+        this._showObjectivesResults(earnings);
+        return;
+      }
+
+      const overlay = document.getElementById('debrief-overlay');
+      if (!overlay) return;
+
+      overlay.innerHTML = this.debriefScreen.render(this);
+      overlay.style.display = 'flex';
+
+      // Draw the P&L chart after DOM is ready
+      setTimeout(() => this.debriefScreen.drawChart(), 50);
+
+      // Bind action buttons
+      const doneBtn = document.getElementById('debrief-done-btn');
+      if (doneBtn) {
+        doneBtn.addEventListener('click', () => {
+          overlay.style.display = 'none';
+          this._showScreen('title-screen');
+          this._updateContinueButton();
+        });
+      }
+
+      const profileBtn = document.getElementById('debrief-profile-btn');
+      if (profileBtn) {
+        profileBtn.addEventListener('click', () => {
+          overlay.style.display = 'none';
+          this._showProfileScreen();
+        });
+      }
+
+      const shareBtn = document.getElementById('debrief-share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+          const text = this.debriefScreen.getShareText(this);
+          if (navigator.share) {
+            navigator.share({ title: 'Cold Creek Shift Debrief', text }).catch(() => {});
+          } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+              this.showToast('COPIED TO CLIPBOARD', 'Share your shift results!', 'SHARE');
+            });
+          }
+        });
+      }
+    },
+
+    _showPromotionOverlay(rank) {
+      const overlay = document.getElementById('promotion-overlay');
+      if (!overlay) return;
+      const titleEl = document.getElementById('promotion-rank');
+      const lineEl = document.getElementById('promotion-line');
+      if (titleEl) {
+        titleEl.textContent = rank.title;
+        titleEl.style.color = rank.color || '#FFD700';
+      }
+      if (lineEl) lineEl.textContent = rank.radioLine || '';
+      overlay.style.display = 'flex';
+
+      const dismissBtn = document.getElementById('promotion-dismiss');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+          overlay.style.display = 'none';
+        });
+      }
+
+      // Auto-dismiss after 6 seconds
+      setTimeout(() => { overlay.style.display = 'none'; }, 6000);
     },
 
     // ============================================================

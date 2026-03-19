@@ -2907,3 +2907,546 @@ g[id^="equip-"]:hover {
   color: var(--text-normal);
   text-decoration: underline;
 }
+
+/* ============================================================
+   OPERATOR PROFILE SCREEN
+   ============================================================ */
+.profile-screen {
+  padding: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.profile-header {
+  text-align: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+.profile-name {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-normal);
+  letter-spacing: 2px;
+}
+.profile-rank {
+  font-size: 0.9rem;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+.profile-stats-mini {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: var(--text-label);
+}
+.profile-career-bar {
+  margin: 12px 0 16px;
+}
+.career-bar-label {
+  font-size: 0.7rem;
+  color: var(--text-label);
+  margin-bottom: 4px;
+}
+.career-bar-track {
+  height: 8px;
+  background: var(--bg-input);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.career-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.profile-section-header {
+  font-size: 0.75rem;
+  color: var(--text-label);
+  letter-spacing: 1px;
+  margin: 16px 0 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
+
+/* Achievement Grid */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+.achievement-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.achievement-card.unlocked {
+  border-color: #4CAF50;
+}
+.achievement-card.locked {
+  opacity: 0.5;
+}
+.ach-icon {
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+.ach-name {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--text-normal);
+}
+.ach-desc {
+  font-size: 0.6rem;
+  color: var(--text-label);
+  margin-top: 2px;
+}
+.ach-tier {
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+.ach-progress-bar {
+  height: 4px;
+  background: var(--bg-input);
+  border-radius: 2px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.ach-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.ach-progress-text {
+  font-size: 0.55rem;
+  color: var(--text-unit);
+  margin-top: 2px;
+}
+
+/* Profile History */
+.profile-history {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.profile-history-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  border-bottom: 1px solid var(--border-lite);
+}
+.ph-date { color: var(--text-unit); width: 50px; }
+.ph-facility { color: var(--text-label); width: 60px; }
+.ph-grade { width: 30px; text-align: center; font-weight: bold; }
+.ph-earnings { width: 80px; text-align: right; }
+.profile-empty {
+  color: var(--text-unit);
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 12px;
+}
+.profile-close-btn {
+  margin-top: 16px;
+  width: 100%;
+}
+
+/* ============================================================
+   CHALLENGES PANEL
+   ============================================================ */
+.challenges-container {
+  position: fixed;
+  top: 80px;
+  right: 8px;
+  width: 240px;
+  z-index: 50;
+  pointer-events: auto;
+}
+.challenges-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 0.7rem;
+}
+.challenges-header {
+  font-size: 0.65rem;
+  color: var(--text-label);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.challenge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+.ch-status { width: 18px; text-align: center; }
+.ch-complete .ch-status { color: #4CAF50; }
+.ch-active .ch-status { color: var(--text-unit); }
+.ch-name { flex: 1; color: var(--text-normal); }
+.ch-complete .ch-name { text-decoration: line-through; color: var(--text-unit); }
+.ch-reward { color: #FFD700; font-size: 0.6rem; }
+.ch-desc {
+  font-size: 0.6rem;
+  color: var(--text-unit);
+  padding-left: 24px;
+  margin-bottom: 4px;
+}
+
+/* ============================================================
+   DEBRIEF SCREEN
+   ============================================================ */
+.screen-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30, 30, 30, 0.97);
+  z-index: 200;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+.debrief-screen {
+  max-width: 650px;
+  width: 100%;
+  padding-bottom: 40px;
+}
+.debrief-banner {
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+.debrief-title {
+  font-size: 1.2rem;
+  color: #4CAF50;
+  letter-spacing: 2px;
+}
+.debrief-sub {
+  font-size: 0.7rem;
+  color: var(--text-label);
+  margin-top: 4px;
+}
+.debrief-grade-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.debrief-grade {
+  font-size: 3rem;
+  font-weight: bold;
+  line-height: 1;
+}
+.debrief-earnings-val {
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+.debrief-earnings-label {
+  font-size: 0.7rem;
+  color: var(--text-label);
+}
+.debrief-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.debrief-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+}
+.debrief-stat-val {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.debrief-stat-label {
+  font-size: 0.6rem;
+  color: var(--text-label);
+  margin-top: 2px;
+}
+.debrief-section-header {
+  font-size: 0.7rem;
+  color: var(--text-label);
+  letter-spacing: 1px;
+  margin: 12px 0 6px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 3px;
+}
+.debrief-chart {
+  width: 100%;
+  height: 180px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.debrief-insights {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+}
+.insight-row {
+  font-size: 0.7rem;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border-lite);
+}
+.insight-row:last-child { border-bottom: none; }
+.insight-bad { color: #E04040; }
+.insight-good { color: #4CAF50; }
+.insight-warn { color: #D4A843; }
+.insight-info { color: var(--text-label); }
+.debrief-objectives, .debrief-achievements, .debrief-challenges {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+}
+.debrief-obj-row {
+  font-size: 0.7rem;
+  padding: 3px 0;
+}
+.debrief-ach-row, .debrief-ch-row {
+  font-size: 0.7rem;
+  padding: 4px 0;
+  color: #FFD700;
+}
+.debrief-henry {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  margin: 12px 0;
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--text-label);
+}
+.debrief-henry-name {
+  color: var(--text-unit);
+  font-size: 0.6rem;
+  font-style: normal;
+}
+.debrief-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.debrief-btn {
+  flex: 1;
+  min-width: 120px;
+}
+.debrief-main-btn {
+  background: var(--bg-input);
+  border-color: #4CAF50;
+}
+
+/* ============================================================
+   GLOSSARY TOOLTIP & POPUP
+   ============================================================ */
+.glossary-term {
+  color: #5A9BD4;
+  border-bottom: 1px dotted #5A9BD4;
+  cursor: help;
+}
+.glossary-tooltip {
+  position: fixed;
+  z-index: 300;
+  background: #2A2A2A;
+  border: 1px solid #5A9BD4;
+  border-radius: 4px;
+  padding: 10px;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  font-family: var(--font-mono, 'Courier New', monospace);
+}
+.gt-category {
+  font-size: 0.55rem;
+  color: #5A9BD4;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.gt-term {
+  font-size: 0.8rem;
+  color: var(--text-normal);
+  font-weight: bold;
+  margin: 2px 0;
+}
+.gt-desc {
+  font-size: 0.7rem;
+  color: var(--text-label);
+  line-height: 1.4;
+}
+.glossary-full {
+  padding: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.glossary-cat-header {
+  font-size: 0.7rem;
+  color: #5A9BD4;
+  letter-spacing: 1px;
+  margin: 12px 0 4px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+}
+.glossary-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-lite);
+}
+.glossary-entry-term {
+  font-size: 0.75rem;
+  color: var(--text-normal);
+  font-weight: bold;
+}
+.glossary-entry-desc {
+  font-size: 0.65rem;
+  color: var(--text-label);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* ============================================================
+   P&ID ZOOM CONTROLS
+   ============================================================ */
+.pid-zoom-controls {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(50, 50, 50, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px;
+  z-index: 20;
+}
+.pid-zoom-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: var(--text-normal);
+  width: 28px;
+  height: 28px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pid-zoom-btn:hover {
+  background: var(--border);
+}
+.pid-zoom-reset {
+  font-size: 0.6rem;
+  width: auto;
+  padding: 0 8px;
+}
+.pid-zoom-level {
+  font-size: 0.6rem;
+  color: var(--text-label);
+  min-width: 36px;
+  text-align: center;
+}
+
+/* ============================================================
+   COLOR-BLIND MODE PATTERNS
+   ============================================================ */
+body.cb-deuteranopia .spec-row.off-spec,
+body.cb-protanopia .spec-row.off-spec {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 68, 0, 0.15) 3px,
+    rgba(255, 68, 0, 0.15) 6px
+  );
+}
+body.cb-deuteranopia .spec-row.in-spec,
+body.cb-protanopia .spec-row.in-spec {
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(68, 136, 255, 0.1) 4px,
+    rgba(68, 136, 255, 0.1) 8px
+  );
+}
+body.cb-tritanopia .spec-row.off-spec {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 32, 32, 0.15) 3px,
+    rgba(255, 32, 32, 0.15) 6px
+  );
+}
+
+/* ============================================================
+   PROMOTION OVERLAY
+   ============================================================ */
+.promotion-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.promotion-content {
+  text-align: center;
+  animation: promotion-appear 0.6s ease;
+}
+@keyframes promotion-appear {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.promotion-icon {
+  font-size: 3rem;
+  color: #FFD700;
+  margin-bottom: 8px;
+}
+.promotion-title {
+  font-size: 0.8rem;
+  color: var(--text-label);
+  letter-spacing: 2px;
+}
+.promotion-rank {
+  font-size: 1.6rem;
+  color: #FFD700;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin: 8px 0;
+}
+.promotion-line {
+  font-size: 0.75rem;
+  color: var(--text-label);
+  font-style: italic;
+  margin-bottom: 16px;
+  max-width: 300px;
+}
+
+@media (max-width: 768px) {
+  .challenges-container {
+    position: static;
+    width: 100%;
+    margin: 8px 0;
+  }
+  .achievement-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .debrief-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pid-zoom-controls {
+    bottom: 4px;
+    right: 4px;
+  }
+}
