@@ -357,6 +357,9 @@
 
       // Mobile info drawer (also handles backdrop)
       this._bindMobileInfoDrawer();
+
+      // Mobile speed dial FAB
+      this._bindMobileSpeedDial();
     },
 
     _bindMobileInfoDrawer() {
@@ -426,6 +429,83 @@
           this._updateMobileInfoContent(tab.dataset.infoTab);
         });
       });
+    },
+
+    _bindMobileSpeedDial() {
+      const dial = document.getElementById('mobile-speed-dial');
+      const fab = document.getElementById('speed-dial-fab');
+      const ring = document.getElementById('speed-dial-ring');
+      const backdrop = document.getElementById('speed-dial-backdrop');
+      const fabLabel = document.getElementById('fab-label');
+      if (!dial || !fab) return;
+
+      const speedLabels = { 0: '\u23F8', 1: '1x', 2: '2x', 4: '4x' };
+      let currentSpeed = 0;
+
+      const closeDial = () => dial.classList.remove('open');
+      const openDial = () => dial.classList.add('open');
+
+      fab.addEventListener('click', () => {
+        if (dial.classList.contains('open')) {
+          closeDial();
+        } else {
+          openDial();
+        }
+      });
+
+      if (backdrop) {
+        backdrop.addEventListener('click', closeDial);
+      }
+
+      // Speed buttons in the ring
+      ring.querySelectorAll('.sd-btn[data-speed]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const speed = parseInt(btn.dataset.speed, 10);
+          currentSpeed = speed;
+
+          // Trigger the desktop button click to keep them in sync
+          if (speed === 0) {
+            if (this.sim) this.sim.pause();
+            this._updateTimeButtons(0);
+          } else {
+            if (this.sim) this.sim.setSpeed(speed);
+            this._updateTimeButtons(speed);
+          }
+
+          // Update FAB label
+          fabLabel.textContent = speedLabels[speed] || speed + 'x';
+
+          // Update ring active states
+          ring.querySelectorAll('.sd-btn[data-speed]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          closeDial();
+        });
+      });
+
+      // Trend button
+      const sdTrend = document.getElementById('sd-trend');
+      if (sdTrend) {
+        sdTrend.addEventListener('click', () => {
+          const deskTrend = document.getElementById('btn-trend');
+          if (deskTrend) deskTrend.click();
+          closeDial();
+        });
+      }
+
+      // Snapshot button
+      const sdSnap = document.getElementById('sd-snapshot');
+      if (sdSnap) {
+        sdSnap.addEventListener('click', () => {
+          const deskSnap = document.getElementById('btn-snapshot');
+          if (deskSnap) deskSnap.click();
+          closeDial();
+        });
+      }
+
+      // Keep FAB label in sync with desktop time button changes
+      this._mobileFabLabel = fabLabel;
+      this._mobileSpeedRing = ring;
     },
 
     _updateMobileInfoContent(tab) {
@@ -633,6 +713,32 @@
           }
         });
         tabBar.appendChild(btn);
+      });
+
+      // Also populate mobile building pills
+      this._buildMobileBuildingPills(facility, tabs);
+    },
+
+    _buildMobileBuildingPills(facility, tabs) {
+      const pillBar = document.getElementById('mobile-building-pills');
+      if (!pillBar) return;
+      pillBar.innerHTML = '';
+
+      tabs.forEach((tab, i) => {
+        const pill = document.createElement('button');
+        pill.className = 'mobile-building-pill' + (i === 0 ? ' active' : '');
+        pill.dataset.building = tab.id;
+        pill.textContent = tab.label;
+        pill.addEventListener('click', () => {
+          // Sync with the desktop building tab click
+          const desktopBtn = document.querySelector(`.building-tab[data-building="${tab.id}"]`);
+          if (desktopBtn) desktopBtn.click();
+
+          // Update pill active state
+          pillBar.querySelectorAll('.mobile-building-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+        pillBar.appendChild(pill);
       });
     },
 
@@ -1564,6 +1670,17 @@
       else if (speed === 1) document.getElementById('btn-1x').classList.add('active');
       else if (speed === 2) document.getElementById('btn-2x').classList.add('active');
       else if (speed === 4) document.getElementById('btn-4x').classList.add('active');
+
+      // Sync mobile FAB label
+      const fabLabels = { 0: '\u23F8', 1: '1x', 2: '2x', 4: '4x' };
+      if (this._mobileFabLabel) {
+        this._mobileFabLabel.textContent = fabLabels[speed] || '';
+      }
+      if (this._mobileSpeedRing) {
+        this._mobileSpeedRing.querySelectorAll('.sd-btn[data-speed]').forEach(b => {
+          b.classList.toggle('active', parseInt(b.dataset.speed, 10) === speed);
+        });
+      }
 
       // Animate flow lines based on speed
       const flowClass = { 0: '', 1: 'flowing', 2: 'flowing-2x', 4: 'flowing-4x' };

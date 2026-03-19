@@ -20,8 +20,17 @@ class PidZoom {
     this._origViewBox = this.svg.getAttribute('viewBox');
     this._parseViewBox();
 
+    // Clean up any previous instance's controls and listeners
+    this._cleanup();
     this._bindControls();
     this._createOverlay();
+  }
+
+  _cleanup() {
+    const container = this.svg && this.svg.parentElement;
+    if (!container) return;
+    // Remove old zoom controls and hints
+    container.querySelectorAll('.pid-zoom-controls, .pid-zoom-hint').forEach(el => el.remove());
   }
 
   _parseViewBox() {
@@ -47,6 +56,32 @@ class PidZoom {
   _bindControls() {
     const container = this.svg.parentElement;
 
+    // Store bound handlers for cleanup
+    this._onMouseMove = (e) => {
+      if (!this._isPanning) return;
+      const dx = e.clientX - this._startX;
+      const dy = e.clientY - this._startY;
+      this._startX = e.clientX;
+      this._startY = e.clientY;
+      const svgRect = this.svg.getBoundingClientRect();
+      const scaleX = this._vbW / svgRect.width;
+      const scaleY = this._vbH / svgRect.height;
+      this._panX -= dx * scaleX;
+      this._panY -= dy * scaleY;
+      this._applyTransform();
+    };
+
+    this._onMouseUp = () => {
+      this._isPanning = false;
+      if (container) container.style.cursor = '';
+    };
+
+    // Remove previous window listeners if any
+    if (PidZoom._prevMouseMove) window.removeEventListener('mousemove', PidZoom._prevMouseMove);
+    if (PidZoom._prevMouseUp) window.removeEventListener('mouseup', PidZoom._prevMouseUp);
+    PidZoom._prevMouseMove = this._onMouseMove;
+    PidZoom._prevMouseUp = this._onMouseUp;
+
     // Mouse wheel zoom
     container.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -57,7 +92,7 @@ class PidZoom {
     // Mouse drag pan
     container.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
-      if (e.target.closest('.tag-bubble, .glossary-term, button')) return;
+      if (e.target.closest('.tag-bubble, .glossary-term, button, .pid-zoom-btn')) return;
       this._isPanning = true;
       this._startX = e.clientX;
       this._startY = e.clientY;
@@ -65,26 +100,8 @@ class PidZoom {
       e.preventDefault();
     });
 
-    window.addEventListener('mousemove', (e) => {
-      if (!this._isPanning) return;
-      const dx = e.clientX - this._startX;
-      const dy = e.clientY - this._startY;
-      this._startX = e.clientX;
-      this._startY = e.clientY;
-
-      // Convert screen pixels to viewBox units
-      const svgRect = this.svg.getBoundingClientRect();
-      const scaleX = this._vbW / svgRect.width;
-      const scaleY = this._vbH / svgRect.height;
-      this._panX -= dx * scaleX;
-      this._panY -= dy * scaleY;
-      this._applyTransform();
-    });
-
-    window.addEventListener('mouseup', () => {
-      this._isPanning = false;
-      if (container) container.style.cursor = '';
-    });
+    window.addEventListener('mousemove', this._onMouseMove);
+    window.addEventListener('mouseup', this._onMouseUp);
 
     // Touch pinch zoom + pan
     let lastTouches = null;
@@ -135,6 +152,7 @@ class PidZoom {
       this._panX = 0;
       this._panY = 0;
       this._applyTransform();
+      this._updateZoomLabel();
     });
   }
 
@@ -180,13 +198,30 @@ class PidZoom {
 
     const controls = document.createElement('div');
     controls.className = 'pid-zoom-controls';
-    controls.innerHTML = `
-      <button class="pid-zoom-btn" id="pid-zoom-in" title="Zoom In">+</button>
-      <span class="pid-zoom-level" id="pid-zoom-level">100%</span>
-      <button class="pid-zoom-btn" id="pid-zoom-out" title="Zoom Out">\u2212</button>
-      <button class="pid-zoom-btn pid-zoom-reset" id="pid-zoom-reset" title="Reset (Double-click)">FIT</button>
-    `;
-    container.style.position = 'relative';
+
+    const btnIn = document.createElement('button');
+    btnIn.className = 'pid-zoom-btn';
+    btnIn.title = 'Zoom In';
+    btnIn.textContent = '+';
+
+    this._zoomLabel = document.createElement('span');
+    this._zoomLabel.className = 'pid-zoom-level';
+    this._zoomLabel.textContent = '100%';
+
+    const btnOut = document.createElement('button');
+    btnOut.className = 'pid-zoom-btn';
+    btnOut.title = 'Zoom Out';
+    btnOut.textContent = '\u2212';
+
+    const btnReset = document.createElement('button');
+    btnReset.className = 'pid-zoom-btn pid-zoom-reset';
+    btnReset.title = 'Reset (Double-click)';
+    btnReset.textContent = 'FIT';
+
+    controls.appendChild(btnIn);
+    controls.appendChild(this._zoomLabel);
+    controls.appendChild(btnOut);
+    controls.appendChild(btnReset);
     container.appendChild(controls);
 
     // Mobile hint
@@ -195,15 +230,18 @@ class PidZoom {
     hint.textContent = 'PINCH TO ZOOM \u2022 DRAG TO PAN \u2022 DOUBLE-TAP TO RESET';
     container.appendChild(hint);
 
-    document.getElementById('pid-zoom-in').addEventListener('click', () => {
+    btnIn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const rect = this.svg.getBoundingClientRect();
       this._zoom(0.3, rect.left + rect.width / 2, rect.top + rect.height / 2);
     });
-    document.getElementById('pid-zoom-out').addEventListener('click', () => {
+    btnOut.addEventListener('click', (e) => {
+      e.stopPropagation();
       const rect = this.svg.getBoundingClientRect();
       this._zoom(-0.3, rect.left + rect.width / 2, rect.top + rect.height / 2);
     });
-    document.getElementById('pid-zoom-reset').addEventListener('click', () => {
+    btnReset.addEventListener('click', (e) => {
+      e.stopPropagation();
       this._scale = 1;
       this._panX = 0;
       this._panY = 0;
@@ -213,8 +251,7 @@ class PidZoom {
   }
 
   _updateZoomLabel() {
-    const el = document.getElementById('pid-zoom-level');
-    if (el) el.textContent = Math.round(this._scale * 100) + '%';
+    if (this._zoomLabel) this._zoomLabel.textContent = Math.round(this._scale * 100) + '%';
   }
 
   /**

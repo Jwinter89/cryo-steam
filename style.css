@@ -1647,6 +1647,158 @@ g[id^="equip-"]:hover line {
   .faceplate-backdrop {
     display: block;
   }
+
+  /* Hide desktop time controls and building tabs on mobile */
+  #time-controls {
+    display: none;
+  }
+  #building-tabs {
+    display: none;
+  }
+
+  /* Show mobile speed dial */
+  .mobile-speed-dial {
+    display: block;
+  }
+
+  /* Show mobile building pill strip */
+  .mobile-building-pills {
+    display: flex;
+  }
+}
+
+/* ============================================================
+   MOBILE SPEED DIAL (FAB)
+   ============================================================ */
+.mobile-speed-dial {
+  display: none;
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 150;
+}
+.speed-dial-fab {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid rgba(255,255,255,0.15);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+  transition: transform 0.2s, background 0.2s;
+  position: relative;
+  z-index: 2;
+}
+.speed-dial-fab:active {
+  transform: scale(0.92);
+}
+.speed-dial-fab .fab-label {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.speed-dial-ring {
+  position: absolute;
+  bottom: 60px;
+  right: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 8px;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.9);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.mobile-speed-dial.open .speed-dial-ring {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.sd-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-normal);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: background 0.15s, transform 0.15s;
+}
+.sd-btn:active {
+  transform: scale(0.9);
+}
+.sd-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Speed dial backdrop to close on outside tap */
+.speed-dial-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 149;
+}
+.mobile-speed-dial.open ~ .speed-dial-backdrop,
+.speed-dial-backdrop.active {
+  display: block;
+}
+
+/* ============================================================
+   MOBILE BUILDING PILLS (floating over P&ID)
+   ============================================================ */
+.mobile-building-pills {
+  display: none;
+  position: fixed;
+  bottom: 76px;
+  left: 8px;
+  right: 76px;
+  z-index: 100;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+.mobile-building-pills::-webkit-scrollbar {
+  display: none;
+}
+.mobile-building-pill {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  padding: 6px 12px;
+  border-radius: 16px;
+  background: rgba(60, 60, 60, 0.85);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--border);
+  color: var(--text-unit);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.mobile-building-pill.active {
+  background: rgba(74, 179, 244, 0.25);
+  color: var(--text-normal);
+  border-color: var(--accent);
 }
 
 @media (max-width: 480px) {
@@ -2516,6 +2668,13 @@ g[id^="equip-"]:hover line {
   }
   .henry-container.henry-top {
     top: 50px;
+  }
+
+  /* Move learn panel to top on mobile so Henry doesn't cover it */
+  #learn-overlay {
+    align-items: flex-start;
+    padding-bottom: 0;
+    padding-top: 60px;
   }
 }
 
