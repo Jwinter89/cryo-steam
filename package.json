@@ -1,0 +1,27 @@
+{
+  "name": "cold-creek",
+  "version": "1.0.0",
+  "description": "Cold Creek — Gas Plant Simulator",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "cap:sync": "npx cap sync",
+    "cap:open": "npx cap open ios",
+    "ios": "npm run build && npx cap sync ios && npx cap open ios"
+  },
+  "keywords": [
+    "simulator",
+    "gas-plant",
+    "cryogenic",
+    "training"
+  ],
+  "author": "Jwinter89",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/ios": "^8.2.0",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1"
+  }
+}
