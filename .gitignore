@@ -4,3 +4,5 @@ node_modules/
 capacitor/ios/
 capacitor/android/
 .env
+www/
+ios/
