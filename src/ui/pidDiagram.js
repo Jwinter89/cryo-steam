@@ -9,6 +9,7 @@ class PidDiagram {
   constructor(sim) {
     this.sim = sim;
     this.svg = document.getElementById('pid-diagram');
+    this._bindTagBubbleClicks();
   }
 
   update() {
@@ -18,6 +19,25 @@ class PidDiagram {
     this._updateFlowLines();
     this._updatePigStatus();
     this._updateTagBubbles();
+    this._updateLiveValues();
+  }
+
+  /**
+   * Bind click events on all tag bubbles to open faceplates
+   */
+  _bindTagBubbleClicks() {
+    if (!this.svg) return;
+    // Use event delegation on the SVG
+    this.svg.addEventListener('click', (e) => {
+      const bubble = e.target.closest('.tag-bubble');
+      if (!bubble) return;
+      const tag = bubble.dataset.tag;
+      if (!tag) return;
+      const game = window.coldCreekGame;
+      if (game && game.faceplateManager) {
+        game.faceplateManager.open(tag, e);
+      }
+    });
   }
 
   /**
@@ -202,12 +222,67 @@ class PidDiagram {
       if (pv.alarmState === 'HIHI' || pv.alarmState === 'LOLO') {
         bubble.setAttribute('stroke', '#FF2020');
         bubble.setAttribute('stroke-width', '2');
+        bubble.style.animation = 'tag-alarm-flash 0.5s ease infinite';
       } else if (pv.alarmState === 'HI' || pv.alarmState === 'LO') {
         bubble.setAttribute('stroke', '#FFD700');
         bubble.setAttribute('stroke-width', '1.5');
+        bubble.style.animation = '';
       } else {
-        bubble.setAttribute('stroke', '#808080');
-        bubble.setAttribute('stroke-width', '1');
+        bubble.setAttribute('stroke', '#5A9FD4');
+        bubble.setAttribute('stroke-width', '1.2');
+        bubble.style.animation = '';
+      }
+    });
+  }
+
+  /**
+   * Show live PV values on the P&ID near their tag bubbles
+   * Creates/updates small text elements next to each tag bubble
+   */
+  _updateLiveValues() {
+    if (!this.svg) return;
+
+    const bubbles = this.svg.querySelectorAll('.tag-bubble');
+    bubbles.forEach(bubble => {
+      const tag = bubble.dataset.tag;
+      if (!tag) return;
+      const pv = this.sim.getPV(tag);
+      if (!pv) return;
+
+      // Find or create the live value text element
+      const liveId = 'live-' + tag.replace(/[^a-zA-Z0-9]/g, '-');
+      let liveEl = this.svg.querySelector('#' + liveId);
+
+      if (!liveEl) {
+        liveEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        liveEl.id = liveId;
+        liveEl.setAttribute('font-family', 'Courier New');
+        liveEl.setAttribute('font-size', '8');
+        liveEl.setAttribute('text-anchor', 'middle');
+        liveEl.setAttribute('pointer-events', 'none');
+        // Position below the bubble
+        const cx = parseFloat(bubble.getAttribute('cx')) || 0;
+        const cy = parseFloat(bubble.getAttribute('cy')) || 0;
+        // Get the parent transform to position correctly
+        const parent = bubble.parentElement;
+        if (parent) {
+          parent.appendChild(liveEl);
+          liveEl.setAttribute('x', cx);
+          liveEl.setAttribute('y', cy + 22);
+        }
+      }
+
+      // Update value
+      const val = pv.formatValue ? pv.formatValue() : (typeof pv.value === 'number' ? pv.value.toFixed(1) : '----');
+      liveEl.textContent = val;
+
+      // Color based on alarm state
+      if (pv.alarmState === 'HIHI' || pv.alarmState === 'LOLO') {
+        liveEl.setAttribute('fill', '#FF2020');
+      } else if (pv.alarmState === 'HI' || pv.alarmState === 'LO') {
+        liveEl.setAttribute('fill', '#FFD700');
+      } else {
+        liveEl.setAttribute('fill', '#B0B0B0');
       }
     });
   }

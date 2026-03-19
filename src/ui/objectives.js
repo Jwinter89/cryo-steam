@@ -181,12 +181,19 @@ class Objectives {
    */
   renderResults(earnings) {
     const grade = this.getGrade();
+    const passed = this.objectives.filter(o => o.passed).length;
+    const total = this.objectives.length;
 
     let html = `<div class="obj-results">`;
     html += `<h3 class="obj-results-title">SHIFT COMPLETE</h3>`;
     html += `<div class="obj-grade" style="color:${grade.color}">${grade.letter}</div>`;
     html += `<div class="obj-grade-label" style="color:${grade.color}">${grade.label}</div>`;
-    html += `<div class="obj-earnings ${earnings >= 0 ? 'positive' : 'negative'}">EARNINGS: $${Math.round(earnings).toLocaleString()}</div>`;
+
+    // Stats row
+    html += `<div class="obj-stats-row">`;
+    html += `<div class="obj-stat"><span class="obj-stat-val" style="color:${earnings >= 0 ? '#4CAF50' : '#E04040'}">$${Math.round(earnings).toLocaleString()}</span><span class="obj-stat-label">EARNINGS</span></div>`;
+    html += `<div class="obj-stat"><span class="obj-stat-val" style="color:${grade.color}">${passed}/${total}</span><span class="obj-stat-label">OBJECTIVES</span></div>`;
+    html += `</div>`;
 
     html += `<div class="obj-checklist">`;
     for (const obj of this.objectives) {

@@ -1,6 +1,7 @@
 /**
- * LearnMode — Guided walkthrough of the stabilizer with tooltips and P&ID overlays.
+ * LearnMode — Guided walkthrough with Henry the mascot.
  * Follows the Stabilizer School progression: Day 1 through Day 5.
+ * Henry delivers the lessons with personality and highlights key equipment.
  */
 
 class LearnMode {
@@ -25,48 +26,59 @@ class LearnMode {
         title: 'DAY 1 — OBSERVE',
         steps: [
           {
-            text: 'Welcome to Stabilizer School. You are standing in the control room of a natural gas liquids stabilizer facility. Before you touch anything, you need to understand what you are looking at.',
-            highlight: null
+            text: "Welcome to Stabilizer School, greenhorn. I'm Henry. Been running gas plants since before you were born.\n\nBefore you touch anything, let me show you what you're looking at.",
+            highlight: null,
+            mood: 'teaching'
           },
           {
-            text: 'The center of your screen shows the P&ID — the Piping and Instrumentation Diagram. Every vessel, valve, exchanger, and instrument is shown here. This is the same document a real operator uses to understand the plant.',
-            highlight: 'pid-diagram'
+            text: "Center of your screen — that's the P&ID. Piping and Instrumentation Diagram. Every vessel, valve, exchanger, and instrument. This is the same document real operators stare at for 12-hour shifts.",
+            highlight: 'pid-diagram',
+            mood: 'teaching'
           },
           {
-            text: 'On the left panel, you see process values displayed in DCS format. Each tag follows the ISA standard: TIC-102 means Temperature Indicator Controller, loop number 102. The "C" means this instrument can be controlled — you can change its setpoint.',
-            highlight: 'left-panel'
+            text: "Left panel — process values in DCS format. Each tag follows ISA standard: TIC-102 means Temperature Indicator Controller, loop 102. That 'C' is important — means you can control it.",
+            highlight: 'left-panel',
+            mood: 'teaching'
           },
           {
-            text: 'The flow path starts at the PIG RECEIVER (top left of the P&ID). Liquid arrives from the pipeline when a pig pushes it through. This liquid enters the INLET SEPARATOR (V-100), where gas and liquid separate.',
-            highlight: 'equip-pig-receiver'
+            text: "Flow starts at the PIG RECEIVER. Liquid arrives from the pipeline when a pig pushes it through. Enters the INLET SEPARATOR (V-100) — gas goes up, liquid goes down. Simple physics.",
+            highlight: 'equip-pig-receiver',
+            mood: 'normal'
           },
           {
-            text: 'Liquid flows from the separator through the PRE-HEAT EXCHANGER (E-101), where it picks up heat from the tower overhead gas. Then through the HOT OIL EXCHANGER (E-102) for more heating.',
-            highlight: 'equip-preheat'
+            text: "Liquid flows through the PRE-HEAT EXCHANGER (E-101) — picks up heat from tower overhead gas. Free energy. Then through the HOT OIL EXCHANGER (E-102) for the real heating.",
+            highlight: 'equip-preheat',
+            mood: 'teaching'
           },
           {
-            text: 'The heated liquid enters the REBOILER (E-103) — this is your primary control point. The reboiler applies heat to flash off light ends (methane, ethane) from the heavier condensate product.',
-            highlight: 'equip-reboiler'
+            text: "The REBOILER (E-103) — your main control point. This is where you earn your paycheck. Apply heat to flash off light ends from the heavier condensate. Too much heat? Product goes to gas. Too little? Tank pops off.",
+            highlight: 'equip-reboiler',
+            mood: 'alert'
           },
           {
-            text: 'The PACKED TOWER (T-100) is where separation happens. Hot vapor rises through packed bed sections while liquid falls. Light ends exit the top as overhead gas. Heavy condensate product exits the bottom.',
-            highlight: 'equip-tower'
+            text: "PACKED TOWER (T-100). Hot vapor rises through packed beds, liquid falls. Light ends exit the top as overhead gas. Heavy condensate — that's your money — exits the bottom.",
+            highlight: 'equip-tower',
+            mood: 'teaching'
           },
           {
-            text: 'Overhead gas goes to the COMPRESSOR (C-100), which sends it to the sales gas pipeline. Condensate product flows to the PRODUCT TANK (TK-100) for truck loading.',
-            highlight: 'equip-comp'
+            text: "Overhead gas hits the COMPRESSOR (C-100), goes to sales gas pipeline. Condensate product flows to the PRODUCT TANK (TK-100) for truck loading. That's the whole flow path.",
+            highlight: 'equip-comp',
+            mood: 'normal'
           },
           {
-            text: 'The key measurement is RVP — Reid Vapor Pressure (tag AI-501). This tells you if your product is in spec. Too high = too many light ends still in product (tank pop-off risk). Too low = you are losing valuable product to the gas stream.',
-            highlight: 'g-ai-501'
+            text: "RVP — Reid Vapor Pressure, tag AI-501. This is THE number. Tells you if your product is in spec. 9.0 to 11.5 psi. Too high means light ends in the tank — that's a pop-off. Too low means you're giving product away.",
+            highlight: 'g-ai-501',
+            mood: 'alert'
           },
           {
-            text: 'The right panel shows your SPEC BOARD and P&L. Every action has a dollar consequence. In-spec product earns revenue. Off-spec product costs money. This is how the real industry measures plant performance.',
-            highlight: 'right-panel'
+            text: "Right panel — SPEC BOARD and P&L. Every mistake costs money. Every good decision makes money. In-spec product? Revenue. Off-spec? Penalties. This is how the real industry keeps score.",
+            highlight: 'right-panel',
+            mood: 'teaching'
           },
           {
-            text: 'Day 1 complete. You now understand the flow path. Tomorrow, you will learn to control the reboiler.',
-            highlight: null
+            text: "Day 1 done. You know the flow path now. That's more than most people learn in their first week.\n\nTomorrow — I'll teach you to control the reboiler.",
+            highlight: null,
+            mood: 'happy'
           }
         ]
       },
@@ -74,34 +86,41 @@ class LearnMode {
         title: 'DAY 2 — CONTROL THE REBOILER',
         steps: [
           {
-            text: 'Today you learn your most important control: the reboiler temperature (TIC-102). Click on any instrument tag — either in the left panel or on the P&ID — to open its FACEPLATE.',
-            highlight: 'g-tic-102'
-          },
-          {
-            text: 'The faceplate shows: PV (process value — what it reads now), SP (setpoint — your target), OUT (output — how open the control valve is), and MODE (AUTO or MAN).',
-            highlight: null
-          },
-          {
-            text: 'In AUTO mode, the controller adjusts the valve automatically to hold the SP. In MAN (manual) mode, you control the valve position directly. New operators start in AUTO. Experts use MAN for faster response.',
-            highlight: null
-          },
-          {
-            text: 'Try adjusting the reboiler setpoint. Click TIC-102, change the SP to 305, and click APPLY. Watch the PV trend upward. Notice the RVP starts to drop — more heat means more light ends removed from product.',
+            text: "Today you learn the most important control in this plant: reboiler temperature, TIC-102.\n\nClick any instrument tag — left panel or P&ID — to open its FACEPLATE.",
             highlight: 'g-tic-102',
-            action: 'enable-controls'
+            mood: 'teaching'
           },
           {
-            text: 'Now watch the TREND ARROW next to each value. An upward arrow means the value is rising. A double arrow means it is rising fast. Rate of change matters more than current value — it tells you where things are going.',
-            highlight: null
-          },
-          {
-            text: 'Set reboiler SP back to 300. Watch the response lag — there is always a delay between your adjustment and the result. This lag time is critical during upsets. You must learn to anticipate, not just react.',
-            highlight: null
-          },
-          {
-            text: 'Day 2 complete. You can now control the reboiler. Tomorrow, your first pig arrives.',
+            text: "Faceplate shows: PV (what it reads now), SP (your target), OUT (how open the control valve is), and MODE (AUTO or MAN).\n\nThis is your cockpit for each loop.",
             highlight: null,
-            action: 'complete-day2'
+            mood: 'teaching'
+          },
+          {
+            text: "AUTO mode — the controller handles the valve to hold your SP. MAN mode — you drive the valve yourself. New operators stay in AUTO. Once you've got the feel... MAN is faster.",
+            highlight: null,
+            mood: 'normal'
+          },
+          {
+            text: "Try it. Click TIC-102, change SP to 305, hit APPLY.\n\nWatch the PV trend up. Notice the RVP start to drop — more heat means more light ends flashed off. That's the cause and effect.",
+            highlight: 'g-tic-102',
+            action: 'enable-controls',
+            mood: 'teaching'
+          },
+          {
+            text: "See the TREND ARROW next to each value? Rising arrow means going up. Double arrow means going fast. Rate of change matters more than current value — it tells you WHERE things are heading.",
+            highlight: null,
+            mood: 'teaching'
+          },
+          {
+            text: "Set reboiler SP back to 300. Watch the lag — there's always a delay between your move and the result. During an upset, this lag is the difference between a good operator and a plant trip.",
+            highlight: null,
+            mood: 'alert'
+          },
+          {
+            text: "Good work. You can control the reboiler now.\n\nTomorrow... your first pig arrives. That's where it gets interesting.",
+            highlight: null,
+            action: 'complete-day2',
+            mood: 'happy'
           }
         ]
       },
@@ -109,25 +128,30 @@ class LearnMode {
         title: 'DAY 3 — FIRST PIG',
         steps: [
           {
-            text: 'A pig is a device that runs through the pipeline to clean it and push liquids ahead of it. When a pig arrives, a large slug of liquid hits your inlet separator all at once. This is the single biggest challenge for new operators.',
-            highlight: null
-          },
-          {
-            text: 'Listen for the NPC RADIO panel (bottom right). Pipeline control will warn you a pig has been launched. You will have about 20 minutes to prepare. Watch LIC-302 (separator level) — it will spike when the pig arrives.',
-            highlight: 'g-lic-302'
-          },
-          {
-            text: 'When alarms fire, click the ACK button on the alarm bar at the top. This acknowledges the alarm and opens the faceplate for that tag so you can take action immediately.',
-            highlight: 'alarm-bar'
-          },
-          {
-            text: 'Your job: Ramp up FIC-401 (liquid feed flow) setpoint to pull liquid off the separator faster. Also ramp reboiler heat UP — more liquid needs more heat to maintain RVP. If you are too slow, RVP will spike.',
-            highlight: 'g-fic-401'
-          },
-          {
-            text: 'The simulation is now running. A pig will arrive in about 20 minutes. Unpause the game (hit 1x) and manage it. Hold RVP in spec (9.0-11.5 psi) through the entire event. Good luck.',
+            text: "A pig — a device that runs through the pipeline to clean it and push liquids ahead. When it arrives, a massive slug of liquid hits your separator at once.\n\nThis is the #1 challenge for new operators.",
             highlight: null,
-            action: 'start-pig-scenario'
+            mood: 'alert'
+          },
+          {
+            text: "Watch the NPC RADIO panel. Pipeline control will warn you when a pig launches. You'll have about 20 minutes to prepare. Watch LIC-302 — separator level — it WILL spike when the pig hits.",
+            highlight: 'g-lic-302',
+            mood: 'teaching'
+          },
+          {
+            text: "When alarms fire, click ACK on the alarm bar. That acknowledges the alarm and lets you focus. Don't panic — alarms are information, not emergencies. Unless they're HIHI. Then move fast.",
+            highlight: 'alarm-bar',
+            mood: 'teaching'
+          },
+          {
+            text: "Your plan: Ramp up FIC-401 (feed flow) to pull liquid off the separator faster. Ramp reboiler heat UP — more liquid needs more heat to hold RVP. If you're slow, RVP goes bad.",
+            highlight: 'g-fic-401',
+            mood: 'alert'
+          },
+          {
+            text: "Alright, I'm turning the sim on. Pig arrives in about 20 minutes. Hit 1x to start the clock.\n\nHold RVP in spec through the whole event. I'll be watching.",
+            highlight: null,
+            action: 'start-pig-scenario',
+            mood: 'normal'
           }
         ]
       },
@@ -135,29 +159,35 @@ class LearnMode {
         title: 'DAY 4 — SOMETHING GOES WRONG',
         steps: [
           {
-            text: 'Today, you are going to experience your first equipment fault. During a pig arrival, the hot oil system will have a problem. Heat supply will drop. The tower will start to flood.',
-            highlight: null
-          },
-          {
-            text: 'When something goes wrong, your first instinct will be to stare at the thing that is alarming. Resist that instinct. Look at the P&ID. Trace the flow. Ask: what feeds into the thing that is failing? That is where the root cause lives.',
-            highlight: null
-          },
-          {
-            text: 'Hot oil feeds the reboiler. The reboiler heats the tower feed. If hot oil drops, reboiler temp drops. If reboiler temp drops, less light ends flash off. RVP rises. Tower sump level rises. Eventually: flooding.',
-            highlight: null
-          },
-          {
-            text: 'When you see TIC-102 (reboiler) dropping and you have not touched anything — check TIC-104 (hot oil supply) FIRST. If hot oil is the problem, reboiler adjustments alone will not fix it. You need to resolve the source.',
-            highlight: null
-          },
-          {
-            text: 'Look at the EVENTS section in the right panel (or tap INFO on mobile). Active events show action buttons — REPAIR HEATER, RESTART COMP, ISSUE PERMIT. These are your tools to resolve equipment faults.',
-            highlight: 'event-status'
-          },
-          {
-            text: 'The simulation will now run a pig + hot oil fault scenario. Find the problem. Fix it. Recover. Click REPAIR HEATER in the event panel when you find the hot oil fault. Good luck.',
+            text: "Today you learn what separates operators from button-pushers.\n\nDuring a pig arrival, the hot oil system is going to have a problem. Heat drops. Tower floods. Things cascade.",
             highlight: null,
-            action: 'start-fault-scenario'
+            mood: 'worried'
+          },
+          {
+            text: "When something breaks, your instinct is to stare at the thing that's alarming. Don't. Look at the P&ID. Trace the flow. Ask: what feeds into the thing that's failing?\n\nThat's where the root cause lives.",
+            highlight: null,
+            mood: 'teaching'
+          },
+          {
+            text: "Hot oil → reboiler → tower feed. Hot oil drops? Reboiler temp drops. Reboiler drops? Less flash-off. Less flash-off? RVP rises. RVP rises? Tower sump rises. Tower floods.\n\nSee the chain?",
+            highlight: null,
+            mood: 'alert'
+          },
+          {
+            text: "If TIC-102 is dropping and you haven't touched anything — check TIC-104 (hot oil supply) FIRST. If hot oil is the problem, adjusting the reboiler setpoint won't help. Fix the source.",
+            highlight: null,
+            mood: 'teaching'
+          },
+          {
+            text: "EVENTS section in the right panel shows active events with action buttons — REPAIR HEATER, RESTART COMP, ISSUE PERMIT. Those are your tools.",
+            highlight: 'event-status',
+            mood: 'teaching'
+          },
+          {
+            text: "Here we go. Pig plus hot oil fault. Find the problem. Fix it. Recover.\n\nClick REPAIR HEATER when you find it. I believe in you.",
+            highlight: null,
+            action: 'start-fault-scenario',
+            mood: 'normal'
           }
         ]
       },
@@ -165,21 +195,25 @@ class LearnMode {
         title: 'DAY 5 — GRADUATION',
         steps: [
           {
-            text: 'Final exam. Full shift simulation. Two pigs scheduled. One instrument fault will occur at some point. A truck will arrive for loading. Hold RVP in spec for the entire shift to pass.',
-            highlight: null
-          },
-          {
-            text: 'Everything you have learned applies now: reboiler control, pig management, pinch valve timing, troubleshooting cascade failures, reading trends, using the P&ID to trace problems to their source.',
-            highlight: null
-          },
-          {
-            text: 'Pass this shift with positive P&L and no ESD events to unlock the Refrigeration Plant (Tier 2). Your shift earnings will be tracked on the leaderboard.',
-            highlight: null
-          },
-          {
-            text: 'The plant tells you something is wrong before it goes wrong. The job is learning to listen. Good luck, operator.',
+            text: "Final exam. Full shift. Two pigs scheduled. One instrument fault somewhere. A truck will show up for loading.\n\nHold RVP in spec. Keep the lights on. Make money.",
             highlight: null,
-            action: 'start-graduation'
+            mood: 'alert'
+          },
+          {
+            text: "Everything you've learned: reboiler control, pig management, cascade troubleshooting, reading trends, tracing the P&ID.\n\nIt all comes together now.",
+            highlight: null,
+            mood: 'teaching'
+          },
+          {
+            text: "Pass this shift with positive P&L and no ESD events. Your shift earnings go on the leaderboard.\n\nShow me what you've got.",
+            highlight: null,
+            mood: 'normal'
+          },
+          {
+            text: "The plant tells you something is wrong before it goes wrong. The job is learning to listen.\n\nGood luck, operator. Make me proud.",
+            highlight: null,
+            action: 'start-graduation',
+            mood: 'happy'
           }
         ]
       }
@@ -202,6 +236,10 @@ class LearnMode {
   stop() {
     this.active = false;
     this.overlay.style.display = 'none';
+    // Hide Henry if he's showing a tutorial
+    if (this.game.henry) {
+      this.game.henry.hide();
+    }
   }
 
   _showStep() {
@@ -218,25 +256,54 @@ class LearnMode {
       return;
     }
 
-    this.overlay.style.display = 'flex';
-    this.titleEl.textContent = dayData.title;
-    this.textEl.textContent = step.text;
+    // Use Henry if available, otherwise fall back to overlay
+    if (this.game.henry) {
+      this.overlay.style.display = 'none';
 
-    // Update button text
-    if (this.currentStep >= dayData.steps.length - 1) {
-      this.nextBtn.textContent = step.action ? 'START' : 'COMPLETE';
+      // Highlight element if specified
+      this._clearHighlights();
+      if (step.highlight) {
+        const el = document.getElementById(step.highlight);
+        if (el) {
+          el.style.outline = '2px solid var(--accent)';
+          el.style.outlineOffset = '2px';
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+
+      const isLast = this.currentStep >= dayData.steps.length - 1;
+      const btnLabel = isLast ? (step.action ? 'START' : 'COMPLETE') : 'NEXT';
+
+      this.game.henry.show({
+        text: step.text,
+        mood: step.mood || 'teaching',
+        position: 'right',
+        duration: 0,
+        type: 'tutorial',
+        buttons: [
+          { label: btnLabel, callback: () => this._nextStep(), action: 'dismiss' }
+        ]
+      });
     } else {
-      this.nextBtn.textContent = 'NEXT';
-    }
+      // Fallback: original overlay
+      this.overlay.style.display = 'flex';
+      this.titleEl.textContent = dayData.title;
+      this.textEl.textContent = step.text;
 
-    // Highlight element if specified
-    this._clearHighlights();
-    if (step.highlight) {
-      const el = document.getElementById(step.highlight);
-      if (el) {
-        el.style.outline = '2px solid var(--accent)';
-        el.style.outlineOffset = '2px';
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (this.currentStep >= dayData.steps.length - 1) {
+        this.nextBtn.textContent = step.action ? 'START' : 'COMPLETE';
+      } else {
+        this.nextBtn.textContent = 'NEXT';
+      }
+
+      this._clearHighlights();
+      if (step.highlight) {
+        const el = document.getElementById(step.highlight);
+        if (el) {
+          el.style.outline = '2px solid var(--accent)';
+          el.style.outlineOffset = '2px';
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       }
     }
   }
@@ -303,12 +370,47 @@ class LearnMode {
     this.overlay.style.display = 'none';
     this.active = false;
 
+    // Hide Henry
+    if (this.game.henry) {
+      this.game.henry.hide();
+    }
+
     // Check if more days available
     if (this.currentDay < 5) {
       this.game.saveProgress({ [`day${this.currentDay}Complete`]: true });
+      // Henry congratulates
+      if (this.game.henry) {
+        setTimeout(() => {
+          this.game.henry.show({
+            text: `Day ${this.currentDay} complete. You're getting the hang of this.\n\nReady for Day ${this.currentDay + 1}?`,
+            mood: 'happy',
+            position: 'right',
+            duration: 0,
+            type: 'announcement',
+            buttons: [
+              { label: `START DAY ${this.currentDay + 1}`, callback: () => {
+                this.start(this.currentDay + 1);
+              }, action: 'dismiss' },
+              { label: 'LATER', action: 'dismiss' }
+            ]
+          });
+        }, 500);
+      }
     } else {
       // Graduation
       this.game.saveProgress({ stabilizerComplete: true });
+      if (this.game.henry) {
+        setTimeout(() => {
+          this.game.henry.show({
+            text: "You graduated Stabilizer School. Not bad, greenhorn.\n\nRefrigeration Plant and Cryogenic are unlocked. Bigger plants, harder problems, more money.\n\nSee you out there.",
+            mood: 'happy',
+            position: 'right',
+            duration: 0,
+            type: 'announcement',
+            buttons: [{ label: 'THANKS, HENRY', action: 'dismiss' }]
+          });
+        }, 500);
+      }
     }
   }
 
