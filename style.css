@@ -2887,3 +2887,23 @@ g[id^="equip-"]:hover {
    ============================================================ */
 .pnl-positive { color: #4CAF50 !important; }
 .pnl-negative { color: #E04040 !important; }
+
+/* ============================================================
+   SITE FOOTER
+   ============================================================ */
+#site-footer {
+  text-align: center;
+  padding: 12px 0;
+  font-size: 0.75rem;
+  color: var(--text-unit);
+  border-top: 1px solid var(--border);
+  background: var(--bg-deep);
+}
+#site-footer a {
+  color: var(--text-label);
+  text-decoration: none;
+}
+#site-footer a:hover {
+  color: var(--text-normal);
+  text-decoration: underline;
+}
