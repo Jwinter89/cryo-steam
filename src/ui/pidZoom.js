@@ -189,6 +189,12 @@ class PidZoom {
     container.style.position = 'relative';
     container.appendChild(controls);
 
+    // Mobile hint
+    const hint = document.createElement('div');
+    hint.className = 'pid-zoom-hint';
+    hint.textContent = 'PINCH TO ZOOM \u2022 DRAG TO PAN \u2022 DOUBLE-TAP TO RESET';
+    container.appendChild(hint);
+
     document.getElementById('pid-zoom-in').addEventListener('click', () => {
       const rect = this.svg.getBoundingClientRect();
       this._zoom(0.3, rect.left + rect.width / 2, rect.top + rect.height / 2);
@@ -209,6 +215,60 @@ class PidZoom {
   _updateZoomLabel() {
     const el = document.getElementById('pid-zoom-level');
     if (el) el.textContent = Math.round(this._scale * 100) + '%';
+  }
+
+  /**
+   * Highlight flow lines connected to a tag bubble (pulse animation).
+   * Clears previous highlights automatically after 3 seconds.
+   */
+  highlightLoop(tag) {
+    // Clear any existing highlights
+    this.clearHighlight();
+
+    if (!this.svg || !tag) return;
+
+    // Find the tag bubble element
+    const bubble = this.svg.querySelector(`.tag-bubble[data-tag="${tag}"]`);
+    if (!bubble) return;
+
+    // Find the parent equipment group
+    const equipGroup = bubble.closest('g[id^="equip-"], g[transform]');
+    if (!equipGroup) return;
+
+    // Highlight connected flow lines (siblings & nearby)
+    const parent = equipGroup.parentElement;
+    if (!parent) return;
+    const allLines = parent.querySelectorAll('.flow-line.active');
+    const groupRect = equipGroup.getBBox();
+    const cx = groupRect.x + groupRect.width / 2;
+    const cy = groupRect.y + groupRect.height / 2;
+
+    allLines.forEach(line => {
+      const x1 = parseFloat(line.getAttribute('x1') || 0);
+      const y1 = parseFloat(line.getAttribute('y1') || 0);
+      const x2 = parseFloat(line.getAttribute('x2') || 0);
+      const y2 = parseFloat(line.getAttribute('y2') || 0);
+      const dist = Math.min(
+        Math.hypot(x1 - cx, y1 - cy),
+        Math.hypot(x2 - cx, y2 - cy)
+      );
+      if (dist < 120) {
+        line.classList.add('loop-highlight');
+      }
+    });
+
+    this._highlightTimer = setTimeout(() => this.clearHighlight(), 3000);
+  }
+
+  clearHighlight() {
+    if (this._highlightTimer) {
+      clearTimeout(this._highlightTimer);
+      this._highlightTimer = null;
+    }
+    if (!this.svg) return;
+    this.svg.querySelectorAll('.loop-highlight').forEach(el => {
+      el.classList.remove('loop-highlight');
+    });
   }
 }
 

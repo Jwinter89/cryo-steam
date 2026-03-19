@@ -216,12 +216,40 @@ class Henry {
       'crisis-start': "Crisis scenario. Clock's ticking. Focus on the critical path — don't get distracted.",
       'separator-high': "Separator level climbing fast. Open up that feed valve before it trips the comp.",
       'comp-trip': "Compressor tripped! Check what caused it. Probably liquid carryover from the separator.",
+      'hotoil-drop': "Hot oil temp dropping. Check the heater — could be a pilot issue or low fuel gas pressure.",
+      'pressure-spike': "Pressure spike on the tower. Check your overhead comp discharge and back-pressure valve.",
+      'glycol-low': "Glycol pump losing prime. Watch your TEG contactor — moisture will blow right through.",
+      'weather-cold': "Temps dropping fast. Watch your methanol injection and exposed instrument lines.",
+      'weather-hot': "It's cooking out there. Aerial coolers are losing efficiency — bump your setpoints.",
+      'level-low': "Level dropping in the sump. You're losing liquid out the overhead — check your reflux.",
+      'flow-swing': "Big flow swing on the inlet. Upstream well probably came online. Ride it out, watch the separator.",
+      'near-miss': "Close call. You almost tripped the plant. That's how real incidents start — stay sharp.",
+      'shift-halfway': "Halfway through the shift. Check your numbers. Still time to turn this around.",
+      'earnings-negative': "You're losing money. Every minute off-spec costs you. Find the leak in your P&L.",
     };
 
     const text = tips[context];
     if (text) {
       this.tip(text, 5000);
     }
+  }
+
+  /**
+   * Random ambient radio chatter — call periodically during gameplay
+   */
+  ambientRadio() {
+    const lines = [
+      "Control room to field: all readings nominal.",
+      "Truck's at the loading rack. Should be out in twenty.",
+      "Just checked the flare. Burning clean.",
+      "Night crew left the log on the desk. Looks like a quiet one.",
+      "Lab results came back. Product's in spec.",
+      "Wind shifted. Keep an eye on the H2S monitor downwind.",
+      "Heard the pipeline pressure dropped upstream. Might see lower throughput.",
+      "Maintenance wants to pull a work permit on the mol sieve. I told them after your shift.",
+    ];
+    const text = lines[Math.floor(Math.random() * lines.length)];
+    this.tip(text, 4000);
   }
 
   hide() {

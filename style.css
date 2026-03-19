@@ -3508,6 +3508,22 @@ body.cb-tritanopia .spec-row.off-spec {
   .pid-zoom-controls {
     bottom: 4px;
     right: 4px;
+    padding: 6px;
+  }
+  .pid-zoom-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+  }
+  .pid-zoom-reset {
+    font-size: 0.7rem;
+    padding: 0 10px;
+  }
+  .pid-zoom-level {
+    font-size: 0.7rem;
+  }
+  .pid-zoom-hint {
+    display: block;
   }
 }
 
@@ -3742,4 +3758,63 @@ body.cb-tritanopia .spec-row.off-spec {
   background: var(--bg-input);
   border-color: #D4A843;
   color: #D4A843;
+}
+
+/* ============================================================
+   P&ID ZOOM MOBILE HINT + LOOP HIGHLIGHT
+   ============================================================ */
+.pid-zoom-hint {
+  display: none;
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(50, 50, 50, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 0.6rem;
+  color: var(--text-label);
+  z-index: 20;
+  pointer-events: none;
+  animation: pid-hint-fade 4s ease-in forwards;
+}
+@keyframes pid-hint-fade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Loop highlight — pulse the flow path for a tagged PV */
+.flow-line.loop-highlight {
+  stroke-width: 4;
+  animation: loop-pulse 1.5s ease-in-out infinite;
+}
+@keyframes loop-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ============================================================
+   SHARE IMAGE BUTTON STATES
+   ============================================================ */
+.debrief-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* ============================================================
+   SITE FOOTER SUPPORT LINK
+   ============================================================ */
+#site-footer .footer-support-link {
+  color: #D4A843;
+  text-decoration: none;
+  margin-left: 12px;
+}
+#site-footer .footer-support-link:hover {
+  color: #FFD700;
+  text-decoration: underline;
+}
+#site-footer .footer-sep {
+  color: #555;
+  margin: 0 8px;
 }

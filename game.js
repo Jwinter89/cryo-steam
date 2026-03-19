@@ -723,6 +723,7 @@
           const tag = row.dataset.tag;
           if (tag && this.faceplateManager) {
             this.faceplateManager.open(tag, e);
+            if (this.pidZoom) this.pidZoom.highlightLoop(tag);
           }
         });
       });
@@ -956,6 +957,11 @@
       if (window.PidZoom) {
         this.pidZoom = new PidZoom();
         this.pidZoom.resetForFacility();
+        document.addEventListener('faceplate:open', (e) => {
+          if (this.pidZoom && e.detail && e.detail.tag) {
+            this.pidZoom.highlightLoop(e.detail.tag);
+          }
+        });
       }
 
       // Bind mol sieve switch button (cryo only)
@@ -2198,6 +2204,39 @@
         this._setHenryTipCooldown('sep-high', 200);
       }
 
+      // Hot oil temperature drop
+      const hoilPV = pvMap['TIC-104'] || pvMap['TIC-201'];
+      if (hoilPV && hoilPV.value < hoilPV.lo && !this._henryTipCooldown('hotoil-drop')) {
+        this.henry.operatorTip('hotoil-drop');
+        this._setHenryTipCooldown('hotoil-drop', 300);
+      }
+
+      // Tower pressure spike
+      const towerP = pvMap['PIC-201'] || pvMap['PIC-501'];
+      if (towerP && towerP.alarmState === 'HI' && !this._henryTipCooldown('pressure-spike')) {
+        this.henry.operatorTip('pressure-spike');
+        this._setHenryTipCooldown('pressure-spike', 300);
+      }
+
+      // Negative earnings warning
+      if (this.pnlSystem.shiftEarnings < -500 && !this._henryTipCooldown('earnings-neg')) {
+        this.henry.operatorTip('earnings-negative');
+        this._setHenryTipCooldown('earnings-neg', 600);
+      }
+
+      // Shift halfway ambient comment
+      const gameMin = this.sim.gameTime;
+      if (gameMin >= 360 && gameMin <= 365 && !this._henryTipCooldown('halfway')) {
+        this.henry.operatorTip('shift-halfway');
+        this._setHenryTipCooldown('halfway', 9999);
+      }
+
+      // Random ambient radio chatter (every ~5 game-minutes, 20% chance)
+      if (this.sim.totalTicks % 300 === 0 && Math.random() < 0.2 && !this._henryTipCooldown('ambient')) {
+        this.henry.ambientRadio();
+        this._setHenryTipCooldown('ambient', 600);
+      }
+
       // First faceplate hint
       if (this.sim.totalTicks === 60 && !this.progress.firstFaceplateHint) {
         this.henry.operatorTip('first-faceplate');
@@ -2482,15 +2521,21 @@
 
       const shareBtn = document.getElementById('debrief-share-btn');
       if (shareBtn) {
-        shareBtn.addEventListener('click', () => {
-          const text = this.debriefScreen.getShareText(this);
-          if (navigator.share) {
-            navigator.share({ title: 'Cold Creek Shift Debrief', text }).catch(() => {});
-          } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(() => {
+        shareBtn.addEventListener('click', async () => {
+          shareBtn.textContent = 'GENERATING...';
+          shareBtn.disabled = true;
+          try {
+            const result = await this.debriefScreen.shareAsImage(this);
+            if (result === 'shared') {
+              this.showToast('SHARED', 'Shift debrief shared!', 'SHARE');
+            } else if (result === 'downloaded') {
+              this.showToast('DOWNLOADED', 'Shift image saved! Share it on social media.', 'SHARE');
+            } else if (result === 'copied') {
               this.showToast('COPIED TO CLIPBOARD', 'Share your shift results!', 'SHARE');
-            });
-          }
+            }
+          } catch (e) { /* ok */ }
+          shareBtn.textContent = 'SHARE SHIFT';
+          shareBtn.disabled = false;
         });
       }
     },
