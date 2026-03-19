@@ -106,11 +106,18 @@ html, body {
 #title-screen {
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   background: var(--bg-deep);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: env(safe-area-inset-top, 20px) 16px 20px;
 }
 .title-content {
   text-align: center;
+  width: 100%;
+  max-width: 500px;
+  padding-top: 24px;
+  margin: auto 0;
 }
 .title-logo {
   font-family: var(--font-mono);
@@ -1478,6 +1485,18 @@ g[id^="equip-"]:hover line {
    MOBILE RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
+  #title-screen {
+    padding-top: env(safe-area-inset-top, 16px);
+  }
+  .title-content {
+    padding-top: 16px;
+  }
+  .title-logo {
+    margin-bottom: 2px;
+  }
+  .title-sub {
+    margin-bottom: 20px;
+  }
   #left-panel {
     width: 170px;
   }
