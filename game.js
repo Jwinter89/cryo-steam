@@ -184,6 +184,7 @@
       this._updateContinueButton();
       this._showScreen('title-screen');
       this._refreshLeaderboard();
+      this._updateChallengesPreview();
       this._initHenry();
       this._checkBuildingTabOverflow();
       window.addEventListener('resize', () => this._checkBuildingTabOverflow());
@@ -647,6 +648,22 @@
             ${pvDef.controllable ? `<span class="gauge-mode">${pvDef.mode || 'AUTO'}</span>` : ''}
             <span class="gauge-trend">&#8594;</span>
           `;
+
+          // Click gauge tag to add to trend graph
+          const tagEl = row.querySelector('.gauge-tag');
+          if (tagEl) {
+            tagEl.style.cursor = 'pointer';
+            tagEl.title = 'Click to track in trend graph';
+            tagEl.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (this.trendManager) {
+                this.trendManager.trackTag(tag);
+                if (!this.trendManager._visible) this.trendManager.show();
+                this.showToast(tag, 'Added to trend graph', 'TREND');
+              }
+            });
+          }
+
           section.appendChild(row);
         }
 
@@ -976,6 +993,46 @@
       }
     },
 
+    _enrichTagBubbleTooltips(config) {
+      const svgEl = document.getElementById('pid-diagram');
+      if (!svgEl || !config) return;
+
+      // Build a tag→description map from config process variables
+      const pvMap = {};
+      if (config.processVariables) {
+        config.processVariables.forEach(pv => {
+          pvMap[pv.tag] = pv.desc + (pv.unit ? ' (' + pv.unit + ')' : '');
+        });
+      }
+
+      // Add SVG <title> elements to tag bubbles for native tooltips
+      svgEl.querySelectorAll('.tag-bubble').forEach(bubble => {
+        const tag = bubble.dataset.tag;
+        if (!tag) return;
+
+        // Remove existing titles
+        const existingTitle = bubble.querySelector('title');
+        if (existingTitle) existingTitle.remove();
+
+        const desc = pvMap[tag] || tag;
+        const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        titleEl.textContent = tag + ': ' + desc;
+        bubble.appendChild(titleEl);
+      });
+
+      // Also add tooltips to tag labels (text elements near bubbles)
+      svgEl.querySelectorAll('text[data-tag]').forEach(textEl => {
+        const tag = textEl.dataset.tag;
+        if (!tag) return;
+        const desc = pvMap[tag] || tag;
+        const existingTitle = textEl.querySelector('title');
+        if (existingTitle) existingTitle.remove();
+        const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        titleEl.textContent = tag + ': ' + desc;
+        textEl.appendChild(titleEl);
+      });
+    },
+
     // ============================================================
     // CRISIS SCREEN
     // ============================================================
@@ -1043,6 +1100,7 @@
       this._buildBuildingTabs(this.currentFacility);
       this._buildSpecBoard(config);
       this._loadFacilityPID(this.currentFacility);
+      this._enrichTagBubbleTooltips(config);
 
       // On small mobile, start with left panel collapsed
       if (window.innerWidth <= 480) {
@@ -1068,6 +1126,11 @@
             this.pidZoom.highlightLoop(e.detail.tag);
           }
         });
+      }
+
+      // Trend graph
+      if (window.TrendManager) {
+        this.trendManager = new TrendManager(this.sim);
       }
 
       // Bind mol sieve switch button (cryo only)
@@ -1393,6 +1456,12 @@
         this.debriefScreen.recordTick(gameTime, this.pnlSystem);
       }
 
+      // Record trend data and update trend graph
+      if (this.trendManager && this.sim.totalTicks % 5 === 0) {
+        this.trendManager.recordTick(gameTime);
+        this.trendManager.update();
+      }
+
       // Track achievement flags
       this._trackAchievementFlags();
     },
@@ -1659,6 +1728,25 @@
         if (this.sim) this.sim.setSpeed(4);
         this._updateTimeButtons(4);
       });
+
+      // Trend graph toggle
+      const trendBtn = document.getElementById('btn-trend');
+      if (trendBtn) {
+        trendBtn.addEventListener('click', () => {
+          if (this.trendManager) {
+            this.trendManager.toggle();
+            trendBtn.classList.toggle('active', this.trendManager._visible);
+          }
+        });
+      }
+
+      // Snapshot button
+      const snapBtn = document.getElementById('btn-snapshot');
+      if (snapBtn) {
+        snapBtn.addEventListener('click', () => {
+          this._takeSnapshot();
+        });
+      }
     },
 
     _updateTimeButtons(speed) {
@@ -1865,6 +1953,47 @@
       });
 
       showName();
+    },
+
+    _updateChallengesPreview() {
+      const container = document.getElementById('title-challenges-preview');
+      if (!container || !this.challenges) {
+        if (container) container.style.display = 'none';
+        return;
+      }
+
+      const today = this.challenges.getDaily ? this.challenges.getDaily() : null;
+      const weekly = this.challenges.getWeekly ? this.challenges.getWeekly() : null;
+
+      if (!today && !weekly) {
+        container.style.display = 'none';
+        return;
+      }
+
+      let html = '<div class="challenges-preview-title">TODAY\'S CHALLENGES</div>';
+
+      const renderChallenge = (ch) => {
+        const done = ch.completed || false;
+        const statusText = done ? '&#10003; DONE' : 'ACTIVE';
+        const statusClass = done ? 'done' : 'active';
+        return `<div class="challenge-preview-item">
+          <span class="challenge-preview-pts">${ch.reward || ch.points || 0} PTS</span>
+          <span class="challenge-preview-name">${ch.name || ch.id}</span>
+          <span class="challenge-preview-status ${statusClass}">${statusText}</span>
+        </div>`;
+      };
+
+      if (today && today.length > 0) {
+        today.forEach(ch => { html += renderChallenge(ch); });
+      }
+
+      if (weekly && weekly.length > 0) {
+        html += '<div class="challenges-preview-title" style="margin-top:8px">WEEKLY CHALLENGE</div>';
+        weekly.forEach(ch => { html += renderChallenge(ch); });
+      }
+
+      container.innerHTML = html;
+      container.style.display = '';
     },
 
     async _refreshLeaderboard() {
@@ -2282,6 +2411,21 @@
         'expander-trip': { name: 'EXPANDER TRIP!', desc: "Turboexpander's down! Your cold box is warming up. Get it restarted before you lose ethane recovery.", mood: 'worried' },
         'cold-box-freeze': { name: 'COLD BOX FREEZE-UP', desc: "Moisture in the cold box. Brazed aluminum doesn't like that. Controlled warmup — don't rush it, 3 degrees per minute max.", mood: 'worried' },
         'molsieve-breakthrough': { name: 'MOL SIEVE BREAKTHROUGH', desc: "Moisture breaking through the mol sieve. Switch beds or inject EG downstream. Clock's ticking.", mood: 'alert' },
+        'weather-change': { name: 'WEATHER INCOMING', desc: "Front moving in. Temps are dropping. Watch your exposed lines and aerial coolers.", mood: 'alert' },
+        'fuel-gas-swing': { name: 'FUEL GAS SWING', desc: "Fuel gas composition just shifted. Your heater might get rich or lean. Watch the BTU and flame.", mood: 'alert' },
+        'instrument-air-loss': { name: 'INSTRUMENT AIR LOSS!', desc: "Instrument air header pressure is dropping. Control valves are going to fail to their safe positions. This is not a drill.", mood: 'worried' },
+        'fire-eye-alarm': { name: 'FIRE EYE ALARM', desc: "Fire eye lost flame signal on the heater. Could be a fouled sensor or an actual flameout. Investigate NOW.", mood: 'worried' },
+        'ldar-inspection': { name: 'LDAR INSPECTION', desc: "Environmental inspector on site with the OGI camera. Keep everything tight and in spec.", mood: 'alert' },
+        'pump-bearing-hot': { name: 'PUMP BEARING HOT', desc: "Bearing temp climbing on one of your pumps. If it gets to 200°F, shut it down before it seizes.", mood: 'alert' },
+        'lel-alarm': { name: 'LEL ALARM!', desc: "Lower Explosive Limit alarm in the comp building. Something's leaking. This is a potential evac situation.", mood: 'worried' },
+        'res-comp-fault': { name: 'RESIDUE COMP FAULT', desc: "Residue gas compressor throwing a fault. Your suction pressure is going to climb. Watch the demethanizer.", mood: 'alert' },
+        'h2s-area-alarm': { name: 'H2S AREA ALARM!', desc: "H2S detector tripped. Check wind direction immediately. If it's heading toward personnel — evacuate.", mood: 'worried' },
+        'amine-pump-fail': { name: 'AMINE PUMP FAILURE', desc: "Amine pump just went down. You're about to lose H2S treating. Get the spare online.", mood: 'worried' },
+        'truck-arrival': { name: 'TRUCK AT RACK', desc: "Truck at the loading rack. Check your tank levels and RVP before you start loading.", mood: 'normal' },
+        'refrig-condenser-foul': { name: 'CONDENSER FOULING', desc: "Condenser's losing efficiency. Approach temperature is climbing. Check for tube fouling.", mood: 'alert' },
+        'kimray-dp-swing': { name: 'KIMRAY DP SWING', desc: "Glycol pump differential is swinging. Your circulation rate is going to bounce. Watch the contactor.", mood: 'alert' },
+        'feed-composition-swing': { name: 'FEED COMP CHANGE', desc: "Upstream composition just changed. Richer feed means more liquids. Adjust your recovery settings.", mood: 'alert' },
+        'mode-switch': { name: 'MODE SWITCH', desc: "Switching recovery modes. Take it slow — changing too fast will upset the demethanizer.", mood: 'teaching' },
       };
 
       const custom = messages[event.id];
@@ -2341,8 +2485,34 @@
         this._setHenryTipCooldown('earnings-neg', 600);
       }
 
-      // Shift halfway ambient comment
+      // NGL recovery dropping (cryo)
+      const nglPV = pvMap['AI-801'] || pvMap['AI-701'];
+      if (nglPV && nglPV.value < 85 && !this._henryTipCooldown('recovery-drop')) {
+        this.henry.operatorTip('recovery-dropping');
+        this._setHenryTipCooldown('recovery-drop', 400);
+      }
+
+      // Tank overpressure
+      const tankP = pvMap['PIC-203'] || pvMap['PIC-202'];
+      if (tankP && tankP.alarmState === 'HI' && !this._henryTipCooldown('tank-op')) {
+        this.henry.operatorTip('tank-overpressure');
+        this._setHenryTipCooldown('tank-op', 300);
+      }
+
+      // Good earnings encouragement
+      if (this.pnlSystem.shiftEarnings > 5000 && !this._henryTipCooldown('good-earnings')) {
+        this.henry.operatorTip('good-earnings');
+        this._setHenryTipCooldown('good-earnings', 9999);
+      }
+
+      // Shift end approaching (15 min left = ~690 game minutes on a 720 min shift)
       const gameMin = this.sim.gameTime;
+      if (gameMin >= 690 && gameMin <= 695 && !this._henryTipCooldown('shift-end')) {
+        this.henry.operatorTip('shift-end-approaching');
+        this._setHenryTipCooldown('shift-end', 9999);
+      }
+
+      // Shift halfway ambient comment
       if (gameMin >= 360 && gameMin <= 365 && !this._henryTipCooldown('halfway')) {
         this.henry.operatorTip('shift-halfway');
         this._setHenryTipCooldown('halfway', 9999);
@@ -2592,6 +2762,77 @@
         }
       }
       this._showScreen('profile-screen');
+    },
+
+    _takeSnapshot() {
+      // Generate a quick in-game snapshot image
+      const gameScreen = document.getElementById('game-screen');
+      if (!gameScreen) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 340;
+      const ctx = canvas.getContext('2d');
+
+      // Draw dark background
+      ctx.fillStyle = '#1E1E1E';
+      ctx.fillRect(0, 0, 600, 340);
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(2, 2, 596, 336);
+
+      // Header
+      ctx.fillStyle = '#E8E8E8';
+      ctx.font = 'bold 16px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('COLD CREEK GAS PLANT', 300, 30);
+
+      ctx.font = '10px Courier New';
+      ctx.fillStyle = '#999';
+      const facility = (this.currentFacility || 'stabilizer').toUpperCase();
+      const mode = (this.currentMode || 'operate').toUpperCase();
+      ctx.fillText(`${facility} | ${mode} MODE`, 300, 48);
+
+      // Time
+      const time = this.sim ? this.sim.getTimeString() : '06:00';
+      const shift = this.sim ? this.sim.getShiftLabel() : 'DAY SHIFT';
+      ctx.fillText(`${time} ${shift}`, 300, 65);
+
+      // P&L
+      const earnings = this.pnlSystem ? Math.round(this.pnlSystem.shiftEarnings) : 0;
+      const rate = this.pnlSystem ? Math.round(this.pnlSystem.netPerHour) : 0;
+      ctx.font = 'bold 28px Courier New';
+      ctx.fillStyle = earnings >= 0 ? '#4CAF50' : '#E04040';
+      ctx.fillText('$' + earnings.toLocaleString(), 300, 120);
+
+      ctx.font = '12px Courier New';
+      ctx.fillStyle = rate >= 0 ? '#4CAF50' : '#E04040';
+      ctx.fillText('$' + rate.toLocaleString() + '/hr', 300, 142);
+
+      // Active alarms
+      const alarmCount = this.alarmManager ? this.alarmManager.getAlarmCount() : 0;
+      ctx.fillStyle = alarmCount > 0 ? '#E04040' : '#4CAF50';
+      ctx.fillText(alarmCount + ' ALARMS', 300, 170);
+
+      // Watermark
+      ctx.font = '9px Courier New';
+      ctx.fillStyle = '#555';
+      ctx.fillText('gasplantsim.com', 300, 330);
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const file = new File([blob], 'coldcreek-snapshot.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file], title: 'Cold Creek Snapshot' }).catch(() => {});
+          this.showToast('SHARED', 'Snapshot shared!', 'SNAPSHOT');
+        } else {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'coldcreek-snapshot.png';
+          a.click();
+          URL.revokeObjectURL(a.href);
+          this.showToast('DOWNLOADED', 'Snapshot saved!', 'SNAPSHOT');
+        }
+      }, 'image/png');
     },
 
     _showGlossaryPopup() {

@@ -333,6 +333,74 @@ html, body {
   color: var(--text-normal);
 }
 
+/* Prominent support button on title screen */
+.support-btn-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: #D4A843;
+  text-decoration: none;
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  padding: 8px 24px;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.support-btn-link:hover {
+  background: rgba(212, 168, 67, 0.15);
+  color: #FFD700;
+}
+
+/* Daily Challenges Preview on title screen */
+.challenges-preview-box {
+  margin-top: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+.challenges-preview-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-tag);
+  margin-bottom: 8px;
+  text-align: center;
+}
+.challenge-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.challenge-preview-pts {
+  color: #4CAF50;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.challenge-preview-name {
+  color: var(--text-normal);
+  flex: 1;
+}
+.challenge-preview-desc {
+  color: var(--text-unit);
+  font-size: 9px;
+}
+.challenge-preview-status {
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.challenge-preview-status.done {
+  color: #4CAF50;
+}
+.challenge-preview-status.active {
+  color: var(--text-label);
+}
+
 .title-credit {
   margin-top: 40px;
   font-size: 11px;
