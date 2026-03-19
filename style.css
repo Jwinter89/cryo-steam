@@ -308,9 +308,18 @@ html, body {
   color: #E04040;
 }
 
-.donate-link {
-  display: inline-block;
+.title-footer-links {
   margin-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.title-footer-sep {
+  color: var(--border);
+  font-size: 12px;
+}
+.donate-link {
   font-family: var(--font-condensed);
   font-size: 12px;
   letter-spacing: 0.15em;
