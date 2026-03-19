@@ -271,9 +271,12 @@ const FacilityViews = {
       <marker id="arrow-amine" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
         <polygon points="0,0 6,2 0,4" fill="#C77DFF"/>
       </marker>
+      <marker id="arrow-stab" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#E8A030"/>
+      </marker>
     </defs>
-    <rect width="1000" height="850" fill="#3C3C3C"/>
-    <rect width="1000" height="850" fill="url(#grid)"/>
+    <rect width="1000" height="1050" fill="#3C3C3C"/>
+    <rect width="1000" height="1050" fill="url(#grid)"/>
 
     <!-- INLET SECTION -->
     <g transform="translate(20,80)">
@@ -713,8 +716,135 @@ const FacilityViews = {
       <text x="0" y="28" text-anchor="middle" font-size="5" fill="#C77DFF" font-family="Arial">H2S</text>
     </g>
 
+    <!-- STABILIZER FRACTIONATION SYSTEM -->
+    <g transform="translate(20,830)">
+      <text x="0" y="0" font-size="9" fill="#E8A030" font-family="Courier New" font-weight="bold">STABILIZER FRACTIONATION</text>
+      <line x1="0" y1="4" x2="200" y2="4" stroke="#E8A030" stroke-width="0.5" opacity="0.5"/>
+    </g>
+
+    <!-- NGL feed from product to stabilizer -->
+    <line class="flow-line active" x1="760" y1="490" x2="760" y2="850" stroke="#E8A030" stroke-dasharray="4,2" opacity="0.6"/>
+    <line class="flow-line active" x1="760" y1="850" x2="160" y2="850" stroke="#E8A030" marker-end="url(#arrow-gas-c)"/>
+    <text x="400" y="847" text-anchor="middle" font-size="6" fill="#E8A030" font-family="Courier New">NGL FEED TO STABILIZER</text>
+
+    <!-- INLET SEPARATOR -->
+    <g transform="translate(60,860)">
+      <rect x="0" y="0" width="55" height="30" rx="8" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <text x="27" y="42" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">S-V-100</text>
+      <text x="27" y="50" text-anchor="middle" font-size="6" fill="#606060" font-family="Arial">INLET SEP</text>
+      <circle cx="65" cy="15" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-LIC-302"/>
+      <text x="65" y="12" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="65" y="19" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">302</text>
+      <circle cx="-10" cy="15" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-TIC-101"/>
+      <text x="-10" y="12" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">TIC</text>
+      <text x="-10" y="19" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">101</text>
+    </g>
+
+    <!-- Sep to pre-heat exchanger -->
+    <line class="flow-line active" x1="115" y1="875" x2="170" y2="875" stroke="#E8A030" marker-end="url(#arrow-gas-c)"/>
+
+    <!-- PRE-HEAT EXCHANGER -->
+    <g transform="translate(170,863)">
+      <rect x="0" y="0" width="35" height="25" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <line x1="5" y1="8" x2="30" y2="17" stroke="#606060" stroke-width="0.8"/>
+      <line x1="5" y1="17" x2="30" y2="8" stroke="#606060" stroke-width="0.8"/>
+      <text x="17" y="35" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">S-E-101</text>
+    </g>
+
+    <!-- Pre-heat to hot oil exchanger -->
+    <line class="flow-line active" x1="205" y1="875" x2="250" y2="875" stroke="#E8A030" marker-end="url(#arrow-gas-c)"/>
+
+    <!-- HOT OIL EXCHANGER -->
+    <g transform="translate(250,863)">
+      <rect x="0" y="0" width="35" height="25" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <line x1="5" y1="8" x2="30" y2="17" stroke="#606060" stroke-width="0.8"/>
+      <line x1="5" y1="17" x2="30" y2="8" stroke="#606060" stroke-width="0.8"/>
+      <text x="17" y="35" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">S-E-102</text>
+      <circle cx="45" cy="12" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-TIC-104"/>
+      <text x="45" y="9" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">TIC</text>
+      <text x="45" y="16" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">104</text>
+    </g>
+
+    <!-- Hot oil exch to packed tower -->
+    <line class="flow-line active" x1="285" y1="875" x2="370" y2="875" stroke="#E8A030" marker-end="url(#arrow-gas-c)"/>
+
+    <!-- STABILIZER PACKED TOWER -->
+    <g id="equip-stab-tower" transform="translate(370,855)">
+      <path d="M 0,12 Q 0,0 15,0 Q 30,0 30,12 L 30,150 Q 30,162 15,162 Q 0,162 0,150 Z" fill="#505050" stroke="#E8A030" stroke-width="1.2" opacity="0.9"/>
+      <line x1="3" y1="30" x2="27" y2="30" stroke="#606060" stroke-width="0.6"/>
+      <line x1="3" y1="50" x2="27" y2="50" stroke="#606060" stroke-width="0.6"/>
+      <line x1="3" y1="70" x2="27" y2="70" stroke="#606060" stroke-width="0.6"/>
+      <line x1="3" y1="90" x2="27" y2="90" stroke="#606060" stroke-width="0.6"/>
+      <line x1="3" y1="110" x2="27" y2="110" stroke="#606060" stroke-width="0.6"/>
+      <text x="15" y="172" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">S-T-100</text>
+      <text x="15" y="182" text-anchor="middle" font-size="6" fill="#606060" font-family="Arial">PACKED TWR</text>
+      <circle cx="40" cy="20" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-TIC-103"/>
+      <text x="40" y="17" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">TIC</text>
+      <text x="40" y="24" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">103</text>
+      <circle cx="40" cy="55" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-PIC-201"/>
+      <text x="40" y="52" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">PIC</text>
+      <text x="40" y="59" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">201</text>
+      <circle cx="40" cy="130" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-LIC-301"/>
+      <text x="40" y="127" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="40" y="134" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">301</text>
+    </g>
+
+    <!-- REBOILER -->
+    <g transform="translate(420,960)">
+      <rect x="0" y="0" width="40" height="25" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <path d="M 5,7 Q 12,4 20,7 Q 28,10 35,7" fill="none" stroke="#707070" stroke-width="1"/>
+      <path d="M 5,17 Q 12,14 20,17 Q 28,20 35,17" fill="none" stroke="#707070" stroke-width="1"/>
+      <text x="20" y="35" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">S-E-103</text>
+      <text x="20" y="43" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">REBOILER</text>
+      <circle cx="50" cy="12" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-TIC-102"/>
+      <text x="50" y="9" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">TIC</text>
+      <text x="50" y="16" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">102</text>
+    </g>
+
+    <!-- Tower overhead to compressor -->
+    <line class="flow-line active" x1="400" y1="855" x2="400" y2="843" stroke="#E8A030"/>
+    <line class="flow-line active" x1="400" y1="843" x2="520" y2="843" stroke="#E8A030" marker-end="url(#arrow-gas-c)"/>
+
+    <!-- OVERHEAD COMPRESSOR -->
+    <g transform="translate(520,855)">
+      <rect x="0" y="0" width="40" height="30" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <polygon points="8,5 32,15 8,25" fill="none" stroke="#707070" stroke-width="1"/>
+      <text x="20" y="42" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">S-C-100</text>
+      <circle cx="50" cy="0" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-PIC-202"/>
+      <text x="50" y="-3" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">PIC</text>
+      <text x="50" y="4" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">202</text>
+    </g>
+
+    <!-- Product flow from tower bottom -->
+    <line class="flow-line active" x1="400" y1="1017" x2="400" y2="1025" stroke="#4A9BD9"/>
+    <line class="flow-line active" x1="400" y1="1025" x2="620" y2="1025" stroke="#4A9BD9" marker-end="url(#arrow-ngl)"/>
+
+    <!-- Feed flow tag -->
+    <g transform="translate(340,845)">
+      <circle cx="0" cy="0" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-FIC-401"/>
+      <text x="0" y="-3" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">FIC</text>
+      <text x="0" y="4" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">401</text>
+    </g>
+
+    <!-- PRODUCT TANK -->
+    <g transform="translate(620,1005)">
+      <rect x="0" y="0" width="55" height="35" rx="3" fill="#505050" stroke="#808080" stroke-width="1.2"/>
+      <text x="27" y="48" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">S-TK-100</text>
+      <circle cx="-10" cy="18" r="10" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="S-LIC-303"/>
+      <text x="-10" y="15" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">LIC</text>
+      <text x="-10" y="22" text-anchor="middle" font-size="5" fill="#A0A0A0" font-family="Courier New">303</text>
+    </g>
+
+    <!-- RVP Analyzer -->
+    <g transform="translate(730,1005)">
+      <circle cx="0" cy="18" r="12" fill="none" stroke="#E8A030" stroke-width="1" class="tag-bubble" data-tag="S-AI-501"/>
+      <text x="0" y="15" text-anchor="middle" font-size="6" fill="#E8A030" font-family="Courier New">AI</text>
+      <text x="0" y="23" text-anchor="middle" font-size="6" fill="#E8A030" font-family="Courier New">501</text>
+      <text x="0" y="38" text-anchor="middle" font-size="5" fill="#E8A030" font-family="Arial">RVP</text>
+    </g>
+
     <!-- Flow line legend -->
-    <g transform="translate(20,810)">
+    <g transform="translate(20,1020)">
       <line x1="0" y1="5" x2="18" y2="5" stroke="#D4A843" stroke-width="2"/>
       <text x="22" y="8" font-size="7" fill="#D4A843" font-family="Courier New">INLET GAS</text>
       <line x1="90" y1="5" x2="108" y2="5" stroke="#00CED1" stroke-width="2"/>
@@ -725,6 +855,8 @@ const FacilityViews = {
       <text x="282" y="8" font-size="7" fill="#4A9BD9" font-family="Courier New">NGL PRODUCT</text>
       <line x1="370" y1="5" x2="388" y2="5" stroke="#C77DFF" stroke-width="2"/>
       <text x="392" y="8" font-size="7" fill="#C77DFF" font-family="Courier New">AMINE</text>
+      <line x1="440" y1="5" x2="458" y2="5" stroke="#E8A030" stroke-width="2"/>
+      <text x="462" y="8" font-size="7" fill="#E8A030" font-family="Courier New">STABILIZER</text>
     </g>
     `;
   },

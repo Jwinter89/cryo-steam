@@ -1843,6 +1843,7 @@
       // Award career XP
       if (this.career) {
         const xpResult = this.career.awardShiftXP(this);
+        this._lastXPResult = xpResult; // Store for debrief display
         if (xpResult.newRank) {
           setTimeout(() => this._showPromotionOverlay(xpResult.newRank), 1500);
           this._addRadioMessage(`PROMOTED: ${xpResult.newRank.title}`);

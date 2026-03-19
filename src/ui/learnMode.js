@@ -465,48 +465,156 @@ class LearnMode {
     this.overlay.style.display = 'none';
     this.active = false;
 
-    // Hide Henry
     if (this.game.henry) {
       this.game.henry.hide();
     }
 
-    // Check if more days available
     if (this.currentDay < 5) {
       this.game.saveProgress({ [`day${this.currentDay}Complete`]: true });
-      // Henry congratulates
-      if (this.game.henry) {
+      this._showQuiz(this.currentDay);
+    } else {
+      this.game.saveProgress({ stabilizerComplete: true });
+      this._showCertificate();
+    }
+  }
+
+  _showQuiz(day) {
+    const quizzes = {
+      1: {
+        question: "What does RVP stand for?",
+        options: ['Reid Vapor Pressure', 'Reduced Valve Position', 'Residual Volume Percent', 'Reboiler Vent Pressure'],
+        correct: 0,
+        explanation: "RVP — Reid Vapor Pressure. It measures how easily a liquid evaporates. Your main product spec."
+      },
+      2: {
+        question: "If reboiler temp (TIC-102) drops, what happens to RVP?",
+        options: ['RVP goes down', 'RVP goes up', 'No change', 'RVP oscillates'],
+        correct: 1,
+        explanation: "Lower reboiler temp = less light ends flashed off = more volatiles in product = higher RVP."
+      },
+      3: {
+        question: "During a pig arrival, which is the FIRST thing to watch?",
+        options: ['Tower overhead temp', 'Separator level (LIC-302)', 'Product tank level', 'Compressor discharge'],
+        correct: 1,
+        explanation: "Separator level spikes first when the pig hits. If you're not watching LIC-302, you'll miss the surge."
+      },
+      4: {
+        question: "Hot oil supply temp drops unexpectedly. Where do you look first?",
+        options: ['The compressor', 'The product tank', 'TIC-104 — Hot Oil Supply', 'The overhead temp'],
+        correct: 2,
+        explanation: "Trace upstream! TIC-104 is the hot oil supply. If it's dropping, that's your root cause."
+      }
+    };
+
+    const quiz = quizzes[day];
+    if (!quiz || !this.game.henry) {
+      this._postQuizAdvance(day);
+      return;
+    }
+
+    let quizHtml = `<strong>POP QUIZ — Day ${day}</strong>\n\n${quiz.question}\n\n`;
+    quiz.options.forEach((opt, i) => {
+      quizHtml += `${String.fromCharCode(65 + i)}) ${opt}\n`;
+    });
+
+    const buttons = quiz.options.map((opt, i) => ({
+      label: String.fromCharCode(65 + i),
+      callback: () => {
+        const correct = i === quiz.correct;
         setTimeout(() => {
           this.game.henry.show({
-            text: `Day ${this.currentDay} complete. You're getting the hang of this.\n\nReady for Day ${this.currentDay + 1}?`,
-            mood: 'happy',
+            text: correct
+              ? `Correct! ${quiz.explanation}\n\nDay ${day} complete. Ready for Day ${day + 1}?`
+              : `Not quite — the answer is ${String.fromCharCode(65 + quiz.correct)}.\n\n${quiz.explanation}\n\nDay ${day} complete. Ready for Day ${day + 1}?`,
+            mood: correct ? 'happy' : 'teaching',
             position: 'right',
             duration: 0,
             type: 'announcement',
             buttons: [
-              { label: `START DAY ${this.currentDay + 1}`, callback: () => {
-                this.start(this.currentDay + 1);
-              }, action: 'dismiss' },
+              { label: `START DAY ${day + 1}`, callback: () => this.start(day + 1), action: 'dismiss' },
               { label: 'LATER', action: 'dismiss' }
             ]
           });
-        }, 500);
-      }
-    } else {
-      // Graduation
-      this.game.saveProgress({ stabilizerComplete: true });
+        }, 300);
+      },
+      action: 'dismiss'
+    }));
+
+    setTimeout(() => {
+      this.game.henry.show({
+        text: quizHtml,
+        mood: 'teaching',
+        position: 'right',
+        duration: 0,
+        type: 'tutorial',
+        buttons: buttons
+      });
+    }, 500);
+  }
+
+  _postQuizAdvance(day) {
+    if (this.game.henry) {
+      setTimeout(() => {
+        this.game.henry.show({
+          text: `Day ${day} complete. You're getting the hang of this.\n\nReady for Day ${day + 1}?`,
+          mood: 'happy',
+          position: 'right',
+          duration: 0,
+          type: 'announcement',
+          buttons: [
+            { label: `START DAY ${day + 1}`, callback: () => this.start(day + 1), action: 'dismiss' },
+            { label: 'LATER', action: 'dismiss' }
+          ]
+        });
+      }, 500);
+    }
+  }
+
+  _showCertificate() {
+    const username = localStorage.getItem('coldcreek-username') || 'OPERATOR';
+    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const certDiv = document.createElement('div');
+    certDiv.className = 'learn-certificate-overlay';
+    certDiv.innerHTML = `
+      <div class="learn-certificate">
+        <div class="cert-border">
+          <div class="cert-header">COLD CREEK GAS PROCESSING</div>
+          <div class="cert-title">CERTIFICATE OF COMPLETION</div>
+          <div class="cert-body">
+            This certifies that
+            <div class="cert-name">${username}</div>
+            has successfully completed the
+            <div class="cert-course">STABILIZER OPERATOR TRAINING PROGRAM</div>
+            under the supervision of Henry, Senior Operator
+          </div>
+          <div class="cert-date">${date}</div>
+          <div class="cert-signature">
+            <div class="cert-sig-line"></div>
+            <div class="cert-sig-name">Henry — Senior Operator</div>
+          </div>
+          <div class="cert-footer">"The plant tells you something is wrong before it goes wrong."</div>
+          <button class="menu-btn cert-close-btn" id="cert-close-btn">CONTINUE</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(certDiv);
+
+    document.getElementById('cert-close-btn').addEventListener('click', () => {
+      certDiv.remove();
       if (this.game.henry) {
         setTimeout(() => {
           this.game.henry.show({
-            text: "You graduated Stabilizer School. Not bad, greenhorn.\n\nRefrigeration Plant and Cryogenic are unlocked. Bigger plants, harder problems, more money.\n\nSee you out there.",
+            text: "You graduated Stabilizer School. Not bad, greenhorn.\n\nRefrigeration Plant and Cryogenic are unlocked.",
             mood: 'happy',
             position: 'right',
             duration: 0,
             type: 'announcement',
             buttons: [{ label: 'THANKS, HENRY', action: 'dismiss' }]
           });
-        }, 500);
+        }, 400);
       }
-    }
+    });
   }
 
   _clearHighlights() {

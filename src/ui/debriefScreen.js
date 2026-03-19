@@ -128,6 +128,30 @@ class DebriefScreen {
       html += `</div>`;
     }
 
+    // Career XP / Promotion
+    if (game.career) {
+      const rank = game.career.getCurrentRank();
+      const next = game.career.getNextRank();
+      const pct = game.career.getProgressPercent();
+      const xpResult = game._lastXPResult;
+      html += `<div class="debrief-section-header">CAREER PROGRESSION</div>`;
+      html += `<div class="debrief-career">`;
+      html += `<div class="debrief-rank" style="color:${rank.color}">${rank.title}</div>`;
+      if (xpResult) {
+        html += `<div class="debrief-xp-gained" style="color:#4CAF50">+${xpResult.xpGained} XP this shift</div>`;
+        if (xpResult.newRank) {
+          html += `<div class="debrief-xp-gained" style="color:${xpResult.newRank.color}">PROMOTED TO ${xpResult.newRank.title}!</div>`;
+        }
+      }
+      if (next) {
+        html += `<div class="debrief-xp-bar"><div class="debrief-xp-fill" style="width:${pct}%;background:${rank.color}"></div></div>`;
+        html += `<div class="debrief-xp-label">${game.career.state.xp} / ${next.xpRequired} XP — Next: ${next.title}</div>`;
+      } else {
+        html += `<div class="debrief-xp-label">MAX RANK ACHIEVED</div>`;
+      }
+      html += `</div>`;
+    }
+
     // Henry comment
     const comment = this._getHenryComment(grade.letter, earnings);
     html += `<div class="debrief-henry">"${comment}"<br><span class="debrief-henry-name">— HENRY, SENIOR OPERATOR</span></div>`;
