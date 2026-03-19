@@ -20,6 +20,18 @@ const FacilityViews = {
       <marker id="flow-arrow-active" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
         <polygon points="0,0 6,2 0,4" fill="#A0A0A0"/>
       </marker>
+      <marker id="arrow-gas-r" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#D4A843"/>
+      </marker>
+      <marker id="arrow-glycol" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#7B68EE"/>
+      </marker>
+      <marker id="arrow-refrig" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#00CED1"/>
+      </marker>
+      <marker id="arrow-product-r" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#4A9BD9"/>
+      </marker>
     </defs>
     <rect width="900" height="600" fill="#3C3C3C"/>
     <rect width="900" height="600" fill="url(#grid)"/>
@@ -35,8 +47,8 @@ const FacilityViews = {
       <text x="55" y="15" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">101</text>
     </g>
 
-    <!-- Flow: Inlet comp to contactor -->
-    <line class="flow-line active" x1="75" y1="105" x2="160" y2="105" marker-end="url(#flow-arrow-active)"/>
+    <!-- Flow: Inlet comp to contactor (gas - yellow) -->
+    <line class="flow-line active" x1="75" y1="105" x2="160" y2="105" stroke="#D4A843" marker-end="url(#arrow-gas-r)"/>
 
     <!-- TEG CONTACTOR TOWER -->
     <g transform="translate(160,30)">
@@ -57,10 +69,10 @@ const FacilityViews = {
       <text x="52" y="175" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">201</text>
     </g>
 
-    <!-- Dry gas out (top of contactor) to refrigeration -->
-    <line class="flow-line active" x1="180" y1="25" x2="180" y2="15" marker-end="url(#flow-arrow-active)"/>
-    <line class="flow-line active" x1="180" y1="15" x2="480" y2="15"/>
-    <line class="flow-line active" x1="480" y1="15" x2="480" y2="60" marker-end="url(#flow-arrow-active)"/>
+    <!-- Dry gas out (top of contactor) to refrigeration (gas - yellow) -->
+    <line class="flow-line active" x1="180" y1="25" x2="180" y2="15" stroke="#D4A843" marker-end="url(#arrow-gas-r)"/>
+    <line class="flow-line active" x1="180" y1="15" x2="480" y2="15" stroke="#D4A843"/>
+    <line class="flow-line active" x1="480" y1="15" x2="480" y2="60" stroke="#D4A843" marker-end="url(#arrow-gas-r)"/>
 
     <!-- KIMRAY GLYCOL PUMP (special widget location) -->
     <g id="kimray-pump-area" transform="translate(250,280)">
@@ -78,9 +90,9 @@ const FacilityViews = {
       <text x="105" y="25" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">201</text>
     </g>
 
-    <!-- Rich glycol line: contactor bottom to flash tank -->
-    <line class="flow-line active" x1="180" y1="240" x2="180" y2="350" marker-end="url(#flow-arrow-active)"/>
-    <line class="flow-line active" x1="180" y1="350" x2="250" y2="350"/>
+    <!-- Rich glycol line: contactor bottom to flash tank (glycol - purple) -->
+    <line class="flow-line active" x1="180" y1="240" x2="180" y2="350" stroke="#7B68EE" marker-end="url(#arrow-glycol)"/>
+    <line class="flow-line active" x1="180" y1="350" x2="250" y2="350" stroke="#7B68EE"/>
 
     <!-- FLASH TANK -->
     <g transform="translate(250,370)">
@@ -91,8 +103,8 @@ const FacilityViews = {
       <text x="55" y="23" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">202</text>
     </g>
 
-    <!-- Flash tank to Still Column -->
-    <line class="flow-line active" x1="295" y1="387" x2="370" y2="387" marker-end="url(#flow-arrow-active)"/>
+    <!-- Flash tank to Still Column (glycol - purple) -->
+    <line class="flow-line active" x1="295" y1="387" x2="370" y2="387" stroke="#7B68EE" marker-end="url(#arrow-glycol)"/>
 
     <!-- STILL COLUMN -->
     <g transform="translate(370,300)">
@@ -128,9 +140,9 @@ const FacilityViews = {
       <text x="60" y="33" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">210</text>
     </g>
 
-    <!-- Lean glycol return: pump to contactor top -->
-    <line class="flow-line active" x1="270" y1="280" x2="270" y2="50"/>
-    <line class="flow-line active" x1="270" y1="50" x2="200" y2="50" marker-end="url(#flow-arrow-active)"/>
+    <!-- Lean glycol return: pump to contactor top (glycol - lighter purple) -->
+    <line class="flow-line active" x1="270" y1="280" x2="270" y2="50" stroke="#9B88EE"/>
+    <line class="flow-line active" x1="270" y1="50" x2="200" y2="50" stroke="#9B88EE" marker-end="url(#arrow-glycol)"/>
 
     <!-- REFRIGERATION SECTION -->
     <g transform="translate(460,60)">
@@ -156,8 +168,8 @@ const FacilityViews = {
       <text x="50" y="13" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">301</text>
     </g>
 
-    <!-- Chiller output to separator/product section -->
-    <line class="flow-line active" x1="530" y1="85" x2="650" y2="85" marker-end="url(#flow-arrow-active)"/>
+    <!-- Chiller output to separator/product section (cold - cyan) -->
+    <line class="flow-line active" x1="530" y1="85" x2="650" y2="85" stroke="#00CED1" marker-end="url(#arrow-refrig)"/>
 
     <!-- Product section -->
     <g transform="translate(650,50)">
@@ -182,7 +194,7 @@ const FacilityViews = {
       <polygon points="7,8 23,15 7,22" fill="none" stroke="#707070" stroke-width="1"/>
       <text x="15" y="38" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">P-501</text>
     </g>
-    <line class="flow-line active" x1="765" y1="75" x2="765" y2="130" marker-end="url(#flow-arrow-active)"/>
+    <line class="flow-line active" x1="765" y1="75" x2="765" y2="130" stroke="#4A9BD9" marker-end="url(#arrow-product-r)"/>
     <g transform="translate(740,130)">
       <rect x="0" y="0" width="50" height="50" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
       <text x="25" y="65" text-anchor="middle" font-size="9" fill="#A0A0A0" font-family="Courier New">TK-501</text>
@@ -217,6 +229,18 @@ const FacilityViews = {
       <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
       <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">601</text>
     </g>
+
+    <!-- Flow line legend -->
+    <g transform="translate(10,560)">
+      <line x1="0" y1="5" x2="18" y2="5" stroke="#D4A843" stroke-width="2"/>
+      <text x="22" y="8" font-size="7" fill="#D4A843" font-family="Courier New">GAS</text>
+      <line x1="55" y1="5" x2="73" y2="5" stroke="#7B68EE" stroke-width="2"/>
+      <text x="77" y="8" font-size="7" fill="#7B68EE" font-family="Courier New">GLYCOL</text>
+      <line x1="125" y1="5" x2="143" y2="5" stroke="#00CED1" stroke-width="2"/>
+      <text x="147" y="8" font-size="7" fill="#00CED1" font-family="Courier New">REFRIG</text>
+      <line x1="195" y1="5" x2="213" y2="5" stroke="#4A9BD9" stroke-width="2"/>
+      <text x="217" y="8" font-size="7" fill="#4A9BD9" font-family="Courier New">PRODUCT</text>
+    </g>
     `;
   },
 
@@ -232,6 +256,18 @@ const FacilityViews = {
       <marker id="flow-arrow-active" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
         <polygon points="0,0 6,2 0,4" fill="#A0A0A0"/>
       </marker>
+      <marker id="arrow-gas-c" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#D4A843"/>
+      </marker>
+      <marker id="arrow-cold" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#00CED1"/>
+      </marker>
+      <marker id="arrow-ngl" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#4A9BD9"/>
+      </marker>
+      <marker id="arrow-residue" viewBox="0 0 6 4" refX="6" refY="2" markerWidth="6" markerHeight="4" orient="auto">
+        <polygon points="0,0 6,2 0,4" fill="#90D060"/>
+      </marker>
     </defs>
     <rect width="1000" height="650" fill="#3C3C3C"/>
     <rect width="1000" height="650" fill="url(#grid)"/>
@@ -239,7 +275,7 @@ const FacilityViews = {
     <!-- INLET SECTION -->
     <g transform="translate(20,80)">
       <text x="30" y="-5" text-anchor="middle" font-size="8" fill="#606060" font-family="Arial">INLET GAS</text>
-      <line class="flow-line active" x1="0" y1="0" x2="60" y2="0" marker-end="url(#flow-arrow-active)"/>
+      <line class="flow-line active" x1="0" y1="0" x2="60" y2="0" stroke="#D4A843" marker-end="url(#arrow-gas-c)"/>
       <circle cx="30" cy="-15" r="12" fill="none" stroke="#808080" stroke-width="1" class="tag-bubble" data-tag="FI-100"/>
       <text x="30" y="-18" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">FI</text>
       <text x="30" y="-10" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">100</text>
@@ -269,8 +305,8 @@ const FacilityViews = {
       <text x="50" y="20" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">203</text>
     </g>
 
-    <!-- Dry gas to cold box -->
-    <line class="flow-line active" x1="200" y1="60" x2="260" y2="60" marker-end="url(#flow-arrow-active)"/>
+    <!-- Dry gas to cold box (gas - yellow) -->
+    <line class="flow-line active" x1="200" y1="60" x2="260" y2="60" stroke="#D4A843" marker-end="url(#arrow-gas-c)"/>
 
     <!-- COLD BOX AREA (main cryogenic section) -->
     <g transform="translate(260,20)">
@@ -295,8 +331,8 @@ const FacilityViews = {
       <text x="70" y="107" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">302</text>
     </g>
 
-    <!-- Flow between exchangers -->
-    <line class="flow-line active" x1="290" y1="65" x2="290" y2="100" marker-end="url(#flow-arrow-active)"/>
+    <!-- Flow between exchangers (cold gas - cyan) -->
+    <line class="flow-line active" x1="290" y1="65" x2="290" y2="100" stroke="#00CED1" marker-end="url(#arrow-cold)"/>
 
     <!-- COLD SEPARATOR -->
     <g transform="translate(260,200)">
@@ -311,10 +347,10 @@ const FacilityViews = {
       <text x="65" y="40" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">301</text>
     </g>
 
-    <line class="flow-line active" x1="290" y1="145" x2="290" y2="200" marker-end="url(#flow-arrow-active)"/>
+    <line class="flow-line active" x1="290" y1="145" x2="290" y2="200" stroke="#00CED1" marker-end="url(#arrow-cold)"/>
 
-    <!-- Cold sep vapor to EXPANDER -->
-    <line class="flow-line active" x1="315" y1="210" x2="420" y2="210" marker-end="url(#flow-arrow-active)"/>
+    <!-- Cold sep vapor to EXPANDER (cold gas - cyan) -->
+    <line class="flow-line active" x1="315" y1="210" x2="420" y2="210" stroke="#00CED1" marker-end="url(#arrow-cold)"/>
 
     <!-- TURBOEXPANDER / RECOMPRESSOR -->
     <g transform="translate(420,180)">
@@ -347,9 +383,9 @@ const FacilityViews = {
       <text x="-15" y="15" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">401</text>
     </g>
 
-    <!-- Expander outlet to DEMETHANIZER -->
-    <line class="flow-line active" x1="445" y1="225" x2="445" y2="300"/>
-    <line class="flow-line active" x1="445" y1="300" x2="550" y2="300" marker-end="url(#flow-arrow-active)"/>
+    <!-- Expander outlet to DEMETHANIZER (very cold - cyan) -->
+    <line class="flow-line active" x1="445" y1="225" x2="445" y2="300" stroke="#00CED1"/>
+    <line class="flow-line active" x1="445" y1="300" x2="550" y2="300" stroke="#00CED1" marker-end="url(#arrow-cold)"/>
 
     <!-- DEMETHANIZER TOWER -->
     <g transform="translate(550,180)">
@@ -411,9 +447,9 @@ const FacilityViews = {
       <text x="50" y="17" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">505</text>
     </g>
 
-    <!-- Overhead gas from demet to booster/residue comp -->
-    <line class="flow-line active" x1="575" y1="178" x2="575" y2="120"/>
-    <line class="flow-line active" x1="575" y1="120" x2="720" y2="120" marker-end="url(#flow-arrow-active)"/>
+    <!-- Overhead gas from demet to booster/residue comp (residue - green) -->
+    <line class="flow-line active" x1="575" y1="178" x2="575" y2="120" stroke="#90D060"/>
+    <line class="flow-line active" x1="575" y1="120" x2="720" y2="120" stroke="#90D060" marker-end="url(#arrow-residue)"/>
 
     <!-- RESIDUE COMPRESSION (3 units) -->
     <g transform="translate(720,80)">
@@ -434,14 +470,14 @@ const FacilityViews = {
       <text x="130" y="10" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">601</text>
     </g>
 
-    <!-- Residue out to pipeline -->
-    <line class="flow-line active" x1="840" y1="100" x2="900" y2="100" marker-end="url(#flow-arrow-active)"/>
+    <!-- Residue out to pipeline (residue - green) -->
+    <line class="flow-line active" x1="840" y1="100" x2="900" y2="100" stroke="#90D060" marker-end="url(#arrow-residue)"/>
     <text x="920" y="104" font-size="7" fill="#606060" font-family="Arial">RESIDUE</text>
     <text x="920" y="114" font-size="7" fill="#606060" font-family="Arial">PIPELINE</text>
 
-    <!-- NGL product out bottom of demet -->
-    <line class="flow-line active" x1="575" y1="555" x2="575" y2="590"/>
-    <line class="flow-line active" x1="575" y1="590" x2="720" y2="590" marker-end="url(#flow-arrow-active)"/>
+    <!-- NGL product out bottom of demet (NGL - blue) -->
+    <line class="flow-line active" x1="575" y1="555" x2="575" y2="590" stroke="#4A9BD9"/>
+    <line class="flow-line active" x1="575" y1="590" x2="720" y2="590" stroke="#4A9BD9" marker-end="url(#arrow-ngl)"/>
 
     <!-- NGL Pumps & Tank -->
     <g transform="translate(720,575)">
@@ -449,7 +485,7 @@ const FacilityViews = {
       <polygon points="7,8 23,15 7,22" fill="none" stroke="#707070" stroke-width="1"/>
       <text x="15" y="38" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">P-701</text>
     </g>
-    <line class="flow-line active" x1="750" y1="590" x2="820" y2="590" marker-end="url(#flow-arrow-active)"/>
+    <line class="flow-line active" x1="750" y1="590" x2="820" y2="590" stroke="#4A9BD9" marker-end="url(#arrow-ngl)"/>
     <g transform="translate(820,565)">
       <rect x="0" y="0" width="55" height="50" rx="3" fill="#505050" stroke="#808080" stroke-width="1.5"/>
       <text x="27" y="62" text-anchor="middle" font-size="7" fill="#A0A0A0" font-family="Courier New">TK-701</text>
@@ -500,6 +536,18 @@ const FacilityViews = {
       <text x="0" y="-3" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">AI</text>
       <text x="0" y="5" text-anchor="middle" font-size="6" fill="#A0A0A0" font-family="Courier New">704</text>
       <text x="0" y="18" text-anchor="middle" font-size="5" fill="#606060" font-family="Arial">RVP</text>
+    </g>
+
+    <!-- Flow line legend -->
+    <g transform="translate(400,630)">
+      <line x1="0" y1="5" x2="18" y2="5" stroke="#D4A843" stroke-width="2"/>
+      <text x="22" y="8" font-size="7" fill="#D4A843" font-family="Courier New">INLET GAS</text>
+      <line x1="90" y1="5" x2="108" y2="5" stroke="#00CED1" stroke-width="2"/>
+      <text x="112" y="8" font-size="7" fill="#00CED1" font-family="Courier New">COLD GAS</text>
+      <line x1="180" y1="5" x2="198" y2="5" stroke="#90D060" stroke-width="2"/>
+      <text x="202" y="8" font-size="7" fill="#90D060" font-family="Courier New">RESIDUE</text>
+      <line x1="260" y1="5" x2="278" y2="5" stroke="#4A9BD9" stroke-width="2"/>
+      <text x="282" y="8" font-size="7" fill="#4A9BD9" font-family="Courier New">NGL PRODUCT</text>
     </g>
     `;
   },

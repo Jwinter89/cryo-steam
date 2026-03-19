@@ -123,6 +123,7 @@
     eventActionPanel: null,
     fieldNotes: null,
     gcDisplay: null,
+    henry: null,
 
     currentScreen: 'title-screen',
     currentMode: null,    // learn, operate, crisis, optimize
@@ -158,6 +159,9 @@
       this._updateContinueButton();
       this._showScreen('title-screen');
       this._refreshLeaderboard();
+      this._initHenry();
+      this._checkBuildingTabOverflow();
+      window.addEventListener('resize', () => this._checkBuildingTabOverflow());
     },
 
     // ============================================================
@@ -443,6 +447,13 @@
       const screen = document.getElementById(screenId);
       if (screen) screen.classList.add('active');
       this.currentScreen = screenId;
+
+      // Start tagline rotation on title screen
+      if (screenId === 'title-screen') {
+        this._startTaglineRotation();
+      } else {
+        this._stopTaglineRotation();
+      }
 
       // Refresh leaderboard when returning to title
       if (screenId === 'title-screen') {
@@ -847,6 +858,16 @@
       // Clean up previous game if any
       if (this.sim) this.sim.destroy();
 
+      // Show DCS boot sequence on first game start
+      if (!this._hasBooted) {
+        this._hasBooted = true;
+        this._showBootSequence(() => this._actualStartGame());
+        return;
+      }
+      this._actualStartGame();
+    },
+
+    _actualStartGame() {
       this._showScreen('game-screen');
 
       const config = FACILITY_CONFIGS[this.currentFacility]
@@ -956,11 +977,43 @@
         this.learnMode.start(1);
       } else if (this.currentMode === 'crisis' && this.crisisScenario) {
         this._startCrisisScenario();
+        // Henry announces crisis
+        if (this.henry) {
+          setTimeout(() => {
+            this.henry.show({
+              text: "Crisis scenario. Clock is ticking.\n\nFocus on the critical path. Don't get distracted by secondary alarms.",
+              mood: 'worried',
+              position: 'right',
+              duration: 5000,
+              type: 'event'
+            });
+          }, 1500);
+        }
       } else {
         // Operate/optimize mode — show briefing, start paused
         this.sim.pause();
         this._showObjectivesBriefing();
+        // Henry shift-start tip
+        if (this.henry) {
+          setTimeout(() => {
+            const facilityTips = {
+              stabilizer: "Stabilizer. Check your reboiler temp and separator level before you start the clock. Plan ahead.",
+              refrigeration: "Refrigeration plant. Watch your TEG contactor level and keep an eye on BTEX compliance. EPA doesn't give second chances.",
+              cryogenic: "Garden Creek Cryogenic — 110 million a day. Watch the cold box, don't let moisture through the mol sieve, and keep that expander running."
+            };
+            this.henry.show({
+              text: facilityTips[this.currentFacility] || "New shift. Read your board before you touch anything.",
+              mood: 'normal',
+              position: 'right',
+              duration: 6000,
+              type: 'tip'
+            });
+          }, 2000);
+        }
       }
+
+      // After game starts, check building tab overflow
+      setTimeout(() => this._checkBuildingTabOverflow(), 100);
     },
 
     _initSimulation(config) {
@@ -1114,6 +1167,17 @@
       if (this.sim.totalTicks % 20 === 0) {
         this._checkSafetyInterlocks();
       }
+
+      // Henry gameplay tips
+      this._henryGameplayTips(dt, gameTime);
+      this._tickHenryCooldowns();
+
+      // Shift timer warning + P&L colors
+      this._updateShiftTimerWarning(gameTime);
+      this._updatePnlColors();
+
+      // Mobile P&L strip
+      this._updateMobilePnlStrip();
     },
 
     _checkSafetyInterlocks() {
@@ -1332,6 +1396,8 @@
       if (this.audioManager && event.severity === 'critical') {
         this.audioManager.playEffect('alarm-critical');
       }
+      // Henry announces the event
+      this._henryAnnounceEvent(event);
       this._updateEventDisplay();
     },
 
@@ -1507,9 +1573,11 @@
       // Check for tier unlock messages
       if (facility === 'stabilizer' && this.progress.stabilizerShiftsComplete === 1) {
         this._addRadioMessage('TIER 2 UNLOCKED: Refrigeration Plant now available.');
+        this.showToast('REFRIGERATION PLANT', 'Tier 2 facility now available', 'FACILITY UNLOCKED');
       }
       if (facility === 'refrigeration' && this.progress.refrigerationShiftsComplete === 1) {
         this._addRadioMessage('TIER 3 UNLOCKED: Garden Creek Cryogenic now available.');
+        this.showToast('GARDEN CREEK CRYOGENIC', 'Tier 3 facility now available', 'FACILITY UNLOCKED');
       }
 
       // Show shift results overlay
@@ -1536,6 +1604,34 @@
       if (!overlay) return;
 
       overlay.innerHTML = this.objectives.renderResults(earnings);
+
+      // Add Henry commentary based on grade
+      const grade = this.objectives.getGrade();
+      const henryComments = {
+        'S': "Well I'll be damned. That's the best shift I've seen in 30 years. You sure you're new?",
+        'A': "Excellent work. Clean shift, good numbers. You'd survive out here.",
+        'B': "Solid shift. Nothing blew up, we made money. That's the job.",
+        'C': "You kept the lights on. That counts for something. But there's room to improve.",
+        'D': "Rough one. Don't worry — every good operator has bad shifts. Learn from it."
+      };
+      const comment = henryComments[grade.letter] || henryComments['C'];
+
+      // Insert Henry comment before the done button
+      const doneBtn = overlay.querySelector('#obj-done-btn');
+      if (doneBtn) {
+        const commentEl = document.createElement('div');
+        commentEl.className = 'obj-henry-comment';
+        commentEl.textContent = comment;
+        doneBtn.parentElement.insertBefore(commentEl, doneBtn);
+      }
+
+      // Show achievement toast for great shifts
+      if (grade.letter === 'S') {
+        setTimeout(() => this.showToast('EXCEPTIONAL SHIFT', `$${Math.round(earnings).toLocaleString()} earned with a perfect score`, 'SHIFT COMPLETE'), 1000);
+      } else if (grade.letter === 'A' && earnings > this._getShiftTarget()) {
+        setTimeout(() => this.showToast('TARGET EXCEEDED', `Beat the shift target by $${Math.round(earnings - this._getShiftTarget()).toLocaleString()}`, 'MILESTONE'), 1000);
+      }
+
       overlay.style.display = 'flex';
 
       document.getElementById('obj-done-btn').addEventListener('click', () => {
@@ -1594,6 +1690,7 @@
           note.unlocked = true;
           anyNew = true;
           this._addRadioMessage(`FIELD NOTE UNLOCKED: "${note.title}"`);
+          this.showToast(note.title, note.category, 'FIELD NOTE UNLOCKED');
         }
       }
 
@@ -1709,6 +1806,299 @@
         this.currentMode = 'operate';
         this.currentFacility = 'stabilizer';
         this._startGame();
+      }
+    },
+
+    // ============================================================
+    // HENRY — MASCOT CHARACTER INTEGRATION
+    // ============================================================
+
+    _initHenry() {
+      if (!window.Henry) return;
+      this.henry = new Henry();
+
+      // Show welcome on first visit
+      if (!localStorage.getItem('coldcreek-welcomed')) {
+        setTimeout(() => {
+          this.henry.welcome();
+          localStorage.setItem('coldcreek-welcomed', '1');
+        }, 800);
+      } else {
+        // Returning player — quick hello
+        const greetings = [
+          "Back for another shift? Good. Let's make some money.",
+          "Welcome back, operator. The board's waiting.",
+          "Another day, another dollar. Let's get to work.",
+          "Good to see you. Pick a plant and show me what you've got."
+        ];
+        setTimeout(() => {
+          this.henry.tip(greetings[Math.floor(Math.random() * greetings.length)], 4000);
+        }, 1200);
+      }
+    },
+
+    _henryAnnounceEvent(event) {
+      if (!this.henry) return;
+
+      // Custom messages per event type for personality
+      const messages = {
+        'pig-single': { name: 'PIG INCOMING!', desc: "Heads up — pig launched on the line. You've got 15-25 minutes. Ramp that feed flow and watch your separator level.", mood: 'alert' },
+        'pig-fast': { name: 'FAST PIG!', desc: "This one's moving! 5-10 minutes tops. Get FIC-401 ramped up NOW. No time to think, just move.", mood: 'worried' },
+        'pig-double': { name: 'BACK-TO-BACK PIGS!', desc: "Two pigs in the line. One behind the other. This is gonna get ugly. Stay sharp.", mood: 'worried' },
+        'hot-oil-fault': { name: 'HOT OIL PROBLEM', desc: "Hot oil system's acting up. Your reboiler temp is about to drop. Find the fault and fix it before RVP goes sideways.", mood: 'alert' },
+        'comp-trip': { name: 'COMPRESSOR TRIPPED!', desc: "Comp's down. Check what caused it — probably liquid carryover. Get that separator sorted first.", mood: 'worried' },
+        'instrument-freeze': { name: 'INSTRUMENT ISSUE', desc: "Something doesn't look right on the board. One of your readings might be stuck. Trust your gut.", mood: 'alert' },
+        'teg-foaming': { name: 'TEG FOAMING', desc: "Glycol's foaming up in the contactor. Inject antifoam before you lose moisture spec.", mood: 'alert' },
+        'btex-pilot-out': { name: 'BTEX PILOT OUT!', desc: "BTEX burner pilot went out. That's an EPA problem real fast. Get it relit.", mood: 'worried' },
+        'expander-trip': { name: 'EXPANDER TRIP!', desc: "Turboexpander's down! Your cold box is warming up. Get it restarted before you lose ethane recovery.", mood: 'worried' },
+        'cold-box-freeze': { name: 'COLD BOX FREEZE-UP', desc: "Moisture in the cold box. Brazed aluminum doesn't like that. Controlled warmup — don't rush it, 3 degrees per minute max.", mood: 'worried' },
+        'molsieve-breakthrough': { name: 'MOL SIEVE BREAKTHROUGH', desc: "Moisture breaking through the mol sieve. Switch beds or inject EG downstream. Clock's ticking.", mood: 'alert' },
+      };
+
+      const custom = messages[event.id];
+      if (custom) {
+        this.henry.announce(custom.name, custom.desc, event.severity);
+        this.henry._setMood(custom.mood);
+      } else {
+        this.henry.announce(event.name, event.description || '', event.severity);
+      }
+    },
+
+    _henryGameplayTips(dt, gameTime) {
+      if (!this.henry || this.henry.isVisible) return;
+      if (!this.sim || !this.pnlSystem) return;
+
+      // Only check every ~60 ticks (about every minute of game time)
+      if (this.sim.totalTicks % 60 !== 0) return;
+
+      const pvMap = this.sim.getAllPVs();
+
+      // RVP tips
+      const rvpPV = pvMap['AI-501'] || pvMap['AI-704'];
+      if (rvpPV) {
+        if (rvpPV.value > 12.5 && !this._henryTipCooldown('rvp-high')) {
+          this.henry.operatorTip('rvp-high');
+          this._setHenryTipCooldown('rvp-high', 300);
+        } else if (rvpPV.value < 8.0 && !this._henryTipCooldown('rvp-low')) {
+          this.henry.operatorTip('rvp-low');
+          this._setHenryTipCooldown('rvp-low', 300);
+        }
+      }
+
+      // Separator high level tip
+      const sepPV = pvMap['LIC-302'];
+      if (sepPV && sepPV.alarmState === 'HI' && !this._henryTipCooldown('sep-high')) {
+        this.henry.operatorTip('separator-high');
+        this._setHenryTipCooldown('sep-high', 200);
+      }
+
+      // First faceplate hint
+      if (this.sim.totalTicks === 60 && !this.progress.firstFaceplateHint) {
+        this.henry.operatorTip('first-faceplate');
+        this.saveProgress({ firstFaceplateHint: true });
+      }
+    },
+
+    _henryTipCooldowns: {},
+
+    _henryTipCooldown(key) {
+      return this._henryTipCooldowns[key] && this._henryTipCooldowns[key] > 0;
+    },
+
+    _setHenryTipCooldown(key, ticks) {
+      this._henryTipCooldowns[key] = ticks;
+    },
+
+    _tickHenryCooldowns() {
+      for (const key in this._henryTipCooldowns) {
+        if (this._henryTipCooldowns[key] > 0) this._henryTipCooldowns[key]--;
+      }
+    },
+
+    // ============================================================
+    // DCS BOOT SEQUENCE
+    // ============================================================
+
+    _showBootSequence(callback) {
+      const overlay = document.createElement('div');
+      overlay.className = 'boot-overlay';
+
+      const facilityNames = {
+        stabilizer: 'COLD CREEK STABILIZER',
+        refrigeration: 'COLD CREEK REFRIGERATION',
+        cryogenic: 'GARDEN CREEK CRYOGENIC'
+      };
+      const name = facilityNames[this.currentFacility] || 'COLD CREEK';
+
+      overlay.innerHTML = `
+        <div class="boot-logo">COLD CREEK</div>
+        <div class="boot-sub">DISTRIBUTED CONTROL SYSTEM v4.2.1</div>
+        <div class="boot-log" id="boot-log"></div>
+        <div class="boot-progress"><div class="boot-progress-bar" id="boot-bar"></div></div>
+      `;
+      document.body.appendChild(overlay);
+
+      const lines = [
+        { text: 'INITIALIZING DCS KERNEL...', cls: 'info', delay: 200 },
+        { text: 'SCANNING I/O MODULES.............. <span class="ok">OK</span>', cls: '', delay: 400 },
+        { text: `LOADING FACILITY: ${name}`, cls: 'info', delay: 300 },
+        { text: 'PROCESS VARIABLE DATABASE......... <span class="ok">OK</span>', cls: '', delay: 350 },
+        { text: 'CASCADE ENGINE.................... <span class="ok">OK</span>', cls: '', delay: 250 },
+        { text: 'ALARM MANAGEMENT SYSTEM........... <span class="ok">OK</span>', cls: '', delay: 300 },
+        { text: 'EVENT SCHEDULER................... <span class="ok">OK</span>', cls: '', delay: 250 },
+        { text: 'P&ID GRAPHICS MODULE.............. <span class="ok">OK</span>', cls: '', delay: 300 },
+        { text: 'HISTORICAL DATA TRENDING.......... <span class="ok">OK</span>', cls: '', delay: 250 },
+        { text: 'SAFETY INTERLOCK SYSTEM........... <span class="ok">OK</span>', cls: '', delay: 350 },
+        { text: 'FIELD INSTRUMENT SCAN............. <span class="ok">OK</span>', cls: '', delay: 300 },
+        { text: 'OPERATOR STATION READY', cls: 'ok', delay: 400 }
+      ];
+
+      const log = document.getElementById('boot-log');
+      const bar = document.getElementById('boot-bar');
+      let i = 0;
+      let totalDelay = 0;
+
+      for (const line of lines) {
+        totalDelay += line.delay;
+        const idx = i;
+        setTimeout(() => {
+          const el = document.createElement('div');
+          el.className = 'boot-line';
+          el.innerHTML = line.text;
+          log.appendChild(el);
+          bar.style.width = Math.round(((idx + 1) / lines.length) * 100) + '%';
+          log.scrollTop = log.scrollHeight;
+        }, totalDelay);
+        i++;
+      }
+
+      // Fade out and start game
+      setTimeout(() => {
+        overlay.style.transition = 'opacity 0.4s ease';
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.remove();
+          callback();
+        }, 400);
+      }, totalDelay + 600);
+    },
+
+    // ============================================================
+    // ACHIEVEMENT TOAST SYSTEM
+    // ============================================================
+
+    showToast(title, description, headerText) {
+      const toast = document.createElement('div');
+      toast.className = 'achievement-toast';
+      toast.innerHTML = `
+        <div class="toast-header">${headerText || 'ACHIEVEMENT'}</div>
+        <div class="toast-title">${title}</div>
+        ${description ? `<div class="toast-desc">${description}</div>` : ''}
+      `;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('toast-out');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    },
+
+    // ============================================================
+    // ROTATING TAGLINES (Title Screen)
+    // ============================================================
+
+    _taglines: [
+      '"The plant tells you something is wrong before it goes wrong."',
+      '"If everything is colored, nothing stands out."',
+      'Designed by a decade-experienced cryogenic plant operator.',
+      'Real cascade physics. Real ISA-101 HMI standards.',
+      '"Watch the trend, not the number."',
+      'From stabilizer to 110 MMcfd cryogenic.',
+      '"Your reboiler is your paycheck."',
+      '"Rate of change matters more than current value."',
+      'Three facilities. Four modes. One leaderboard.',
+      '"Don\'t stare at the alarm. Trace the flow."'
+    ],
+
+    _startTaglineRotation() {
+      const el = document.getElementById('title-tagline');
+      if (!el) return;
+      this._taglineIdx = this._taglineIdx || 0;
+
+      const show = () => {
+        el.textContent = this._taglines[this._taglineIdx % this._taglines.length];
+        el.classList.add('visible');
+        this._taglineIdx++;
+      };
+
+      show();
+      this._taglineInterval = setInterval(() => {
+        el.classList.remove('visible');
+        setTimeout(show, 600);
+      }, 5000);
+    },
+
+    _stopTaglineRotation() {
+      if (this._taglineInterval) {
+        clearInterval(this._taglineInterval);
+        this._taglineInterval = null;
+      }
+    },
+
+    // ============================================================
+    // SHIFT TIMER WARNINGS
+    // ============================================================
+
+    _updateShiftTimerWarning(gameTime) {
+      const timeEl = document.getElementById('game-time');
+      if (!timeEl) return;
+      // Shift is 12 hours game time (06:00 to 18:00)
+      const shiftEnd = 18 * 60; // 1080 minutes
+      const minsLeft = shiftEnd - gameTime;
+
+      if (minsLeft <= 30 && minsLeft > 10) {
+        timeEl.classList.add('time-warning');
+        timeEl.classList.remove('time-critical');
+      } else if (minsLeft <= 10 && minsLeft > 0) {
+        timeEl.classList.remove('time-warning');
+        timeEl.classList.add('time-critical');
+      } else {
+        timeEl.classList.remove('time-warning', 'time-critical');
+      }
+    },
+
+    // ============================================================
+    // ENHANCED P&L DISPLAY
+    // ============================================================
+
+    _updatePnlColors() {
+      const rateEl = document.getElementById('pnl-rate');
+      const shiftEl = document.getElementById('shift-earnings');
+      if (!this.pnlSystem) return;
+
+      if (rateEl) {
+        const net = this.pnlSystem.netPerHour;
+        rateEl.classList.toggle('pnl-positive', net >= 0);
+        rateEl.classList.toggle('pnl-negative', net < 0);
+      }
+      if (shiftEl) {
+        const shift = this.pnlSystem.shiftEarnings;
+        shiftEl.classList.toggle('pnl-positive', shift >= 0);
+        shiftEl.classList.toggle('pnl-negative', shift < 0);
+      }
+    },
+
+    // ============================================================
+    // BUILDING TAB OVERFLOW CHECK
+    // ============================================================
+
+    _checkBuildingTabOverflow() {
+      const tabBar = document.getElementById('building-tabs');
+      if (!tabBar) return;
+      if (tabBar.scrollWidth > tabBar.clientWidth) {
+        tabBar.classList.add('has-overflow');
+      } else {
+        tabBar.classList.remove('has-overflow');
       }
     },
 
