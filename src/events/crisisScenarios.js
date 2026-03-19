@@ -4,6 +4,27 @@
  */
 
 const CrisisScenarios = {
+
+  DIFFICULTY_MAP: {
+    'EASY': { stars: 1, multiplier: 1.0, color: '#4CAF50' },
+    'MEDIUM': { stars: 2, multiplier: 1.2, color: '#D4A843' },
+    'HARD': { stars: 3, multiplier: 1.5, color: '#FF6600' },
+    'VERY HARD': { stars: 4, multiplier: 2.0, color: '#E04040' },
+    'EXTREME': { stars: 5, multiplier: 2.5, color: '#C77DFF' },
+    'LEGENDARY': { stars: 5, multiplier: 3.0, color: '#FFD700' }
+  },
+
+  getStars(difficulty) {
+    const info = this.DIFFICULTY_MAP[difficulty];
+    if (!info) return '';
+    return '\u2605'.repeat(info.stars) + '\u2606'.repeat(5 - info.stars);
+  },
+
+  getMultiplier(difficulty) {
+    const info = this.DIFFICULTY_MAP[difficulty];
+    return info ? info.multiplier : 1.0;
+  },
+
   scenarios: [
     // ---- STABILIZER CRISES ----
     {
@@ -238,23 +259,87 @@ const CrisisScenarios = {
   /**
    * Score a completed crisis
    */
-  scoreScenario(scenarioId, recoveryTime, pnlLoss) {
+  scoreScenario(scenarioId, recoveryTime, pnlLoss, zeroPenalties) {
     const scenario = this.getById(scenarioId);
     if (!scenario) return null;
 
     const s = scenario.scoring;
+    const multiplier = this.getMultiplier(scenario.difficulty);
+
     let medal = 'NONE';
     if (recoveryTime <= s.goldTime && pnlLoss >= s.pnlThreshold) medal = 'GOLD';
     else if (recoveryTime <= s.silverTime) medal = 'SILVER';
     else if (recoveryTime <= s.bronzeTime) medal = 'BRONZE';
+
+    let baseScore = Math.max(0, 10000 - (recoveryTime * 50) - Math.abs(pnlLoss) * 0.1);
+
+    let bonus = 0;
+    if (zeroPenalties && recoveryTime <= s.goldTime) {
+      bonus = 2000;
+    } else if (zeroPenalties) {
+      bonus = 500;
+    }
+
+    const finalScore = Math.round((baseScore + bonus) * multiplier);
 
     return {
       scenarioId,
       recoveryTime,
       pnlLoss,
       medal,
-      score: Math.max(0, 10000 - (recoveryTime * 50) - Math.abs(pnlLoss) * 0.1)
+      baseScore: Math.round(baseScore),
+      bonus,
+      multiplier,
+      score: finalScore
     };
+  },
+
+  getCoachHint(scenarioId) {
+    const hints = {
+      'crisis-pig-cascade': [
+        "Ramp FIC-401 up BEFORE the pig hits. Pre-stage the reboiler to 310.",
+        "Hot oil going down? Check TIC-104 first — that's your root cause.",
+        "Don't chase RVP directly — fix what's feeding the problem."
+      ],
+      'crisis-instrument-air': [
+        "Valves are going to fail-position. Know which ones fail OPEN vs CLOSED.",
+        "Watch your level controllers — they'll drift fastest without air.",
+        "Focus on keeping the separator from flooding. Everything else can wait."
+      ],
+      'crisis-btex-cascade': [
+        "Relight that BTEX pilot immediately. EPA fines clock is ticking.",
+        "Fuel gas BTU is swinging — the pilot won't stay lit until gas stabilizes.",
+        "Stabilize fuel gas first, then relight. Doing it backwards wastes time."
+      ],
+      'crisis-expander-trip': [
+        "Expander is down. Close the guide vanes and check bearing temp.",
+        "Residue compression will destabilize without the booster. Watch discharge temps.",
+        "Recovery sequence: bearings cool, lube oil normal, then slow restart."
+      ],
+      'crisis-coldbox-freeze': [
+        "Mol sieve breakthrough means moisture in the cold box. Slow the rate of change.",
+        "Do NOT rapid-heat a frozen cold box. Brazed aluminum will crack.",
+        "Warm up at 3 degF/min max. This is a marathon, not a sprint."
+      ],
+      'crisis-mode-switch': [
+        "Mode switch is a procedure, not a panic. Follow the ramp sequence.",
+        "Guide vanes, then demethanizer, then reboilers. In that order.",
+        "Pig mid-switch? Pause the switch, handle the pig, then resume."
+      ],
+      'crisis-night-everything': [
+        "Prioritize: safety first, then equipment protection, then product.",
+        "Don't try to fix everything at once. Triage by severity.",
+        "When in doubt, slow down the plant. Reduced rate buys you time."
+      ],
+      'crisis-h2s-evacuation': [
+        "H2S is deadly. Check wind direction — evacuate UPWIND.",
+        "Find and isolate the source before attempting repairs.",
+        "Amine circulation loss = H2S breakthrough. Get that pump back."
+      ]
+    };
+
+    const scenarioHints = hints[scenarioId] || ["Stay calm. Read the alarms. Trace the P&ID."];
+    return scenarioHints[Math.floor(Math.random() * scenarioHints.length)];
   }
 };
 

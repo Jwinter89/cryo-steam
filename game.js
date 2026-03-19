@@ -41,6 +41,7 @@
     cryogenic: [
       { id: 'overview', label: 'OVERVIEW' },
       { id: 'molsieve', label: 'MOL SIEVE' },
+      { id: 'amine', label: 'AMINE' },
       { id: 'coldbox', label: 'COLD BOX' },
       { id: 'expander', label: 'EXPANDER' },
       { id: 'demet', label: 'DEMET' },
@@ -66,6 +67,7 @@
     ],
     cryogenic: [
       { header: 'INLET / MOL SIEVE', tags: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'] },
+      { header: 'AMINE / H2S', tags: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'LIC-A03', 'AI-A04', 'AI-A05', 'CI-A01'] },
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
       { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'] },
       { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
@@ -95,6 +97,7 @@
     cryogenic: {
       overview: null,
       molsieve: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'],
+      amine: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'TIC-A04', 'PIC-A03', 'LIC-A03', 'LIC-A02', 'PIC-A02', 'AI-A04', 'AI-A05', 'CI-A01', 'LIC-A04'],
       coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
       expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'],
       demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
@@ -181,6 +184,7 @@
       this._updateContinueButton();
       this._showScreen('title-screen');
       this._refreshLeaderboard();
+      this._updateChallengesPreview();
       this._initHenry();
       this._checkBuildingTabOverflow();
       window.addEventListener('resize', () => this._checkBuildingTabOverflow());
@@ -354,6 +358,9 @@
 
       // Mobile info drawer (also handles backdrop)
       this._bindMobileInfoDrawer();
+
+      // Mobile speed dial FAB
+      this._bindMobileSpeedDial();
     },
 
     _bindMobileInfoDrawer() {
@@ -423,6 +430,83 @@
           this._updateMobileInfoContent(tab.dataset.infoTab);
         });
       });
+    },
+
+    _bindMobileSpeedDial() {
+      const dial = document.getElementById('mobile-speed-dial');
+      const fab = document.getElementById('speed-dial-fab');
+      const ring = document.getElementById('speed-dial-ring');
+      const backdrop = document.getElementById('speed-dial-backdrop');
+      const fabLabel = document.getElementById('fab-label');
+      if (!dial || !fab) return;
+
+      const speedLabels = { 0: '\u23F8', 1: '1x', 2: '2x', 4: '4x' };
+      let currentSpeed = 0;
+
+      const closeDial = () => dial.classList.remove('open');
+      const openDial = () => dial.classList.add('open');
+
+      fab.addEventListener('click', () => {
+        if (dial.classList.contains('open')) {
+          closeDial();
+        } else {
+          openDial();
+        }
+      });
+
+      if (backdrop) {
+        backdrop.addEventListener('click', closeDial);
+      }
+
+      // Speed buttons in the ring
+      ring.querySelectorAll('.sd-btn[data-speed]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const speed = parseInt(btn.dataset.speed, 10);
+          currentSpeed = speed;
+
+          // Trigger the desktop button click to keep them in sync
+          if (speed === 0) {
+            if (this.sim) this.sim.pause();
+            this._updateTimeButtons(0);
+          } else {
+            if (this.sim) this.sim.setSpeed(speed);
+            this._updateTimeButtons(speed);
+          }
+
+          // Update FAB label
+          fabLabel.textContent = speedLabels[speed] || speed + 'x';
+
+          // Update ring active states
+          ring.querySelectorAll('.sd-btn[data-speed]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          closeDial();
+        });
+      });
+
+      // Trend button
+      const sdTrend = document.getElementById('sd-trend');
+      if (sdTrend) {
+        sdTrend.addEventListener('click', () => {
+          const deskTrend = document.getElementById('btn-trend');
+          if (deskTrend) deskTrend.click();
+          closeDial();
+        });
+      }
+
+      // Snapshot button
+      const sdSnap = document.getElementById('sd-snapshot');
+      if (sdSnap) {
+        sdSnap.addEventListener('click', () => {
+          const deskSnap = document.getElementById('btn-snapshot');
+          if (deskSnap) deskSnap.click();
+          closeDial();
+        });
+      }
+
+      // Keep FAB label in sync with desktop time button changes
+      this._mobileFabLabel = fabLabel;
+      this._mobileSpeedRing = ring;
     },
 
     _updateMobileInfoContent(tab) {
@@ -564,6 +648,22 @@
             ${pvDef.controllable ? `<span class="gauge-mode">${pvDef.mode || 'AUTO'}</span>` : ''}
             <span class="gauge-trend">&#8594;</span>
           `;
+
+          // Click gauge tag to add to trend graph
+          const tagEl = row.querySelector('.gauge-tag');
+          if (tagEl) {
+            tagEl.style.cursor = 'pointer';
+            tagEl.title = 'Click to track in trend graph';
+            tagEl.addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (this.trendManager) {
+                this.trendManager.trackTag(tag);
+                if (!this.trendManager._visible) this.trendManager.show();
+                this.showToast(tag, 'Added to trend graph', 'TREND');
+              }
+            });
+          }
+
           section.appendChild(row);
         }
 
@@ -630,6 +730,32 @@
           }
         });
         tabBar.appendChild(btn);
+      });
+
+      // Also populate mobile building pills
+      this._buildMobileBuildingPills(facility, tabs);
+    },
+
+    _buildMobileBuildingPills(facility, tabs) {
+      const pillBar = document.getElementById('mobile-building-pills');
+      if (!pillBar) return;
+      pillBar.innerHTML = '';
+
+      tabs.forEach((tab, i) => {
+        const pill = document.createElement('button');
+        pill.className = 'mobile-building-pill' + (i === 0 ? ' active' : '');
+        pill.dataset.building = tab.id;
+        pill.textContent = tab.label;
+        pill.addEventListener('click', () => {
+          // Sync with the desktop building tab click
+          const desktopBtn = document.querySelector(`.building-tab[data-building="${tab.id}"]`);
+          if (desktopBtn) desktopBtn.click();
+
+          // Update pill active state
+          pillBar.querySelectorAll('.mobile-building-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+        pillBar.appendChild(pill);
       });
     },
 
@@ -720,6 +846,7 @@
           const tag = row.dataset.tag;
           if (tag && this.faceplateManager) {
             this.faceplateManager.open(tag, e);
+            if (this.pidZoom) this.pidZoom.highlightLoop(tag);
           }
         });
       });
@@ -862,8 +989,48 @@
           this._stabilizerSVG = svgEl.innerHTML;
         }
         svgEl.innerHTML = FacilityViews.cryogenicPID();
-        svgEl.setAttribute('viewBox', '0 0 1000 700');
+        svgEl.setAttribute('viewBox', '0 0 1000 850');
       }
+    },
+
+    _enrichTagBubbleTooltips(config) {
+      const svgEl = document.getElementById('pid-diagram');
+      if (!svgEl || !config) return;
+
+      // Build a tag→description map from config process variables
+      const pvMap = {};
+      if (config.processVariables) {
+        config.processVariables.forEach(pv => {
+          pvMap[pv.tag] = pv.desc + (pv.unit ? ' (' + pv.unit + ')' : '');
+        });
+      }
+
+      // Add SVG <title> elements to tag bubbles for native tooltips
+      svgEl.querySelectorAll('.tag-bubble').forEach(bubble => {
+        const tag = bubble.dataset.tag;
+        if (!tag) return;
+
+        // Remove existing titles
+        const existingTitle = bubble.querySelector('title');
+        if (existingTitle) existingTitle.remove();
+
+        const desc = pvMap[tag] || tag;
+        const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        titleEl.textContent = tag + ': ' + desc;
+        bubble.appendChild(titleEl);
+      });
+
+      // Also add tooltips to tag labels (text elements near bubbles)
+      svgEl.querySelectorAll('text[data-tag]').forEach(textEl => {
+        const tag = textEl.dataset.tag;
+        if (!tag) return;
+        const desc = pvMap[tag] || tag;
+        const existingTitle = textEl.querySelector('title');
+        if (existingTitle) existingTitle.remove();
+        const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        titleEl.textContent = tag + ': ' + desc;
+        textEl.appendChild(titleEl);
+      });
     },
 
     // ============================================================
@@ -933,6 +1100,7 @@
       this._buildBuildingTabs(this.currentFacility);
       this._buildSpecBoard(config);
       this._loadFacilityPID(this.currentFacility);
+      this._enrichTagBubbleTooltips(config);
 
       // On small mobile, start with left panel collapsed
       if (window.innerWidth <= 480) {
@@ -953,6 +1121,27 @@
       if (window.PidZoom) {
         this.pidZoom = new PidZoom();
         this.pidZoom.resetForFacility();
+        document.addEventListener('faceplate:open', (e) => {
+          if (this.pidZoom && e.detail && e.detail.tag) {
+            this.pidZoom.highlightLoop(e.detail.tag);
+          }
+        });
+      }
+
+      // Trend graph
+      if (window.TrendManager) {
+        this.trendManager = new TrendManager(this.sim);
+      }
+
+      // Bind mol sieve switch button (cryo only)
+      if (this.currentFacility === 'cryogenic') {
+        const switchBtn = document.getElementById('ms-switch-btn');
+        if (switchBtn) {
+          switchBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._switchMolSieveBeds();
+          });
+        }
       }
 
       // GC display
@@ -1103,8 +1292,9 @@
         this.sim.registerPV(pv);
       }
 
-      // Also register amine PVs if amine DLC is active
-      if (this.progress.amineDLC && window.AmineConfig) {
+      // Register amine PVs — built into cryo, DLC for other facilities
+      const loadAmine = (this.currentFacility === 'cryogenic' || this.progress.amineDLC) && window.AmineConfig;
+      if (loadAmine) {
         for (const pvConfig of AmineConfig.processVariables) {
           const pv = new ProcessVariable(pvConfig);
           this.sim.registerPV(pv);
@@ -1115,7 +1305,7 @@
       for (const rule of config.cascadeRules) {
         this.sim.cascadeEngine.addRule(rule);
       }
-      if (this.progress.amineDLC && window.AmineConfig) {
+      if (loadAmine) {
         for (const rule of AmineConfig.cascadeRules) {
           this.sim.cascadeEngine.addRule(rule);
         }
@@ -1128,7 +1318,7 @@
           this.valves[id] = { ...v };
         }
       }
-      if (this.progress.amineDLC && window.AmineConfig && AmineConfig.valves) {
+      if (loadAmine && AmineConfig.valves) {
         for (const [id, v] of Object.entries(AmineConfig.valves)) {
           this.valves[id] = { ...v };
         }
@@ -1141,7 +1331,7 @@
           this.equipment[id] = { ...e };
         }
       }
-      if (this.progress.amineDLC && window.AmineConfig && AmineConfig.equipment) {
+      if (loadAmine && AmineConfig.equipment) {
         for (const [id, e] of Object.entries(AmineConfig.equipment)) {
           this.equipment[id] = { ...e };
         }
@@ -1163,7 +1353,7 @@
       if (this.currentFacility === 'cryogenic' && window.registerCryogenicEvents) {
         registerCryogenicEvents(this.eventSystem);
       }
-      if (this.progress.amineDLC && window.registerAmineEvents) {
+      if ((this.currentFacility === 'cryogenic' || this.progress.amineDLC) && window.registerAmineEvents) {
         registerAmineEvents(this.eventSystem);
       }
 
@@ -1221,6 +1411,11 @@
       if (this.gcDisplay) this.gcDisplay.update();
       this._updateGaugeSheet();
 
+      // Mol sieve cycle tracking (cryo only)
+      if (this.currentFacility === 'cryogenic') {
+        this._tickMolSieveCycle(dt);
+      }
+
       // Update spec board (facility-aware)
       this._updateSpecBoard();
 
@@ -1261,8 +1456,138 @@
         this.debriefScreen.recordTick(gameTime, this.pnlSystem);
       }
 
+      // Record trend data and update trend graph
+      if (this.trendManager && this.sim.totalTicks % 5 === 0) {
+        this.trendManager.recordTick(gameTime);
+        this.trendManager.update();
+      }
+
       // Track achievement flags
       this._trackAchievementFlags();
+    },
+
+    // ============================================================
+    // MOL SIEVE 3-BED CYCLE MANAGEMENT
+    // ============================================================
+
+    _tickMolSieveCycle(dt) {
+      const config = window.CryogenicConfig;
+      if (!config || !config.molSieve) return;
+
+      const ms = config.molSieve;
+      const beds = [
+        { key: 'bedA', label: 'A' },
+        { key: 'bedB', label: 'B' },
+        { key: 'bedC', label: 'C' }
+      ];
+
+      // Advance cycle timers
+      for (const bed of beds) {
+        const b = ms[bed.key];
+        b.cycleTime += dt;
+
+        // Auto-advance from regen to standby after regen time
+        if (b.state === 'regenerating' && b.cycleTime >= b.maxCycleTime) {
+          b.state = 'standby';
+          b.cycleTime = 0;
+        }
+      }
+
+      // Update P&ID bed status indicators
+      this._updateMolSievePID(ms);
+    },
+
+    _switchMolSieveBeds() {
+      const config = window.CryogenicConfig;
+      if (!config || !config.molSieve) return;
+
+      const ms = config.molSieve;
+      const beds = ['bedA', 'bedB', 'bedC'];
+
+      // Find the bed that's been adsorbing longest
+      let longestAdsorb = null;
+      let longestTime = -1;
+      for (const key of beds) {
+        if (ms[key].state === 'adsorbing' && ms[key].cycleTime > longestTime) {
+          longestTime = ms[key].cycleTime;
+          longestAdsorb = key;
+        }
+      }
+
+      // Find the standby bed to bring online
+      let standbyBed = null;
+      for (const key of beds) {
+        if (ms[key].state === 'standby') {
+          standbyBed = key;
+          break;
+        }
+      }
+
+      if (longestAdsorb && standbyBed) {
+        // Swap: longest adsorber goes to regen, standby goes to adsorb
+        ms[longestAdsorb].state = 'regenerating';
+        ms[longestAdsorb].cycleTime = 0;
+        ms[standbyBed].state = 'adsorbing';
+        ms[standbyBed].cycleTime = 0;
+
+        if (this.henry) {
+          const bedLabel = longestAdsorb.replace('bed', '');
+          const newLabel = standbyBed.replace('bed', '');
+          this.henry.tip(`Mol sieve switch: Bed ${bedLabel} to regen, Bed ${newLabel} online.`, 4000);
+        }
+      } else if (longestAdsorb && !standbyBed) {
+        // No standby available — force the regen bed
+        if (this.henry) {
+          this.henry.tip("No standby bed available. Wait for regen to complete.", 3000);
+        }
+      }
+
+      this._updateMolSievePID(ms);
+    },
+
+    _updateMolSievePID(ms) {
+      const stateColors = {
+        adsorbing: '#4CAF50',  // green
+        regenerating: '#FF9800', // orange
+        standby: '#607D8B'     // grey-blue
+      };
+      const stateLabels = {
+        adsorbing: 'ADSORB',
+        regenerating: 'REGEN',
+        standby: 'STANDBY'
+      };
+      const bedFills = {
+        adsorbing: '#505050',
+        regenerating: '#4A3A20',
+        standby: '#383838'
+      };
+
+      for (const [key, label] of [['bedA', 'a'], ['bedB', 'b'], ['bedC', 'c']]) {
+        const bed = ms[key];
+        const color = stateColors[bed.state] || '#606060';
+        const statusDot = document.getElementById('ms-status-' + label);
+        const stateText = document.getElementById('ms-state-' + label);
+        const bedRect = document.getElementById('ms-bed-' + label);
+
+        if (statusDot) statusDot.setAttribute('fill', color);
+        if (stateText) {
+          stateText.textContent = stateLabels[bed.state] || bed.state.toUpperCase();
+          stateText.setAttribute('fill', color);
+        }
+        if (bedRect) {
+          bedRect.setAttribute('fill', bedFills[bed.state] || '#505050');
+          bedRect.setAttribute('stroke', bed.state === 'adsorbing' ? '#808080' : '#606060');
+        }
+      }
+
+      // Update equipment status too
+      if (this.equipment) {
+        for (const [key, equipId] of [['bedA', 'MS-A'], ['bedB', 'MS-B'], ['bedC', 'MS-C']]) {
+          if (this.equipment[equipId]) {
+            this.equipment[equipId].status = ms[key].state;
+          }
+        }
+      }
     },
 
     _checkSafetyInterlocks() {
@@ -1403,6 +1728,25 @@
         if (this.sim) this.sim.setSpeed(4);
         this._updateTimeButtons(4);
       });
+
+      // Trend graph toggle
+      const trendBtn = document.getElementById('btn-trend');
+      if (trendBtn) {
+        trendBtn.addEventListener('click', () => {
+          if (this.trendManager) {
+            this.trendManager.toggle();
+            trendBtn.classList.toggle('active', this.trendManager._visible);
+          }
+        });
+      }
+
+      // Snapshot button
+      const snapBtn = document.getElementById('btn-snapshot');
+      if (snapBtn) {
+        snapBtn.addEventListener('click', () => {
+          this._takeSnapshot();
+        });
+      }
     },
 
     _updateTimeButtons(speed) {
@@ -1414,6 +1758,17 @@
       else if (speed === 1) document.getElementById('btn-1x').classList.add('active');
       else if (speed === 2) document.getElementById('btn-2x').classList.add('active');
       else if (speed === 4) document.getElementById('btn-4x').classList.add('active');
+
+      // Sync mobile FAB label
+      const fabLabels = { 0: '\u23F8', 1: '1x', 2: '2x', 4: '4x' };
+      if (this._mobileFabLabel) {
+        this._mobileFabLabel.textContent = fabLabels[speed] || '';
+      }
+      if (this._mobileSpeedRing) {
+        this._mobileSpeedRing.querySelectorAll('.sd-btn[data-speed]').forEach(b => {
+          b.classList.toggle('active', parseInt(b.dataset.speed, 10) === speed);
+        });
+      }
 
       // Animate flow lines based on speed
       const flowClass = { 0: '', 1: 'flowing', 2: 'flowing-2x', 4: 'flowing-4x' };
@@ -1600,6 +1955,47 @@
       showName();
     },
 
+    _updateChallengesPreview() {
+      const container = document.getElementById('title-challenges-preview');
+      if (!container || !this.challenges) {
+        if (container) container.style.display = 'none';
+        return;
+      }
+
+      const today = this.challenges.getDaily ? this.challenges.getDaily() : null;
+      const weekly = this.challenges.getWeekly ? this.challenges.getWeekly() : null;
+
+      if (!today && !weekly) {
+        container.style.display = 'none';
+        return;
+      }
+
+      let html = '<div class="challenges-preview-title">TODAY\'S CHALLENGES</div>';
+
+      const renderChallenge = (ch) => {
+        const done = ch.completed || false;
+        const statusText = done ? '&#10003; DONE' : 'ACTIVE';
+        const statusClass = done ? 'done' : 'active';
+        return `<div class="challenge-preview-item">
+          <span class="challenge-preview-pts">${ch.reward || ch.points || 0} PTS</span>
+          <span class="challenge-preview-name">${ch.name || ch.id}</span>
+          <span class="challenge-preview-status ${statusClass}">${statusText}</span>
+        </div>`;
+      };
+
+      if (today && today.length > 0) {
+        today.forEach(ch => { html += renderChallenge(ch); });
+      }
+
+      if (weekly && weekly.length > 0) {
+        html += '<div class="challenges-preview-title" style="margin-top:8px">WEEKLY CHALLENGE</div>';
+        weekly.forEach(ch => { html += renderChallenge(ch); });
+      }
+
+      container.innerHTML = html;
+      container.style.display = '';
+    },
+
     async _refreshLeaderboard() {
       const listEl = document.getElementById('leaderboard-list');
       if (!listEl) return;
@@ -1699,6 +2095,7 @@
       // Award career XP
       if (this.career) {
         const xpResult = this.career.awardShiftXP(this);
+        this._lastXPResult = xpResult; // Store for debrief display
         if (xpResult.newRank) {
           setTimeout(() => this._showPromotionOverlay(xpResult.newRank), 1500);
           this._addRadioMessage(`PROMOTED: ${xpResult.newRank.title}`);
@@ -2014,6 +2411,21 @@
         'expander-trip': { name: 'EXPANDER TRIP!', desc: "Turboexpander's down! Your cold box is warming up. Get it restarted before you lose ethane recovery.", mood: 'worried' },
         'cold-box-freeze': { name: 'COLD BOX FREEZE-UP', desc: "Moisture in the cold box. Brazed aluminum doesn't like that. Controlled warmup — don't rush it, 3 degrees per minute max.", mood: 'worried' },
         'molsieve-breakthrough': { name: 'MOL SIEVE BREAKTHROUGH', desc: "Moisture breaking through the mol sieve. Switch beds or inject EG downstream. Clock's ticking.", mood: 'alert' },
+        'weather-change': { name: 'WEATHER INCOMING', desc: "Front moving in. Temps are dropping. Watch your exposed lines and aerial coolers.", mood: 'alert' },
+        'fuel-gas-swing': { name: 'FUEL GAS SWING', desc: "Fuel gas composition just shifted. Your heater might get rich or lean. Watch the BTU and flame.", mood: 'alert' },
+        'instrument-air-loss': { name: 'INSTRUMENT AIR LOSS!', desc: "Instrument air header pressure is dropping. Control valves are going to fail to their safe positions. This is not a drill.", mood: 'worried' },
+        'fire-eye-alarm': { name: 'FIRE EYE ALARM', desc: "Fire eye lost flame signal on the heater. Could be a fouled sensor or an actual flameout. Investigate NOW.", mood: 'worried' },
+        'ldar-inspection': { name: 'LDAR INSPECTION', desc: "Environmental inspector on site with the OGI camera. Keep everything tight and in spec.", mood: 'alert' },
+        'pump-bearing-hot': { name: 'PUMP BEARING HOT', desc: "Bearing temp climbing on one of your pumps. If it gets to 200°F, shut it down before it seizes.", mood: 'alert' },
+        'lel-alarm': { name: 'LEL ALARM!', desc: "Lower Explosive Limit alarm in the comp building. Something's leaking. This is a potential evac situation.", mood: 'worried' },
+        'res-comp-fault': { name: 'RESIDUE COMP FAULT', desc: "Residue gas compressor throwing a fault. Your suction pressure is going to climb. Watch the demethanizer.", mood: 'alert' },
+        'h2s-area-alarm': { name: 'H2S AREA ALARM!', desc: "H2S detector tripped. Check wind direction immediately. If it's heading toward personnel — evacuate.", mood: 'worried' },
+        'amine-pump-fail': { name: 'AMINE PUMP FAILURE', desc: "Amine pump just went down. You're about to lose H2S treating. Get the spare online.", mood: 'worried' },
+        'truck-arrival': { name: 'TRUCK AT RACK', desc: "Truck at the loading rack. Check your tank levels and RVP before you start loading.", mood: 'normal' },
+        'refrig-condenser-foul': { name: 'CONDENSER FOULING', desc: "Condenser's losing efficiency. Approach temperature is climbing. Check for tube fouling.", mood: 'alert' },
+        'kimray-dp-swing': { name: 'KIMRAY DP SWING', desc: "Glycol pump differential is swinging. Your circulation rate is going to bounce. Watch the contactor.", mood: 'alert' },
+        'feed-composition-swing': { name: 'FEED COMP CHANGE', desc: "Upstream composition just changed. Richer feed means more liquids. Adjust your recovery settings.", mood: 'alert' },
+        'mode-switch': { name: 'MODE SWITCH', desc: "Switching recovery modes. Take it slow — changing too fast will upset the demethanizer.", mood: 'teaching' },
       };
 
       const custom = messages[event.id];
@@ -2051,6 +2463,65 @@
       if (sepPV && sepPV.alarmState === 'HI' && !this._henryTipCooldown('sep-high')) {
         this.henry.operatorTip('separator-high');
         this._setHenryTipCooldown('sep-high', 200);
+      }
+
+      // Hot oil temperature drop
+      const hoilPV = pvMap['TIC-104'] || pvMap['TIC-201'];
+      if (hoilPV && hoilPV.value < hoilPV.lo && !this._henryTipCooldown('hotoil-drop')) {
+        this.henry.operatorTip('hotoil-drop');
+        this._setHenryTipCooldown('hotoil-drop', 300);
+      }
+
+      // Tower pressure spike
+      const towerP = pvMap['PIC-201'] || pvMap['PIC-501'];
+      if (towerP && towerP.alarmState === 'HI' && !this._henryTipCooldown('pressure-spike')) {
+        this.henry.operatorTip('pressure-spike');
+        this._setHenryTipCooldown('pressure-spike', 300);
+      }
+
+      // Negative earnings warning
+      if (this.pnlSystem.shiftEarnings < -500 && !this._henryTipCooldown('earnings-neg')) {
+        this.henry.operatorTip('earnings-negative');
+        this._setHenryTipCooldown('earnings-neg', 600);
+      }
+
+      // NGL recovery dropping (cryo)
+      const nglPV = pvMap['AI-801'] || pvMap['AI-701'];
+      if (nglPV && nglPV.value < 85 && !this._henryTipCooldown('recovery-drop')) {
+        this.henry.operatorTip('recovery-dropping');
+        this._setHenryTipCooldown('recovery-drop', 400);
+      }
+
+      // Tank overpressure
+      const tankP = pvMap['PIC-203'] || pvMap['PIC-202'];
+      if (tankP && tankP.alarmState === 'HI' && !this._henryTipCooldown('tank-op')) {
+        this.henry.operatorTip('tank-overpressure');
+        this._setHenryTipCooldown('tank-op', 300);
+      }
+
+      // Good earnings encouragement
+      if (this.pnlSystem.shiftEarnings > 5000 && !this._henryTipCooldown('good-earnings')) {
+        this.henry.operatorTip('good-earnings');
+        this._setHenryTipCooldown('good-earnings', 9999);
+      }
+
+      // Shift end approaching (15 min left = ~690 game minutes on a 720 min shift)
+      const gameMin = this.sim.gameTime;
+      if (gameMin >= 690 && gameMin <= 695 && !this._henryTipCooldown('shift-end')) {
+        this.henry.operatorTip('shift-end-approaching');
+        this._setHenryTipCooldown('shift-end', 9999);
+      }
+
+      // Shift halfway ambient comment
+      if (gameMin >= 360 && gameMin <= 365 && !this._henryTipCooldown('halfway')) {
+        this.henry.operatorTip('shift-halfway');
+        this._setHenryTipCooldown('halfway', 9999);
+      }
+
+      // Random ambient radio chatter (every ~5 game-minutes, 20% chance)
+      if (this.sim.totalTicks % 300 === 0 && Math.random() < 0.2 && !this._henryTipCooldown('ambient')) {
+        this.henry.ambientRadio();
+        this._setHenryTipCooldown('ambient', 600);
       }
 
       // First faceplate hint
@@ -2293,6 +2764,77 @@
       this._showScreen('profile-screen');
     },
 
+    _takeSnapshot() {
+      // Generate a quick in-game snapshot image
+      const gameScreen = document.getElementById('game-screen');
+      if (!gameScreen) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 340;
+      const ctx = canvas.getContext('2d');
+
+      // Draw dark background
+      ctx.fillStyle = '#1E1E1E';
+      ctx.fillRect(0, 0, 600, 340);
+      ctx.strokeStyle = '#4CAF50';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(2, 2, 596, 336);
+
+      // Header
+      ctx.fillStyle = '#E8E8E8';
+      ctx.font = 'bold 16px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('COLD CREEK GAS PLANT', 300, 30);
+
+      ctx.font = '10px Courier New';
+      ctx.fillStyle = '#999';
+      const facility = (this.currentFacility || 'stabilizer').toUpperCase();
+      const mode = (this.currentMode || 'operate').toUpperCase();
+      ctx.fillText(`${facility} | ${mode} MODE`, 300, 48);
+
+      // Time
+      const time = this.sim ? this.sim.getTimeString() : '06:00';
+      const shift = this.sim ? this.sim.getShiftLabel() : 'DAY SHIFT';
+      ctx.fillText(`${time} ${shift}`, 300, 65);
+
+      // P&L
+      const earnings = this.pnlSystem ? Math.round(this.pnlSystem.shiftEarnings) : 0;
+      const rate = this.pnlSystem ? Math.round(this.pnlSystem.netPerHour) : 0;
+      ctx.font = 'bold 28px Courier New';
+      ctx.fillStyle = earnings >= 0 ? '#4CAF50' : '#E04040';
+      ctx.fillText('$' + earnings.toLocaleString(), 300, 120);
+
+      ctx.font = '12px Courier New';
+      ctx.fillStyle = rate >= 0 ? '#4CAF50' : '#E04040';
+      ctx.fillText('$' + rate.toLocaleString() + '/hr', 300, 142);
+
+      // Active alarms
+      const alarmCount = this.alarmManager ? this.alarmManager.getAlarmCount() : 0;
+      ctx.fillStyle = alarmCount > 0 ? '#E04040' : '#4CAF50';
+      ctx.fillText(alarmCount + ' ALARMS', 300, 170);
+
+      // Watermark
+      ctx.font = '9px Courier New';
+      ctx.fillStyle = '#555';
+      ctx.fillText('gasplantsim.com', 300, 330);
+
+      canvas.toBlob(blob => {
+        if (!blob) return;
+        const file = new File([blob], 'coldcreek-snapshot.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file], title: 'Cold Creek Snapshot' }).catch(() => {});
+          this.showToast('SHARED', 'Snapshot shared!', 'SNAPSHOT');
+        } else {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'coldcreek-snapshot.png';
+          a.click();
+          URL.revokeObjectURL(a.href);
+          this.showToast('DOWNLOADED', 'Snapshot saved!', 'SNAPSHOT');
+        }
+      }, 'image/png');
+    },
+
     _showGlossaryPopup() {
       if (!this.glossary) return;
       const content = document.getElementById('glossary-content');
@@ -2337,15 +2879,21 @@
 
       const shareBtn = document.getElementById('debrief-share-btn');
       if (shareBtn) {
-        shareBtn.addEventListener('click', () => {
-          const text = this.debriefScreen.getShareText(this);
-          if (navigator.share) {
-            navigator.share({ title: 'Cold Creek Shift Debrief', text }).catch(() => {});
-          } else if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(() => {
+        shareBtn.addEventListener('click', async () => {
+          shareBtn.textContent = 'GENERATING...';
+          shareBtn.disabled = true;
+          try {
+            const result = await this.debriefScreen.shareAsImage(this);
+            if (result === 'shared') {
+              this.showToast('SHARED', 'Shift debrief shared!', 'SHARE');
+            } else if (result === 'downloaded') {
+              this.showToast('DOWNLOADED', 'Shift image saved! Share it on social media.', 'SHARE');
+            } else if (result === 'copied') {
               this.showToast('COPIED TO CLIPBOARD', 'Share your shift results!', 'SHARE');
-            });
-          }
+            }
+          } catch (e) { /* ok */ }
+          shareBtn.textContent = 'SHARE SHIFT';
+          shareBtn.disabled = false;
         });
       }
     },

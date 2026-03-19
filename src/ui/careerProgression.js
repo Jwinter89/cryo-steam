@@ -73,8 +73,24 @@ class CareerProgression {
     // Crisis mode bonus
     if (game.currentMode === 'crisis') xp = Math.round(xp * 1.5);
 
+    // Optimize mode bonus for beating personal best
+    if (game.currentMode === 'optimize') {
+      xp = Math.round(xp * 1.3);
+      const bestKey = `best-${facility}`;
+      const prevBest = this.state[bestKey] || 0;
+      if (earnings > prevBest) {
+        xp += 100; // New personal best bonus
+        this.state[bestKey] = earnings;
+      }
+    }
+
     this.state.xp = (this.state.xp || 0) + xp;
     this.state.totalShifts = (this.state.totalShifts || 0) + 1;
+
+    // Track per-facility shifts
+    const fKey = `shifts-${facility}`;
+    this.state[fKey] = (this.state[fKey] || 0) + 1;
+
     this._save();
 
     const newRank = this.getCurrentRank();

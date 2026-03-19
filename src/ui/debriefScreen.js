@@ -128,6 +128,30 @@ class DebriefScreen {
       html += `</div>`;
     }
 
+    // Career XP / Promotion
+    if (game.career) {
+      const rank = game.career.getCurrentRank();
+      const next = game.career.getNextRank();
+      const pct = game.career.getProgressPercent();
+      const xpResult = game._lastXPResult;
+      html += `<div class="debrief-section-header">CAREER PROGRESSION</div>`;
+      html += `<div class="debrief-career">`;
+      html += `<div class="debrief-rank" style="color:${rank.color}">${rank.title}</div>`;
+      if (xpResult) {
+        html += `<div class="debrief-xp-gained" style="color:#4CAF50">+${xpResult.xpGained} XP this shift</div>`;
+        if (xpResult.newRank) {
+          html += `<div class="debrief-xp-gained" style="color:${xpResult.newRank.color}">PROMOTED TO ${xpResult.newRank.title}!</div>`;
+        }
+      }
+      if (next) {
+        html += `<div class="debrief-xp-bar"><div class="debrief-xp-fill" style="width:${pct}%;background:${rank.color}"></div></div>`;
+        html += `<div class="debrief-xp-label">${game.career.state.xp} / ${next.xpRequired} XP — Next: ${next.title}</div>`;
+      } else {
+        html += `<div class="debrief-xp-label">MAX RANK ACHIEVED</div>`;
+      }
+      html += `</div>`;
+    }
+
     // Henry comment
     const comment = this._getHenryComment(grade.letter, earnings);
     html += `<div class="debrief-henry">"${comment}"<br><span class="debrief-henry-name">— HENRY, SENIOR OPERATOR</span></div>`;
@@ -290,6 +314,153 @@ class DebriefScreen {
     const facility = (game.currentFacility || '').toUpperCase();
     const grade = game.objectives ? game.objectives.getGrade() : { letter: 'C' };
     return `I just completed a shift at Cold Creek ${facility} \u2014 Grade ${grade.letter}, $${earnings.toLocaleString()} earned! \ud83c\udfed\n\nPlay free at gasplantsim.com #ColdCreek #GasPlant`;
+  }
+
+  /**
+   * Generate a shareable image (canvas → blob) with shift stats.
+   * Returns a Promise<Blob> (PNG).
+   */
+  generateShareImage(game) {
+    const W = 600, H = 340;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#1E1E1E';
+    ctx.fillRect(0, 0, W, H);
+
+    // Border accent
+    ctx.strokeStyle = '#4CAF50';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(2, 2, W - 4, H - 4);
+
+    // Header
+    ctx.fillStyle = '#D4A843';
+    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('COLD CREEK GAS PLANT', W / 2, 36);
+
+    ctx.fillStyle = '#808080';
+    ctx.font = '12px "Courier New", monospace';
+    ctx.fillText('SHIFT DEBRIEF', W / 2, 54);
+
+    // Facility & mode
+    const facility = (game.currentFacility || 'stabilizer').toUpperCase();
+    const mode = (game.currentMode || 'operate').toUpperCase();
+    ctx.fillStyle = '#A0A0A0';
+    ctx.font = '13px "Courier New", monospace';
+    ctx.fillText(`${facility}  |  ${mode} MODE`, W / 2, 78);
+
+    // Grade circle
+    const grade = game.objectives ? game.objectives.getGrade() : { letter: 'C', color: '#D4A843' };
+    ctx.beginPath();
+    ctx.arc(W / 2, 130, 36, 0, Math.PI * 2);
+    ctx.fillStyle = '#2A2A2A';
+    ctx.fill();
+    ctx.strokeStyle = grade.color;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = grade.color;
+    ctx.font = 'bold 40px "Courier New", monospace';
+    ctx.fillText(grade.letter, W / 2, 145);
+
+    // Earnings
+    const earnings = game.pnlSystem ? Math.round(game.pnlSystem.shiftEarnings) : 0;
+    ctx.fillStyle = earnings >= 0 ? '#4CAF50' : '#E04040';
+    ctx.font = 'bold 28px "Courier New", monospace';
+    ctx.fillText('$' + earnings.toLocaleString(), W / 2, 200);
+    ctx.fillStyle = '#808080';
+    ctx.font = '11px "Courier New", monospace';
+    ctx.fillText('NET SHIFT EARNINGS', W / 2, 218);
+
+    // Stats row
+    const alarms = game.alarmManager ? (game.alarmManager.alarmHistory || []).length : 0;
+    const rank = game.career ? game.career.getCurrentRank() : null;
+    const items = [
+      { label: 'ALARMS', val: alarms.toString(), color: alarms === 0 ? '#4CAF50' : '#E04040' },
+      { label: 'RANK', val: rank ? rank.title.split(' ').pop() : 'N/A', color: rank ? rank.color : '#A0A0A0' }
+    ];
+    const pvMap = game.sim ? game.sim.getAllPVs() : {};
+    const recovery = pvMap['AI-701'] || pvMap['AI-502'];
+    if (recovery) {
+      items.unshift({ label: 'RECOVERY', val: recovery.displayValue().toFixed(1) + '%', color: '#5A9BD4' });
+    }
+    const spacing = W / (items.length + 1);
+    items.forEach((item, i) => {
+      const x = spacing * (i + 1);
+      ctx.fillStyle = item.color;
+      ctx.font = 'bold 16px "Courier New", monospace';
+      ctx.fillText(item.val, x, 254);
+      ctx.fillStyle = '#606060';
+      ctx.font = '10px "Courier New", monospace';
+      ctx.fillText(item.label, x, 268);
+    });
+
+    // Mini P&L sparkline
+    if (this._pnlHistory.length > 2) {
+      const data = this._pnlHistory;
+      const maxS = Math.max(...data.map(d => d.shift), 1);
+      const minS = Math.min(...data.map(d => d.shift), 0);
+      const range = maxS - minS || 1;
+      const sparkX = 60, sparkW = W - 120, sparkY = 280, sparkH = 28;
+
+      ctx.strokeStyle = '#4CAF5088';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let i = 0; i < data.length; i++) {
+        const x = sparkX + (i / (data.length - 1)) * sparkW;
+        const y = sparkY + sparkH - ((data[i].shift - minS) / range) * sparkH;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // Footer
+    ctx.fillStyle = '#555';
+    ctx.font = '11px "Courier New", monospace';
+    ctx.fillText('gasplantsim.com  |  Play Free', W / 2, H - 14);
+
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  }
+
+  /**
+   * Share as image (uses Web Share API or fallback download).
+   */
+  async shareAsImage(game) {
+    try {
+      const blob = await this.generateShareImage(game);
+      const file = new File([blob], 'cold-creek-shift.png', { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Cold Creek Shift Debrief',
+          text: this.getShareText(game),
+          files: [file]
+        });
+        return 'shared';
+      }
+
+      // Fallback: download the image
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cold-creek-shift.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return 'downloaded';
+    } catch (e) {
+      // Final fallback: copy text
+      const text = this.getShareText(game);
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        return 'copied';
+      }
+      return 'failed';
+    }
   }
 }
 

@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#2E2E2E"/>
+    </linearGradient>
+    <linearGradient id="pipeGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#555"/>
+      <stop offset="50%" stop-color="#888"/>
+      <stop offset="100%" stop-color="#555"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="textGlow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Grid lines (DCS aesthetic) -->
+  <g stroke="#3a3a3a" stroke-width="0.5" opacity="0.5">
+    <line x1="0" y1="100" x2="1200" y2="100"/>
+    <line x1="0" y1="200" x2="1200" y2="200"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="0" y1="400" x2="1200" y2="400"/>
+    <line x1="0" y1="500" x2="1200" y2="500"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+  </g>
+
+  <!-- P&ID-style equipment silhouettes (background) -->
+  <!-- Separator vessel -->
+  <g opacity="0.15" transform="translate(80, 340)">
+    <rect x="0" y="0" width="120" height="60" rx="30" fill="none" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="60" y1="0" x2="60" y2="-30" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="120" y1="30" x2="170" y2="30" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="0" y1="30" x2="-40" y2="30" stroke="#4ab3f4" stroke-width="2"/>
+  </g>
+
+  <!-- Tower/column -->
+  <g opacity="0.15" transform="translate(320, 280)">
+    <rect x="0" y="0" width="50" height="140" rx="10" fill="none" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="5" y1="30" x2="45" y2="30" stroke="#4ab3f4" stroke-width="1"/>
+    <line x1="5" y1="55" x2="45" y2="55" stroke="#4ab3f4" stroke-width="1"/>
+    <line x1="5" y1="80" x2="45" y2="80" stroke="#4ab3f4" stroke-width="1"/>
+    <line x1="5" y1="105" x2="45" y2="105" stroke="#4ab3f4" stroke-width="1"/>
+    <line x1="50" y1="70" x2="100" y2="70" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="0" y1="50" x2="-50" y2="50" stroke="#4ab3f4" stroke-width="2"/>
+  </g>
+
+  <!-- Compressor symbol -->
+  <g opacity="0.15" transform="translate(900, 360)">
+    <circle cx="30" cy="30" r="30" fill="none" stroke="#4ab3f4" stroke-width="2"/>
+    <polygon points="10,50 30,10 50,50" fill="none" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="-40" y1="30" x2="0" y2="30" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="60" y1="30" x2="110" y2="30" stroke="#4ab3f4" stroke-width="2"/>
+  </g>
+
+  <!-- Heat exchanger -->
+  <g opacity="0.15" transform="translate(700, 420)">
+    <circle cx="25" cy="25" r="25" fill="none" stroke="#4ab3f4" stroke-width="2"/>
+    <line x1="5" y1="5" x2="45" y2="45" stroke="#4ab3f4" stroke-width="1.5"/>
+    <line x1="5" y1="45" x2="45" y2="5" stroke="#4ab3f4" stroke-width="1.5"/>
+  </g>
+
+  <!-- Pipelines connecting equipment -->
+  <g opacity="0.12" stroke="#4ab3f4" stroke-width="2" fill="none">
+    <path d="M250,370 L320,370 L320,350"/>
+    <path d="M420,350 L500,350 L500,390 L700,390 L700,430"/>
+    <path d="M750,430 L870,430 L870,390 L900,390"/>
+    <path d="M1010,390 L1100,390"/>
+  </g>
+
+  <!-- Accent line top -->
+  <rect x="0" y="0" width="1200" height="3" fill="#4ab3f4" opacity="0.8"/>
+
+  <!-- Alarm-style indicator lights -->
+  <g filter="url(#glow)">
+    <circle cx="100" cy="40" r="5" fill="#00CC44" opacity="0.7"/>
+    <circle cx="130" cy="40" r="5" fill="#00CC44" opacity="0.7"/>
+    <circle cx="160" cy="40" r="5" fill="#FFD700" opacity="0.7"/>
+    <circle cx="1040" cy="40" r="5" fill="#00CC44" opacity="0.7"/>
+    <circle cx="1070" cy="40" r="5" fill="#00CC44" opacity="0.7"/>
+    <circle cx="1100" cy="40" r="5" fill="#FF6600" opacity="0.7"/>
+  </g>
+
+  <!-- Tag bubbles (DCS-style) -->
+  <g opacity="0.2">
+    <rect x="140" y="450" width="80" height="24" rx="3" fill="#3C3C3C" stroke="#606060" stroke-width="1"/>
+    <text x="180" y="466" font-family="Courier New, monospace" font-size="11" fill="#E8E8E8" text-anchor="middle">TIC-102</text>
+
+    <rect x="500" y="480" width="80" height="24" rx="3" fill="#3C3C3C" stroke="#606060" stroke-width="1"/>
+    <text x="540" y="496" font-family="Courier New, monospace" font-size="11" fill="#E8E8E8" text-anchor="middle">PIC-201</text>
+
+    <rect x="850" y="500" width="80" height="24" rx="3" fill="#3C3C3C" stroke="#606060" stroke-width="1"/>
+    <text x="890" y="516" font-family="Courier New, monospace" font-size="11" fill="#E8E8E8" text-anchor="middle">FIC-401</text>
+
+    <rect x="1020" y="460" width="80" height="24" rx="3" fill="#3C3C3C" stroke="#606060" stroke-width="1"/>
+    <text x="1060" y="476" font-family="Courier New, monospace" font-size="11" fill="#E8E8E8" text-anchor="middle">LIC-302</text>
+  </g>
+
+  <!-- Trend line (background decoration) -->
+  <g opacity="0.12" transform="translate(50, 480)">
+    <polyline points="0,40 40,38 80,35 120,30 160,32 200,25 240,28 280,20 320,22 360,15 400,18 440,12 480,15 520,10 560,8 600,12 640,5 680,8 720,3 760,6 800,2 840,5 880,3 920,4 960,2 1000,3 1050,1 1100,2"
+      fill="none" stroke="#00CC44" stroke-width="1.5"/>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="200" font-family="Courier New, Consolas, monospace" font-size="82" font-weight="700"
+    fill="#E8E8E8" text-anchor="middle" filter="url(#textGlow)">COLD CREEK</text>
+
+  <!-- Subtitle -->
+  <text x="600" y="260" font-family="Arial Narrow, Arial, sans-serif" font-size="28"
+    fill="#999" text-anchor="middle" letter-spacing="0.35em">GAS PLANT SIMULATOR</text>
+
+  <!-- Accent underline -->
+  <rect x="380" y="275" width="440" height="2" fill="#4ab3f4" opacity="0.6" rx="1"/>
+
+  <!-- Tagline -->
+  <text x="600" y="320" font-family="Arial Narrow, Arial, sans-serif" font-size="18"
+    fill="#888" text-anchor="middle" letter-spacing="0.15em">Run the board. Keep it in spec. Make it home safe.</text>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="627" width="1200" height="3" fill="#4ab3f4" opacity="0.8"/>
+
+  <!-- Bottom bar with DCS info -->
+  <rect x="0" y="580" width="1200" height="47" fill="#1a1a1a" opacity="0.6"/>
+  <text x="40" y="608" font-family="Courier New, monospace" font-size="12" fill="#606060">SYS: ONLINE</text>
+  <text x="600" y="608" font-family="Courier New, monospace" font-size="12" fill="#606060" text-anchor="middle">DISTRIBUTED CONTROL SYSTEM</text>
+  <text x="1160" y="608" font-family="Courier New, monospace" font-size="12" fill="#606060" text-anchor="end">STATUS: NORMAL</text>
+</svg>

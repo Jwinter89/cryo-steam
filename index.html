@@ -7,6 +7,24 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <title>Cold Creek — Gas Plant Simulator</title>
+  <meta name="description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator with DCS controls, P&amp;ID diagrams, and procedural upsets.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gasplantsim.com/">
+  <meta property="og:title" content="Cold Creek — Gas Plant Simulator">
+  <meta property="og:description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator.">
+  <meta property="og:image" content="https://gasplantsim.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cold Creek — Gas Plant Simulator">
+  <meta name="twitter:description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator.">
+  <meta name="twitter:image" content="https://gasplantsim.com/og-image.png">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -59,9 +77,13 @@
           <span class="cta-label">FULL VERSION COMING TO APP STORE SOON</span>
         </div>
 
+        <!-- Daily Challenges Preview -->
+        <div id="title-challenges-preview" class="challenges-preview-box"></div>
+
         <div class="title-footer-links">
-          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="donate-link">Support the Developer</a>
-          <span class="title-footer-sep">|</span>
+          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="support-btn-link">&#9734; SUPPORT THE DEV</a>
+        </div>
+        <div class="title-footer-links" style="margin-top:8px">
           <a href="https://winterhowlers.com" target="_blank" rel="noopener" class="donate-link">Built by Winter Howlers</a>
         </div>
 
@@ -592,14 +614,35 @@
         <div class="mobile-info-content" id="mobile-info-content"></div>
       </div>
 
-      <!-- Time Control Bar -->
+      <!-- Time Control Bar (desktop) -->
       <div id="time-controls">
         <button id="btn-pause" class="time-btn active">&#9646;&#9646;</button>
         <button id="btn-1x" class="time-btn">1x</button>
         <button id="btn-2x" class="time-btn">2x</button>
         <button id="btn-4x" class="time-btn">4x</button>
         <span id="time-speed-label">PAUSED</span>
-        <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="game-support-link">&#9734; SUPPORT</a>
+        <button id="btn-trend" class="time-btn trend-toggle-btn" title="Toggle Trend Graph">&#x1F4C8;</button>
+        <button id="btn-snapshot" class="time-btn snapshot-btn" title="Take Snapshot">&#x1F4F7;</button>
+        <button id="btn-coach" class="time-btn coach-btn" title="Pause & Coach (Henry gives a hint)" style="display:none">COACH</button>
+      </div>
+
+      <!-- Mobile Building Pills (floating over P&ID) -->
+      <div id="mobile-building-pills" class="mobile-building-pills"></div>
+
+      <!-- Mobile Floating Speed Dial -->
+      <div id="speed-dial-backdrop" class="speed-dial-backdrop"></div>
+      <div id="mobile-speed-dial" class="mobile-speed-dial">
+        <div class="speed-dial-ring" id="speed-dial-ring">
+          <button class="sd-btn" data-speed="0" title="Pause">&#9646;&#9646;</button>
+          <button class="sd-btn" data-speed="1" title="1x Speed">1x</button>
+          <button class="sd-btn" data-speed="2" title="2x Speed">2x</button>
+          <button class="sd-btn" data-speed="4" title="4x Speed">4x</button>
+          <button class="sd-btn sd-trend" id="sd-trend" title="Trend">&#x1F4C8;</button>
+          <button class="sd-btn sd-snap" id="sd-snapshot" title="Snapshot">&#x1F4F7;</button>
+        </div>
+        <button class="speed-dial-fab" id="speed-dial-fab">
+          <span class="fab-label" id="fab-label">&#9646;&#9646;</span>
+        </button>
       </div>
     </div>
 
@@ -735,6 +778,8 @@
 
   <footer id="site-footer">
     <a href="https://winterhowlers.com" target="_blank" rel="noopener">Built by Winter Howlers</a>
+    <span class="footer-sep">|</span>
+    <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="footer-support-link">&#9734; Support the Developer</a>
   </footer>
 
   <!-- Firebase (leaderboard) -->

@@ -22,6 +22,7 @@ const items = [
   'game.js',
   'src',
   'assets',
+  'og-image.png',
 ];
 
 function copyRecursive(src, dest) {
