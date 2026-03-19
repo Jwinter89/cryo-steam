@@ -1287,6 +1287,20 @@ g[id^="equip-"]:hover line {
   gap: 4px;
   flex-shrink: 0;
 }
+.game-support-link {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-unit);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.game-support-link:hover {
+  opacity: 1;
+  color: var(--text-normal);
+}
 .time-btn {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -2373,6 +2387,8 @@ g[id^="equip-"]:hover line {
   padding: 12px 14px;
   max-width: 340px;
   min-width: 200px;
+  max-height: 60vh;
+  overflow-y: auto;
   position: relative;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
