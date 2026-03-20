@@ -43,18 +43,26 @@ class FaceplateManager {
             const newSP = parseFloat(spInput.value);
             if (!isNaN(newSP) && newSP >= pv.min && newSP <= pv.max) {
               pv.sp = newSP;
+              this._flashApply(true);
               document.dispatchEvent(new CustomEvent('faceplate:apply', {
                 detail: { tag: this.currentTag, sp: newSP }
               }));
+            } else {
+              this._flashApply(false);
+              spInput.value = pv.sp.toFixed(1);
             }
           } else if (pv.mode === 'MAN') {
             const outInput = document.getElementById('fp-out');
             const newOut = parseFloat(outInput.value);
             if (!isNaN(newOut) && newOut >= 0 && newOut <= 100) {
               pv.output = newOut;
+              this._flashApply(true);
               document.dispatchEvent(new CustomEvent('faceplate:apply', {
                 detail: { tag: this.currentTag, output: newOut }
               }));
+            } else {
+              this._flashApply(false);
+              outInput.value = pv.output.toFixed(1);
             }
           }
         }
@@ -250,6 +258,15 @@ class FaceplateManager {
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+  }
+
+  _flashApply(success) {
+    const btn = document.getElementById('fp-apply');
+    btn.classList.remove('fp-apply-ok', 'fp-apply-err');
+    // Force reflow for re-triggering animation
+    void btn.offsetWidth;
+    btn.classList.add(success ? 'fp-apply-ok' : 'fp-apply-err');
+    setTimeout(() => btn.classList.remove('fp-apply-ok', 'fp-apply-err'), 600);
   }
 
   _updateFieldAccess(pv) {

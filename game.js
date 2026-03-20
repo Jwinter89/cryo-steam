@@ -216,6 +216,21 @@
         btn.addEventListener('click', () => {
           switch (btn.dataset.action) {
             case 'new-game':
+              // Nudge player to set callsign if they haven't
+              if (!localStorage.getItem('coldcreek-username')) {
+                const promptEl = document.getElementById('username-prompt');
+                const inputEl = document.getElementById('username-input');
+                if (promptEl && inputEl) {
+                  promptEl.classList.add('callsign-nudge');
+                  inputEl.setAttribute('placeholder', 'SET CALLSIGN TO CONTINUE');
+                  inputEl.focus();
+                  setTimeout(() => {
+                    promptEl.classList.remove('callsign-nudge');
+                    inputEl.setAttribute('placeholder', 'ENTER CALLSIGN');
+                  }, 3000);
+                  break;
+                }
+              }
               this._showScreen('mode-screen');
               break;
             case 'continue':
@@ -235,7 +250,7 @@
       const mainMenuBtn = document.getElementById('btn-main-menu');
       if (mainMenuBtn) {
         mainMenuBtn.addEventListener('click', () => {
-          if (this.sim && this.sim.running) {
+          if (this.sim && this.sim.speed > 0) {
             this.sim.pause();
             this._updateTimeButtons(0);
           }
@@ -2506,7 +2521,7 @@
       }
 
       // Shift end approaching (15 min left = ~690 game minutes on a 720 min shift)
-      const gameMin = this.sim.gameTime;
+      const gameMin = this.sim.gameTimeMinutes;
       if (gameMin >= 690 && gameMin <= 695 && !this._henryTipCooldown('shift-end')) {
         this.henry.operatorTip('shift-end-approaching');
         this._setHenryTipCooldown('shift-end', 9999);

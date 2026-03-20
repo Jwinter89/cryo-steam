@@ -199,6 +199,17 @@ html, body {
   justify-content: center;
   align-items: center;
 }
+.callsign-nudge {
+  animation: nudge-pulse 0.5s ease-in-out 3;
+}
+.callsign-nudge .username-input {
+  border-color: #e8a030 !important;
+  box-shadow: 0 0 8px rgba(232,160,48,0.4);
+}
+@keyframes nudge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
 .username-input {
   font-family: var(--font-mono);
   font-size: 13px;
@@ -1177,6 +1188,13 @@ g[id^="equip-"]:hover line {
 .fp-apply-btn {
   background: var(--bg-input);
   color: var(--text-normal);
+  transition: background 0.3s;
+}
+.fp-apply-ok {
+  background: rgba(0,200,120,0.35) !important;
+}
+.fp-apply-err {
+  background: rgba(220,60,60,0.35) !important;
 }
 
 /* ---- RIGHT PANEL ---- */
@@ -3143,6 +3161,20 @@ g[id^="equip-"]:hover {
   font-size: 11px;
   color: var(--text-label);
   line-height: 1.4;
+}
+.update-banner-list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+  font-size: 11px;
+  color: var(--text-label);
+  line-height: 1.6;
+  text-align: left;
+}
+.update-banner-list li::before {
+  content: "\2022 ";
+  color: #00c878;
+  margin-right: 4px;
 }
 
 .cta-banner {
