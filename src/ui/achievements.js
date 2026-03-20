@@ -28,12 +28,12 @@ class Achievements {
       { id: 'expander-tamer', name: 'Turboexpander Tamer', desc: 'Switch modes in Cryo without recycle trip', tier: 'silver', icon: '\u2699', max: 1 },
 
       // Gold
-      { id: 'cryo-god', name: 'Cryo God', desc: '98%+ NGL recovery for full shift', tier: 'gold', icon: '\u2744', max: 1 },
+      { id: 'cryo-god', name: 'Cryo God', desc: '92%+ NGL recovery for full shift', tier: 'gold', icon: '\u2744', max: 1 },
       { id: 'profit-king', name: 'Profit King', desc: '$15,000+ net in one shift', tier: 'gold', icon: '\u2654', max: 1 },
       { id: 'crisis-legend', name: 'Crisis Legend', desc: 'Recover from any Crisis in under 4 minutes', tier: 'gold', icon: '\u26A1', max: 1 },
       { id: 'zero-alarm-legend', name: 'Zero-Alarm Legend', desc: '10 perfect shifts in a row', tier: 'gold', icon: '\u2728', max: 10 },
       { id: 'three-plant', name: 'Three-Plant Overlord', desc: 'Run all three facilities in one session with positive P&L', tier: 'gold', icon: '\u2756', max: 3 },
-      { id: 'shift-legend', name: 'Shift Legend', desc: 'Beat global average P&L by 50% for 7 days', tier: 'gold', icon: '\u265B', max: 7 }
+      { id: 'shift-legend', name: 'Shift Legend', desc: 'Earn $8,000+ net for 7 shifts in a row', tier: 'gold', icon: '\u265B', max: 7 }
     ];
   }
 
@@ -153,9 +153,16 @@ class Achievements {
     // Zero-Alarm Legend — track consecutive 0-alarm shifts
     if (alarmMgr && alarmMgr.alarmHistory && alarmMgr.alarmHistory.length === 0) {
       if (this.addProgress('zero-alarm-legend', 1)) results.push('zero-alarm-legend');
-    } else {
-      // Reset progress on any alarm
+    } else if (!this.isUnlocked('zero-alarm-legend')) {
+      // Reset streak only if not yet unlocked
       if (this.state['zero-alarm-legend']) this.state['zero-alarm-legend'].progress = 0;
+    }
+
+    // Shift Legend — strong earnings across multiple shifts ($8k+ for 7 shifts)
+    if (earnings >= 8000) {
+      if (this.addProgress('shift-legend', 1)) results.push('shift-legend');
+    } else if (!this.isUnlocked('shift-legend')) {
+      if (this.state['shift-legend']) this.state['shift-legend'].progress = 0;
     }
 
     // Three-Plant Overlord — track facilities completed this session

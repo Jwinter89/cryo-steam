@@ -2755,9 +2755,9 @@
         this._noBtexPenalties = false;
       }
 
-      // NGL recovery tracking (98%+ for Cryo God)
+      // NGL recovery tracking (92%+ for Cryo God)
       const eth = pvMap['AI-701'] || pvMap['AI-502'];
-      if (eth && eth.displayValue() < 98) {
+      if (eth && eth.displayValue() < 92) {
         this._highRecoveryEntireShift = false;
       }
     },
