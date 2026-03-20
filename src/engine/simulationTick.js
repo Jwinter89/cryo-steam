@@ -142,10 +142,12 @@ class SimulationTick {
       this.onTick(dt, this.gameTimeMinutes);
     }
 
-    // Check shift end
+    // Check shift end (fire once, then clear callback to prevent repeat)
     if (this.shiftElapsed >= this.shiftDurationMinutes) {
       if (this.onShiftEnd) {
-        this.onShiftEnd(this.shiftElapsed);
+        const cb = this.onShiftEnd;
+        this.onShiftEnd = null;
+        cb(this.shiftElapsed);
       }
     }
   }

@@ -118,8 +118,13 @@ class AlarmManager {
   }
 
   _updateList() {
+    this._listDirty = true;
     if (this.listPopup.style.display === 'none') return;
+    this._renderList();
+  }
 
+  _renderList() {
+    this._listDirty = false;
     if (this.alarms.length === 0) {
       this.listEl.innerHTML = '<div class="alarm-empty">NO ALARMS</div>';
       return;
@@ -289,7 +294,9 @@ class AlarmManager {
   _toggleAlarmList() {
     if (this.listPopup.style.display === 'none') {
       this.listPopup.style.display = 'flex';
-      this._updateList();
+      if (this._listDirty) {
+        this._renderList();
+      }
     } else {
       this.listPopup.style.display = 'none';
     }

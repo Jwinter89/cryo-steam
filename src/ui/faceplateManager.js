@@ -27,6 +27,7 @@ class FaceplateManager {
           if (pv && pv.controllable) {
             pv.mode = mode;
             this._updateModeButtons(mode);
+            this._updateFieldAccess(pv);
           }
         }
       });
@@ -37,13 +38,32 @@ class FaceplateManager {
       if (this.currentTag) {
         const pv = this.sim.getPV(this.currentTag);
         if (pv && pv.controllable) {
-          const spInput = document.getElementById('fp-sp');
-          const newSP = parseFloat(spInput.value);
-          if (!isNaN(newSP) && newSP >= pv.min && newSP <= pv.max) {
-            pv.sp = newSP;
-            document.dispatchEvent(new CustomEvent('faceplate:apply', {
-              detail: { tag: this.currentTag, sp: newSP }
-            }));
+          if (pv.mode === 'AUTO') {
+            const spInput = document.getElementById('fp-sp');
+            const newSP = parseFloat(spInput.value);
+            if (!isNaN(newSP) && newSP >= pv.min && newSP <= pv.max) {
+              pv.sp = newSP;
+              this._flashApply(true);
+              document.dispatchEvent(new CustomEvent('faceplate:apply', {
+                detail: { tag: this.currentTag, sp: newSP }
+              }));
+            } else {
+              this._flashApply(false);
+              spInput.value = pv.sp.toFixed(1);
+            }
+          } else if (pv.mode === 'MAN') {
+            const outInput = document.getElementById('fp-out');
+            const newOut = parseFloat(outInput.value);
+            if (!isNaN(newOut) && newOut >= 0 && newOut <= 100) {
+              pv.output = newOut;
+              this._flashApply(true);
+              document.dispatchEvent(new CustomEvent('faceplate:apply', {
+                detail: { tag: this.currentTag, output: newOut }
+              }));
+            } else {
+              this._flashApply(false);
+              outInput.value = pv.output.toFixed(1);
+            }
           }
         }
       }
@@ -115,11 +135,10 @@ class FaceplateManager {
     document.getElementById('fp-pv-unit').textContent = pv.unit;
     document.getElementById('fp-sp').value = pv.sp.toFixed(1);
     document.getElementById('fp-sp-unit').textContent = pv.unit;
-    document.getElementById('fp-out').textContent = pv.output.toFixed(1);
+    document.getElementById('fp-out').value = pv.output.toFixed(1);
 
-    // Show/hide SP input based on controllability
-    const spInput = document.getElementById('fp-sp');
-    spInput.disabled = !pv.controllable;
+    // Update field access based on mode and controllability
+    this._updateFieldAccess(pv);
 
     // Mode display
     document.getElementById('fp-mode-display').textContent = pv.mode;
@@ -157,8 +176,13 @@ class FaceplateManager {
     if (!pv) return;
 
     document.getElementById('fp-pv').textContent = pv.formatValue();
-    document.getElementById('fp-out').textContent = pv.output.toFixed(1);
     document.getElementById('fp-mode-display').textContent = pv.mode;
+
+    // Update OUT display — only overwrite if not actively being edited in MAN mode
+    const outInput = document.getElementById('fp-out');
+    if (document.activeElement !== outInput) {
+      outInput.value = pv.output.toFixed(1);
+    }
 
     this._updateBar(pv);
     this._drawTrend(pv);
@@ -234,6 +258,25 @@ class FaceplateManager {
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+  }
+
+  _flashApply(success) {
+    const btn = document.getElementById('fp-apply');
+    btn.classList.remove('fp-apply-ok', 'fp-apply-err');
+    // Force reflow for re-triggering animation
+    void btn.offsetWidth;
+    btn.classList.add(success ? 'fp-apply-ok' : 'fp-apply-err');
+    setTimeout(() => btn.classList.remove('fp-apply-ok', 'fp-apply-err'), 600);
+  }
+
+  _updateFieldAccess(pv) {
+    const spInput = document.getElementById('fp-sp');
+    const outInput = document.getElementById('fp-out');
+
+    // SP is editable in AUTO mode for controllable PVs
+    spInput.disabled = !pv.controllable || pv.mode === 'MAN';
+    // OUT is editable in MAN mode for controllable PVs
+    outInput.disabled = !pv.controllable || pv.mode === 'AUTO';
   }
 
   _updateModeButtons(activeMode) {
