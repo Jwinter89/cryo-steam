@@ -23,6 +23,14 @@ const items = [
   'src',
   'assets',
   'og-image.png',
+  'manifest.json',
+  'sw.js',
+  'favicon.svg',
+  'apple-touch-icon.svg',
+  'icon-192.svg',
+  'icon-512.svg',
+  'icon-maskable-192.svg',
+  'icon-maskable-512.svg',
 ];
 
 function copyRecursive(src, dest) {

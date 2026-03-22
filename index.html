@@ -25,6 +25,12 @@
   <meta name="twitter:description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator.">
   <meta name="twitter:image" content="https://gasplantsim.com/og-image.png">
 
+  <!-- PWA -->
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.svg">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -862,6 +868,17 @@
 
   <!-- Main game -->
   <script src="game.js"></script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('[PWA] Service worker registered:', reg.scope))
+          .catch(err => console.warn('[PWA] Service worker registration failed:', err));
+      });
+    }
+  </script>
 
   <!-- Vercel Analytics -->
   <script defer src="/_vercel/insights/script.js"></script>
