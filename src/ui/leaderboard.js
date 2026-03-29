@@ -83,12 +83,13 @@ class Leaderboard {
     this.localScores.push(entry);
     this._saveLocalScores();
 
-    // Push to Firebase if available
-    if (this.db) {
+    // Push to Firebase if available and authenticated
+    if (this.db && typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
       try {
+        entry.uid = firebase.auth().currentUser.uid;
         this.db.ref('leaderboard').push(entry);
       } catch (e) {
-        console.warn('Leaderboard: Firebase push failed', e);
+        // Firebase push failed — local score is preserved
       }
     }
   }

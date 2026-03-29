@@ -141,13 +141,11 @@ class OperatorProfile {
       localStorage.setItem('coldcreek-profile-stats', JSON.stringify(this._stats));
     } catch (e) { /* ok */ }
 
-    // Sync to Firebase
-    if (typeof firebase !== 'undefined' && firebase.database) {
+    // Sync to Firebase (only if authenticated)
+    if (typeof firebase !== 'undefined' && firebase.database && firebase.auth && firebase.auth().currentUser) {
       try {
-        const username = localStorage.getItem('coldcreek-username');
-        if (username) {
-          firebase.database().ref('profiles/' + username + '/stats').set(this._stats);
-        }
+        const uid = firebase.auth().currentUser.uid;
+        firebase.database().ref('profiles/' + uid + '/stats').set(this._stats);
       } catch (e) { /* ok */ }
     }
   }

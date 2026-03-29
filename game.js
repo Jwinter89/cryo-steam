@@ -189,6 +189,7 @@
       this._showScreen('title-screen');
       this._refreshLeaderboard();
       this._bindLeaderboardFilters();
+      this._bindAdFree();
       this._updateChallengesPreview();
       this._initHenry();
       this._checkBuildingTabOverflow();
@@ -201,6 +202,7 @@
       if (window.Challenges) this.challenges = new Challenges();
       if (window.DebriefScreen) this.debriefScreen = new DebriefScreen();
       if (window.Glossary) this.glossary = new Glossary();
+      if (window.AdManager) this.adManager = new AdManager();
       if (window.ColorBlindMode) {
         this.colorBlindMode = new ColorBlindMode();
         // Restore saved setting
@@ -224,7 +226,7 @@
 
       // iOS Safari: show manual add-to-home-screen hint
       // (beforeinstallprompt never fires on iOS)
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && /Mac/.test(navigator.platform)));
       const isStandalone = window.navigator.standalone === true;
       if (isIOS && !isStandalone && !localStorage.getItem('coldcreek-pwa-dismissed')) {
         const banner = document.getElementById('pwa-install-banner');
@@ -252,6 +254,21 @@
         dismissBtn.addEventListener('click', () => {
           document.getElementById('pwa-install-banner').style.display = 'none';
           localStorage.setItem('coldcreek-pwa-dismissed', '1');
+        });
+      }
+    },
+
+    // ============================================================
+    // AD-FREE PURCHASE
+    // ============================================================
+
+    _bindAdFree() {
+      const buyBtn = document.getElementById('ad-free-buy-btn');
+      if (buyBtn) {
+        buyBtn.addEventListener('click', () => {
+          // Placeholder — wire to Stripe Checkout when keys are provided
+          // For now, show a message
+          this.showToast('COMING SOON', 'Ad-free purchase will be available shortly', 'AD-FREE');
         });
       }
     },
@@ -323,10 +340,10 @@
         ctaBtn.addEventListener('click', () => {
           const email = document.getElementById('cta-email').value.trim();
           if (!email || !email.includes('@')) return;
-          // Store in Firebase if available, localStorage as fallback
+          // Store in Firebase if available and authenticated, localStorage as fallback
           try {
-            if (this.leaderboard && this.leaderboard.db) {
-              this.leaderboard.db.ref('waitlist').push({ email, timestamp: Date.now() });
+            if (this.leaderboard && this.leaderboard.db && typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+              this.leaderboard.db.ref('waitlist').push({ email, timestamp: Date.now(), uid: firebase.auth().currentUser.uid });
             }
           } catch(e) {}
           localStorage.setItem('coldcreek-waitlist-email', email);
@@ -660,6 +677,16 @@
       // Refresh leaderboard when returning to title
       if (screenId === 'title-screen') {
         this._refreshLeaderboard();
+        // Show title banner ad
+        if (this.adManager) {
+          this.adManager.showTitleBanner();
+          // Show upgrade banner for non-ad-free users
+          const upgradeBanner = document.getElementById('ad-free-banner');
+          if (upgradeBanner) upgradeBanner.style.display = this.adManager.isAdFree() ? 'none' : '';
+        }
+      } else {
+        // Hide banner ad on non-title screens
+        if (this.adManager) this.adManager.hideTitleBanner();
       }
     },
 
@@ -1999,10 +2026,14 @@
         return;
       }
 
-      eventBlock.innerHTML = active.map(e => {
+      eventBlock.innerHTML = '';
+      active.forEach(e => {
         const mins = Math.floor(e.elapsed);
-        return `<span class="event-item active-event">${e.name} (${mins}m)</span>`;
-      }).join('');
+        const span = document.createElement('span');
+        span.className = 'event-item active-event';
+        span.textContent = e.name + ' (' + mins + 'm)';
+        eventBlock.appendChild(span);
+      });
     },
 
     _addRadioMessage(msg) {
@@ -2169,6 +2200,14 @@
       const div = document.createElement('div');
       div.textContent = str;
       return div.innerHTML;
+    },
+
+    /** Sanitize a string for use as a Firebase path key */
+    _sanitizeFirebaseKey(str) {
+      // Firebase keys cannot contain . $ # [ ] / or control chars
+      return String(str || '')
+        .replace(/[.$#\[\]\/\x00-\x1f]/g, '_')
+        .substring(0, 40);
     },
 
     // ============================================================
@@ -2372,8 +2411,16 @@
 
       document.getElementById('obj-done-btn').addEventListener('click', () => {
         overlay.style.display = 'none';
-        this._showScreen('title-screen');
-        this._updateContinueButton();
+        // Show interstitial ad between shifts (throttled to max 1 per 5 min)
+        if (this.adManager) {
+          this.adManager.showInterstitial(() => {
+            this._showScreen('title-screen');
+            this._updateContinueButton();
+          });
+        } else {
+          this._showScreen('title-screen');
+          this._updateContinueButton();
+        }
       });
     },
 
@@ -2466,11 +2513,20 @@
       for (const note of FieldNotes.notes) {
         const card = document.createElement('div');
         card.className = 'field-note-card' + (note.unlocked ? '' : ' field-note-locked');
-        card.innerHTML = `
-          <div class="field-note-category">${note.category}</div>
-          <div class="field-note-title">${note.unlocked ? note.title : '???'}</div>
-          <div class="field-note-text">${note.unlocked ? note.text : 'Keep operating to unlock this note.'}</div>
-        `;
+        const catDiv = document.createElement('div');
+        catDiv.className = 'field-note-category';
+        catDiv.textContent = note.category;
+        card.appendChild(catDiv);
+
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'field-note-title';
+        titleDiv.textContent = note.unlocked ? note.title : '???';
+        card.appendChild(titleDiv);
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'field-note-text';
+        textDiv.textContent = note.unlocked ? note.text : 'Keep operating to unlock this note.';
+        card.appendChild(textDiv);
         list.appendChild(card);
       }
 
@@ -2488,12 +2544,14 @@
         localStorage.setItem('coldcreek-progress', JSON.stringify(this.progress));
       } catch (e) { /* Storage unavailable */ }
 
-      // Sync progress to Firebase
-      if (typeof firebase !== 'undefined' && firebase.database) {
+      // Sync progress to Firebase (only if authenticated)
+      if (typeof firebase !== 'undefined' && firebase.database && firebase.auth && firebase.auth().currentUser) {
         try {
           const username = localStorage.getItem('coldcreek-username');
           if (username) {
-            firebase.database().ref('profiles/' + username + '/progress').set(this.progress);
+            const safeKey = this._sanitizeFirebaseKey(username);
+            const uid = firebase.auth().currentUser.uid;
+            firebase.database().ref('profiles/' + uid + '/progress').set(this.progress);
           }
         } catch (e) { /* ok */ }
       }
@@ -2814,11 +2872,24 @@
     showToast(title, description, headerText) {
       const toast = document.createElement('div');
       toast.className = 'achievement-toast';
-      toast.innerHTML = `
-        <div class="toast-header">${headerText || 'ACHIEVEMENT'}</div>
-        <div class="toast-title">${title}</div>
-        ${description ? `<div class="toast-desc">${description}</div>` : ''}
-      `;
+
+      const hdr = document.createElement('div');
+      hdr.className = 'toast-header';
+      hdr.textContent = headerText || 'ACHIEVEMENT';
+      toast.appendChild(hdr);
+
+      const ttl = document.createElement('div');
+      ttl.className = 'toast-title';
+      ttl.textContent = title;
+      toast.appendChild(ttl);
+
+      if (description) {
+        const desc = document.createElement('div');
+        desc.className = 'toast-desc';
+        desc.textContent = description;
+        toast.appendChild(desc);
+      }
+
       document.body.appendChild(toast);
 
       setTimeout(() => {

@@ -110,13 +110,11 @@ class CareerProgression {
       localStorage.setItem('coldcreek-career', JSON.stringify(this.state));
     } catch (e) { /* ok */ }
 
-    // Firebase sync
-    if (typeof firebase !== 'undefined' && firebase.database) {
+    // Firebase sync (only if authenticated)
+    if (typeof firebase !== 'undefined' && firebase.database && firebase.auth && firebase.auth().currentUser) {
       try {
-        const username = localStorage.getItem('coldcreek-username');
-        if (username) {
-          firebase.database().ref('profiles/' + username + '/career').set(this.state);
-        }
+        const uid = firebase.auth().currentUser.uid;
+        firebase.database().ref('profiles/' + uid + '/career').set(this.state);
       } catch (e) { /* ok */ }
     }
   }

@@ -3,7 +3,7 @@
  * Enables offline caching and PWA install prompt.
  */
 
-const CACHE_NAME = 'cold-creek-v3';
+const CACHE_NAME = 'cold-creek-v4';
 
 // Core assets to cache on install
 const PRECACHE_ASSETS = [
@@ -12,10 +12,13 @@ const PRECACHE_ASSETS = [
   '/style.css',
   '/game.js',
   '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
   '/icon-192.svg',
   '/icon-512.svg',
   '/robots.txt',
   '/sitemap.xml',
+  '/ads.txt',
   '/src/engine/simulationTick.js',
   '/src/engine/cascadeEngine.js',
   '/src/engine/processVariable.js',
@@ -53,6 +56,7 @@ const PRECACHE_ASSETS = [
   '/src/ui/debriefScreen.js',
   '/src/ui/glossary.js',
   '/src/ui/colorBlindMode.js',
+  '/src/ui/adManager.js',
   '/src/ui/leaderboard.js',
   '/src/audio/audioManager.js',
   '/src/capacitor/storageBridge.js',
@@ -88,9 +92,12 @@ self.addEventListener('activate', (event) => {
 
 // Fetch — network-first with cache fallback
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and chrome-extension URLs
+  // Skip non-GET requests, chrome-extension URLs, and external ad/analytics scripts
   if (event.request.method !== 'GET') return;
   if (event.request.url.startsWith('chrome-extension://')) return;
+  if (event.request.url.includes('googlesyndication.com')) return;
+  if (event.request.url.includes('googleads.')) return;
+  if (event.request.url.includes('doubleclick.net')) return;
 
   event.respondWith(
     fetch(event.request)

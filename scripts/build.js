@@ -21,7 +21,7 @@ const items = [
   'style.css',
   'game.js',
   'src',
-  'assets',
+  'apple-touch-icon.png',
   'og-image.png',
   'manifest.json',
   'sw.js',
@@ -31,6 +31,13 @@ const items = [
   'icon-512.svg',
   'icon-maskable-192.svg',
   'icon-maskable-512.svg',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-192.png',
+  'icon-maskable-512.png',
+  'robots.txt',
+  'sitemap.xml',
+  'ads.txt',
 ];
 
 function copyRecursive(src, dest) {

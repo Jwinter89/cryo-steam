@@ -42,10 +42,16 @@
   </script>
 
   <!-- PWA -->
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://tpc.googlesyndication.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://pagead2.googlesyndication.com https://*.google.com; img-src 'self' data: blob: https://pagead2.googlesyndication.com https://*.google.com https://*.googleusercontent.com; font-src 'self'; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com;">
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4033673224873505" crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
@@ -99,6 +105,23 @@
           <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
           <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
           <button class="menu-btn" data-action="settings">SETTINGS</button>
+        </div>
+
+        <!-- Title Screen Ad Banner (hidden for ad-free users) -->
+        <div id="ad-title-banner" class="ad-title-banner" style="display:none">
+          <div class="ad-label">ADVERTISEMENT</div>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-client="ca-pub-4033673224873505"
+               data-ad-slot=""
+               data-ad-format="horizontal"
+               data-full-width-responsive="true"></ins>
+        </div>
+
+        <!-- Ad-Free Upgrade Banner -->
+        <div id="ad-free-banner" class="ad-free-upgrade-banner" style="display:none">
+          <span>Remove ads for a one-time purchase</span>
+          <button id="ad-free-buy-btn" class="menu-btn" style="margin-left:8px;padding:4px 12px;font-size:10px;">GO AD-FREE</button>
         </div>
 
         <!-- Leaderboard -->
@@ -856,6 +879,7 @@
   <!-- Firebase (leaderboard) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
     // Firebase config — Cold Creek Leaderboard
     if (typeof firebase !== 'undefined') {
@@ -867,6 +891,10 @@
         storageBucket: "cryo-bd332.firebasestorage.app",
         messagingSenderId: "895328674793",
         appId: "1:895328674793:web:8cc7b6e1fa953ab03be178"
+      });
+      // Sign in anonymously for security rules enforcement
+      firebase.auth().signInAnonymously().catch(function(err) {
+        // Auth not available — leaderboard falls back to local
       });
     }
   </script>
@@ -919,17 +947,36 @@
   <script src="src/ui/glossary.js"></script>
   <script src="src/ui/colorBlindMode.js"></script>
   <script src="src/ui/pidZoom.js"></script>
+  <script src="src/ui/adManager.js"></script>
 
   <!-- Main game -->
   <script src="game.js"></script>
 
+  <!-- Global Error Handler -->
+  <script>
+    window.addEventListener('error', function(e) {
+      // Pause simulation on critical errors to prevent runaway setInterval
+      if (window._coldCreekGame && window._coldCreekGame.sim) {
+        try { window._coldCreekGame.sim.pause(); } catch(_) {}
+      }
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      // Suppress noisy promise rejections but log for debugging
+    });
+  </script>
+
+  <!-- StorageBridge Migration (runs once on first native launch) -->
+  <script>
+    if (window.StorageBridge && window.StorageBridge.migrateFromLocalStorage) {
+      window.StorageBridge.migrateFromLocalStorage().catch(function() {});
+    }
+  </script>
+
   <!-- PWA Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('[PWA] Service worker registered:', reg.scope))
-          .catch(err => console.warn('[PWA] Service worker registration failed:', err));
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
       });
     }
   </script>

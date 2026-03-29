@@ -1,0 +1,37 @@
+{
+  "rules": {
+    "leaderboard": {
+      ".read": true,
+      ".write": "auth != null",
+      "$pushId": {
+        ".validate": "newData.hasChildren(['username', 'facility', 'mode', 'earnings', 'timestamp', 'uid']) && newData.child('username').isString() && newData.child('username').val().length <= 20 && newData.child('earnings').isNumber() && newData.child('earnings').val() >= -100000 && newData.child('earnings').val() <= 500000 && newData.child('uid').val() === auth.uid"
+      }
+    },
+    "profiles": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "progress": {
+          ".validate": true
+        },
+        "stats": {
+          ".validate": true
+        },
+        "achievements": {
+          ".validate": true
+        }
+      }
+    },
+    "waitlist": {
+      ".read": false,
+      ".write": "auth != null",
+      "$pushId": {
+        ".validate": "newData.hasChildren(['email', 'timestamp', 'uid']) && newData.child('email').isString() && newData.child('email').val().length <= 100 && newData.child('uid').val() === auth.uid"
+      }
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

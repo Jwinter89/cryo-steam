@@ -185,13 +185,11 @@ class Achievements {
       localStorage.setItem('coldcreek-achievements', JSON.stringify(this.state));
     } catch (e) { /* ok */ }
 
-    // Sync to Firebase
-    if (typeof firebase !== 'undefined' && firebase.database) {
+    // Sync to Firebase (only if authenticated)
+    if (typeof firebase !== 'undefined' && firebase.database && firebase.auth && firebase.auth().currentUser) {
       try {
-        const username = localStorage.getItem('coldcreek-username');
-        if (username) {
-          firebase.database().ref('profiles/' + username + '/achievements').set(this.state);
-        }
+        const uid = firebase.auth().currentUser.uid;
+        firebase.database().ref('profiles/' + uid + '/achievements').set(this.state);
       } catch (e) { /* ok */ }
     }
   }

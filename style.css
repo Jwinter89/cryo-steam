@@ -4288,3 +4288,72 @@ body.cb-tritanopia .spec-row.off-spec {
 .leaderboard-filters { display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; }
 .lb-filter { background: var(--bg-deep); border: 1px solid var(--border); color: var(--text-unit); padding: 4px 10px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
 .lb-filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ============================================================
+   ADS — Title Banner & Interstitial
+   ============================================================ */
+.ad-title-banner {
+  margin: 12px auto;
+  max-width: 480px;
+  text-align: center;
+}
+.ad-title-banner .ad-label,
+.ad-interstitial-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-unit);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+.ad-free-upgrade-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 6px auto;
+  padding: 6px 12px;
+  max-width: 400px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-label);
+}
+.ad-interstitial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ad-interstitial-container {
+  background: var(--bg-panel, #2a2a2a);
+  border: 1px solid var(--border, #444);
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+.ad-interstitial-close {
+  margin-top: 12px;
+  padding: 10px 24px;
+  background: var(--accent, #4CAF50);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.ad-interstitial-close:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
