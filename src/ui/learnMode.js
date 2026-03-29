@@ -1062,6 +1062,9 @@ class LearnMode {
     const username = localStorage.getItem('coldcreek-username') || 'OPERATOR';
     const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
+    const facilityNames = { stabilizer: 'STABILIZER', refrigeration: 'REFRIGERATION', cryogenic: 'CRYOGENIC' };
+    const certTitle = (facilityNames[this.facility] || 'STABILIZER') + ' OPERATOR TRAINING PROGRAM';
+
     const certDiv = document.createElement('div');
     certDiv.className = 'learn-certificate-overlay';
     certDiv.innerHTML = `
@@ -1073,7 +1076,7 @@ class LearnMode {
             This certifies that
             <div class="cert-name">${username}</div>
             has successfully completed the
-            <div class="cert-course">${(() => { const facilityNames = { stabilizer: 'STABILIZER', refrigeration: 'REFRIGERATION', cryogenic: 'CRYOGENIC' }; return (facilityNames[this.facility] || 'STABILIZER') + ' OPERATOR TRAINING PROGRAM'; })()}</div>
+            <div class="cert-course">${certTitle}</div>
             under the supervision of Henry, Senior Operator
           </div>
           <div class="cert-date">${date}</div>
@@ -1092,8 +1095,13 @@ class LearnMode {
       certDiv.remove();
       if (this.game.henry) {
         setTimeout(() => {
+          const gradMessages = {
+            stabilizer: "You graduated Stabilizer School. Not bad, greenhorn.\n\nRefrigeration Plant and Cryogenic are unlocked.",
+            refrigeration: "You graduated Refrigeration School. You can run a refrig plant now.\n\nCryogenic is where the real operators play. Give it a shot.",
+            cryogenic: "You graduated Cryogenic School. That's the top of the mountain.\n\nYou can run any gas plant in the country. I'm proud of you, operator."
+          };
           this.game.henry.show({
-            text: "You graduated Stabilizer School. Not bad, greenhorn.\n\nRefrigeration Plant and Cryogenic are unlocked.",
+            text: gradMessages[this.facility] || gradMessages.stabilizer,
             mood: 'happy',
             position: 'right',
             duration: 0,

@@ -1315,7 +1315,7 @@
 
       // Start in appropriate mode
       if (this.currentMode === 'learn') {
-        this.learnMode.start(1);
+        this.learnMode.start(1, this.currentFacility);
       } else if (this.currentMode === 'crisis' && this.crisisScenario) {
         this._startCrisisScenario();
         // Henry announces crisis
