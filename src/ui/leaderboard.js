@@ -8,8 +8,29 @@ class Leaderboard {
   constructor() {
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
+    this._seedScores();
     this.db = null;
     this._initFirebase();
+  }
+
+  // Seed leaderboard with notable scores (only added once)
+  _seedScores() {
+    if (localStorage.getItem('coldcreek-lb-seeded')) return;
+    const seeds = [
+      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771, timestamp: Date.now() - 86400000 },
+      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, timestamp: Date.now() - 43200000 }
+    ];
+    this.localScores.push(...seeds);
+    this._saveLocalScores();
+    localStorage.setItem('coldcreek-lb-seeded', '1');
+    // Also push to Firebase if available
+    setTimeout(() => {
+      if (this.db) {
+        seeds.forEach(s => {
+          try { this.db.ref('leaderboard').push(s); } catch(e) {}
+        });
+      }
+    }, 2000);
   }
 
   _initFirebase() {
