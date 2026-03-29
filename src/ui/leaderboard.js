@@ -15,14 +15,16 @@ class Leaderboard {
 
   // Seed leaderboard with notable scores (only added once)
   _seedScores() {
-    if (localStorage.getItem('coldcreek-lb-seeded')) return;
+    if (localStorage.getItem('coldcreek-lb-seeded-v2')) return;
     const seeds = [
       { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771, timestamp: Date.now() - 86400000 },
-      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, timestamp: Date.now() - 43200000 }
+      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, timestamp: Date.now() - 43200000 },
+      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587, timestamp: Date.now() - 72000000 },
+      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429, timestamp: Date.now() - 36000000 }
     ];
     this.localScores.push(...seeds);
     this._saveLocalScores();
-    localStorage.setItem('coldcreek-lb-seeded', '1');
+    localStorage.setItem('coldcreek-lb-seeded-v2', '1');
     // Also push to Firebase if available
     setTimeout(() => {
       if (this.db) {
