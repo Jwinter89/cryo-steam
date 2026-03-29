@@ -163,6 +163,14 @@ class DebriefScreen {
     html += `<button class="menu-btn debrief-btn debrief-main-btn" id="debrief-done-btn">MAIN MENU</button>`;
     html += `</div>`;
 
+    // Desktop share fallbacks
+    const shareUrl = encodeURIComponent('https://gasplantsim.com');
+    const shareText = encodeURIComponent(this.getShareText(game));
+    html += `<div class="debrief-social-row">`;
+    html += `<a href="https://www.facebook.com/sharer/sharer.php?u=${shareUrl}" target="_blank" rel="noopener" class="social-share-btn fb-share-btn">SHARE ON FACEBOOK</a>`;
+    html += `<a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank" rel="noopener" class="social-share-btn linkedin-btn">SHARE ON LINKEDIN</a>`;
+    html += `</div>`;
+
     html += `</div>`;
     return html;
   }

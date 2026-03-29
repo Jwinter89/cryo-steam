@@ -209,6 +209,9 @@
         }
       }
 
+      // Daily login streak
+      this._checkStreak();
+
       // PWA install prompt
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -300,7 +303,7 @@
           if (!text) return;
           const subject = encodeURIComponent('Cold Creek Feedback' + (name ? ' from ' + name : ''));
           const body = encodeURIComponent((name ? 'From: ' + name + '\n\n' : '') + text);
-          window.open(`mailto:Josh.winter5276@gmail.com?subject=${subject}&body=${body}`, '_blank');
+          window.open(`mailto:hello@winterhowlers.com?subject=${subject}&body=${body}`, '_blank');
           // Show confirmation
           const box = document.querySelector('.feedback-box');
           const msg = document.createElement('p');
@@ -310,6 +313,25 @@
           document.getElementById('feedback-text').value = '';
           document.getElementById('feedback-name').value = '';
           setTimeout(() => msg.remove(), 4000);
+        });
+      }
+
+      // CTA email capture
+      const ctaBtn = document.getElementById('cta-notify');
+      if (ctaBtn) {
+        ctaBtn.addEventListener('click', () => {
+          const email = document.getElementById('cta-email').value.trim();
+          if (!email || !email.includes('@')) return;
+          // Store in Firebase if available, localStorage as fallback
+          try {
+            if (this.leaderboard && this.leaderboard.db) {
+              this.leaderboard.db.ref('waitlist').push({ email, timestamp: Date.now() });
+            }
+          } catch(e) {}
+          localStorage.setItem('coldcreek-waitlist-email', email);
+          ctaBtn.textContent = 'SAVED!';
+          ctaBtn.disabled = true;
+          document.getElementById('cta-email').disabled = true;
         });
       }
 
@@ -1131,6 +1153,7 @@
 
     _actualStartGame() {
       this._showScreen('game-screen');
+      this._shiftStartRealTime = Date.now();
 
       const config = FACILITY_CONFIGS[this.currentFacility]
         ? FACILITY_CONFIGS[this.currentFacility]()
@@ -1217,6 +1240,7 @@
       // Kimray widget for refrigeration plant
       if (this.currentFacility === 'refrigeration' && window.KimrayWidget) {
         this.kimrayWidget = new KimrayWidget(this);
+        if (this.kimrayWidget) this.kimrayWidget.bindSVG();
       } else {
         this.kimrayWidget = null;
       }
@@ -1494,6 +1518,11 @@
       // Kimray widget tick
       if (this.kimrayWidget && this.kimrayWidget.visible) {
         this.kimrayWidget.tick(dt);
+      }
+
+      // Tag dynamic content with glossary terms (throttled every 30 ticks)
+      if (this.glossary && this.sim.totalTicks % 30 === 0) {
+        this.glossary.tagDynamic('.event-action-desc, .henry-text, .alarm-tip, .radio-msg');
       }
 
       // Check field note unlocks periodically
@@ -2121,6 +2150,36 @@
     },
 
     // ============================================================
+    // DAILY LOGIN STREAK
+    // ============================================================
+
+    _checkStreak() {
+      const today = new Date().toDateString();
+      const lastLogin = localStorage.getItem('coldcreek-last-login');
+      let streak = parseInt(localStorage.getItem('coldcreek-streak') || '0');
+
+      if (lastLogin === today) return; // Already logged in today
+
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      if (lastLogin === yesterday) {
+        streak++;
+      } else if (lastLogin) {
+        streak = 1; // Streak broken
+      } else {
+        streak = 1; // First login
+      }
+
+      localStorage.setItem('coldcreek-streak', streak);
+      localStorage.setItem('coldcreek-last-login', today);
+
+      if (streak > 1) {
+        setTimeout(() => {
+          this.showToast(`${streak}-DAY STREAK`, `+${Math.min(streak * 2, 20)}% shift bonus`, 'DAILY LOGIN');
+        }, 1500);
+      }
+    },
+
+    // ============================================================
     // SHIFT END
     // ============================================================
 
@@ -2128,8 +2187,22 @@
       this.sim.pause();
       this._updateTimeButtons(0);
 
+      // Apply streak bonus
+      const streak = parseInt(localStorage.getItem('coldcreek-streak') || '0');
+      const streakBonus = Math.min(streak * 0.02, 0.20); // Max 20% bonus
+      if (streakBonus > 0 && this.pnlSystem) {
+        this.pnlSystem.shiftEarnings *= (1 + streakBonus);
+      }
+
       const earnings = this.pnlSystem ? this.pnlSystem.shiftEarnings : 0;
       const facility = this.currentFacility;
+
+      // Anti-exploit: minimum real playtime
+      const realPlayTime = Date.now() - (this._shiftStartRealTime || Date.now());
+      const validScore = realPlayTime > 120000; // 2 minutes minimum
+
+      // Scores at 4x speed get a penalty
+      const speedPenalty = this.sim.timeCompression > 2 ? 0.85 : 1.0;
 
       // Record shift completion
       const key = facility + 'ShiftsComplete';
@@ -2142,9 +2215,10 @@
       this._updateUnlockStates();
       this._addRadioMessage(`SHIFT COMPLETE — Earnings: $${Math.round(earnings).toLocaleString()}`);
 
-      // Submit to leaderboard
-      if (this.leaderboard) {
-        this.leaderboard.submitScore(facility, this.currentMode, earnings);
+      // Submit to leaderboard (with anti-exploit checks)
+      if (this.leaderboard && validScore) {
+        const adjustedEarnings = earnings * speedPenalty;
+        this.leaderboard.submitScore(facility, this.currentMode, adjustedEarnings);
       }
 
       // Crisis-specific scoring

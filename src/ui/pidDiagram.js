@@ -66,6 +66,39 @@ class PidDiagram {
     this._setLevel(pvMap, 'LIC-A03', 'regen-sump-level-fill', null);
   }
 
+  _setLevel(pvMap, tag, fillId, lineId) {
+    const pv = pvMap[tag];
+    if (!pv) return;
+    const pct = Math.max(0, Math.min(100, pv.value));
+
+    const fill = document.getElementById(fillId);
+    if (fill) {
+      const maxH = parseFloat(fill.getAttribute('data-max-height') || fill.getAttribute('height') || 40);
+      fill.setAttribute('height', maxH * pct / 100);
+      fill.setAttribute('y', parseFloat(fill.getAttribute('data-base-y') || fill.getAttribute('y')) + maxH * (1 - pct / 100));
+      // Color based on alarm state
+      if (pv.value > (pv.hh || 999) || pv.value < (pv.ll || -999)) {
+        fill.setAttribute('fill', '#E04040');
+      } else if (pv.value > (pv.hi || 999) || pv.value < (pv.lo || -999)) {
+        fill.setAttribute('fill', '#D4A843');
+      } else {
+        fill.setAttribute('fill', '#2E86C1');
+      }
+    }
+
+    if (lineId) {
+      const line = document.getElementById(lineId);
+      if (line) {
+        const parent = fill || line.parentElement;
+        const baseY = parseFloat(line.getAttribute('data-base-y') || line.getAttribute('y1') || 0);
+        const maxH = parseFloat(line.getAttribute('data-max-height') || 40);
+        const y = baseY + maxH * (1 - pct / 100);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+      }
+    }
+  }
+
   _updateSepFill(elementId, pvTag, vesselHeight) {
     const pv = this.sim.getPV(pvTag);
     if (!pv) return;

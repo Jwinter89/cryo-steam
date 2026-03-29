@@ -344,6 +344,63 @@ html, body {
   color: var(--text-normal);
 }
 
+/* Winter Howlers CTA banner */
+.wh-cta-banner {
+  margin: 16px auto;
+  padding: 16px 20px;
+  max-width: 420px;
+  background: linear-gradient(135deg, rgba(90,155,212,0.1), rgba(212,168,67,0.1));
+  border: 1px solid rgba(90,155,212,0.3);
+  border-radius: 8px;
+  text-align: center;
+}
+.wh-cta-text {
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  color: var(--text-normal);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.wh-cta-btn {
+  display: inline-block;
+  padding: 10px 24px !important;
+  font-size: 12px !important;
+  background: var(--accent) !important;
+  color: #fff !important;
+  text-decoration: none;
+  border-radius: 4px;
+  letter-spacing: 0.1em;
+}
+.wh-cta-btn:hover { opacity: 0.9; }
+.wh-cta-sub {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-condensed);
+  font-size: 10px;
+  color: var(--text-unit);
+  letter-spacing: 0.1em;
+}
+
+/* Social footer link */
+.title-footer-social {
+  text-align: center;
+  margin-top: 10px;
+}
+.social-link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease;
+}
+.social-link:hover { opacity: 0.85; }
+.fb-link {
+  background: #1877F2;
+  color: #fff;
+}
+
 /* Prominent support button on title screen */
 .support-btn-link {
   font-family: var(--font-mono);
@@ -3164,6 +3221,43 @@ g[id^="equip-"]:hover line {
 /* ============================================================
    CTA — TRY FULL VERSION BANNER
    ============================================================ */
+/* New version announcement banner */
+.new-version-banner {
+  margin-bottom: 12px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, rgba(90,155,212,0.2), rgba(255,215,0,0.15));
+  border: 2px solid rgba(255,215,0,0.5);
+  border-radius: 6px;
+  text-align: center;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: version-glow 2s ease-in-out infinite alternate;
+}
+@keyframes version-glow {
+  from { border-color: rgba(255,215,0,0.3); }
+  to { border-color: rgba(255,215,0,0.7); }
+}
+.new-version-tag {
+  display: inline-block;
+  background: #FFD700;
+  color: #1a1a2e;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.15em;
+  padding: 2px 10px;
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+.new-version-text {
+  display: block;
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  color: var(--text-normal);
+  line-height: 1.4;
+}
+
 .update-banner {
   margin-bottom: 16px;
   padding: 10px 16px;
@@ -4172,3 +4266,25 @@ body.cb-tritanopia .spec-row.off-spec {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================================
+   SOCIAL SHARE BUTTONS (debrief)
+   ============================================================ */
+.debrief-social-row { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+.social-share-btn { padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 11px; font-family: var(--font-mono); font-weight: bold; }
+.fb-share-btn { background: #1877F2; color: #fff; }
+.linkedin-btn { background: #0A66C2; color: #fff; }
+
+/* ============================================================
+   CTA EMAIL FORM
+   ============================================================ */
+.cta-form { display: flex; gap: 8px; justify-content: center; margin: 8px 0; flex-wrap: wrap; }
+.cta-email-input { background: var(--bg-deep); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; font-family: var(--font-mono); font-size: 12px; width: 240px; }
+.cta-btn { padding: 8px 16px !important; font-size: 11px !important; }
+
+/* ============================================================
+   LEADERBOARD FILTERS
+   ============================================================ */
+.leaderboard-filters { display: flex; gap: 4px; justify-content: center; margin-bottom: 8px; }
+.lb-filter { background: var(--bg-deep); border: 1px solid var(--border); color: var(--text-unit); padding: 4px 10px; border-radius: 3px; font-family: var(--font-mono); font-size: 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.lb-filter.active { background: var(--accent); color: #fff; border-color: var(--accent); }

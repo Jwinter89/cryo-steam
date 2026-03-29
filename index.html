@@ -54,15 +54,21 @@
     <!-- Title Screen -->
     <div id="title-screen" class="screen active">
       <div class="title-content">
+        <div class="new-version-banner">
+          <span class="new-version-tag">NEW VERSION</span>
+          <span class="new-version-text">Major update! Improved gameplay, new features, and mobile fixes. See below.</span>
+        </div>
         <div class="update-banner">
-          <span class="update-banner-tag">PATCH NOTES</span>
+          <span class="update-banner-tag">WHAT'S NEW</span>
           <ul class="update-banner-list">
-            <li>Manual mode fix — set points &amp; valve output now fully controllable in MAN mode</li>
-            <li>Fixed Henry's shift tips not triggering (halfway &amp; end-of-shift warnings)</li>
-            <li>Game now properly pauses when returning to main menu</li>
-            <li>Shift end no longer fires multiple times</li>
-            <li>Alarm list stays current even when panel is closed</li>
-            <li>APPLY button now flashes green/red for success/invalid input</li>
+            <li>Optimize Mode — tighter specs, efficiency targets, competitive scoring</li>
+            <li>Learn Mode now available for Refrigeration &amp; Cryogenic facilities</li>
+            <li>CAS (Cascade) mode added to faceplates</li>
+            <li>Crisis scoring with gold/silver/bronze medals &amp; coach hints</li>
+            <li>50+ bug fixes — achievements, alarms, save/load, events all improved</li>
+            <li>Mobile overhaul — touch targets, smooth scrolling, landscape support</li>
+            <li>Per-facility leaderboards &amp; daily login streaks</li>
+            <li>Install as app — add to your home screen for offline play</li>
           </ul>
         </div>
         <h1 class="title-logo">COLD CREEK</h1>
@@ -118,8 +124,19 @@
         </div>
 
         <div class="cta-banner">
-          <div class="cta-text">Like what you see? The full version includes advanced scenarios, detailed analytics, mobile app, and more.</div>
+          <div class="cta-text">The full version includes advanced scenarios, detailed analytics, and mobile app.</div>
+          <div class="cta-form">
+            <input type="email" id="cta-email" class="cta-email-input" placeholder="Enter email for launch notification">
+            <button id="cta-notify" class="menu-btn cta-btn">NOTIFY ME</button>
+          </div>
           <span class="cta-label">FULL VERSION COMING TO APP STORE SOON</span>
+        </div>
+
+        <!-- Winter Howlers CTA -->
+        <div class="wh-cta-banner">
+          <div class="wh-cta-text">Need a custom simulator, app, or web tool built for your operation?</div>
+          <a href="https://www.winterhowlers.com" target="_blank" rel="noopener" class="menu-btn wh-cta-btn">GET A QUOTE &rarr;</a>
+          <span class="wh-cta-sub">winterhowlers.com &mdash; We build tools that work as hard as you do</span>
         </div>
 
         <!-- Daily Challenges Preview -->
@@ -128,8 +145,11 @@
         <div class="title-footer-links">
           <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="support-btn-link">&#9734; SUPPORT THE DEV</a>
         </div>
+        <div class="title-footer-social">
+          <a href="https://www.facebook.com/winterhowlers" target="_blank" rel="noopener" class="social-link fb-link">FOLLOW US ON FACEBOOK</a>
+        </div>
         <div class="title-footer-links" style="margin-top:8px">
-          <a href="https://winterhowlers.com" target="_blank" rel="noopener" class="donate-link">Built by Winter Howlers</a>
+          <a href="https://www.winterhowlers.com" target="_blank" rel="noopener" class="donate-link">Built by Winter Howlers</a>
         </div>
 
         <p class="title-credit">Designed by a decade-experienced cryogenic plant operator</p>
