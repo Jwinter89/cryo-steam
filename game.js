@@ -67,11 +67,12 @@
     ],
     cryogenic: [
       { header: 'INLET / MOL SIEVE', tags: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'] },
-      { header: 'AMINE / H2S', tags: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'LIC-A03', 'AI-A04', 'AI-A05', 'CI-A01'] },
+      { header: 'AMINE / H2S', tags: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'LIC-A03', 'AI-A04', 'AI-A05', 'CI-A01', 'TIC-A04', 'PIC-A03', 'LIC-A02', 'PIC-A02', 'LIC-A04'] },
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
-      { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'] },
+      { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'] },
       { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
-      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701'] }
+      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701'] },
+      { header: 'UTILITIES', tags: ['TIC-801', 'TIC-901', 'AI-801'] }
     ]
   };
 
@@ -83,7 +84,8 @@
       inlet: ['PIC-201', 'LIC-303', 'TIC-101'],
       hotoil: ['TIC-104', 'TIC-105'],
       compression: ['PIC-202', 'PIC-203'],
-      tanks: ['FIC-401', 'FI-402', 'AI-501']
+      tanks: ['FIC-401', 'FI-402', 'AI-501'],
+      gc: ['GC-C1', 'GC-C2', 'GC-C3', 'GC-C4', 'GC-C5']
     },
     refrigeration: {
       overview: null, // null = show all
@@ -99,11 +101,11 @@
       molsieve: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'],
       amine: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'TIC-A04', 'PIC-A03', 'LIC-A03', 'LIC-A02', 'PIC-A02', 'AI-A04', 'AI-A05', 'CI-A01', 'LIC-A04'],
       coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
-      expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401'],
+      expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'],
       demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
-      residue: ['PIC-601', 'PIC-602'],
-      product: ['AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701'],
-      hotoil: ['TIC-201', 'TIC-202', 'TIC-203']
+      residue: ['PIC-601', 'PIC-602', 'AI-705'],
+      product: ['AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701', 'AI-801'],
+      hotoil: ['TIC-801']
     }
   };
 
@@ -147,6 +149,7 @@
     _compRecoveredUnder8Min: false,
     _truckLoadsClean: 0,
     _molsieveCycleComplete: false,
+    _compTripStartTime: null,
     _shiftAchievements: [],
     _shiftChallenges: [],
 
@@ -203,6 +206,33 @@
         if (cbSelect) {
           cbSelect.value = this.colorBlindMode.getMode();
         }
+      }
+
+      // PWA install prompt
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window._deferredInstallPrompt = e;
+        // Show install banner on title screen
+        const banner = document.getElementById('pwa-install-banner');
+        if (banner) banner.style.display = '';
+      });
+
+      const installBtn = document.getElementById('pwa-install-btn');
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (window._deferredInstallPrompt) {
+            window._deferredInstallPrompt.prompt();
+            const result = await window._deferredInstallPrompt.userChoice;
+            window._deferredInstallPrompt = null;
+            document.getElementById('pwa-install-banner').style.display = 'none';
+          }
+        });
+      }
+      const dismissBtn = document.getElementById('pwa-dismiss-btn');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+          document.getElementById('pwa-install-banner').style.display = 'none';
+        });
       }
     },
 
@@ -394,6 +424,9 @@
       checkMobile();
       window.addEventListener('resize', checkMobile);
 
+      // Use the faceplate backdrop to dim and close on tap-outside
+      const backdrop = document.getElementById('faceplate-backdrop');
+
       const closeDrawer = () => {
         drawer.classList.remove('open');
         expandBtn.innerHTML = 'INFO &#9650;';
@@ -409,9 +442,6 @@
         if (drawer.classList.contains('open')) closeDrawer();
         else openDrawer();
       };
-
-      // Use the faceplate backdrop to dim and close on tap-outside
-      const backdrop = document.getElementById('faceplate-backdrop');
 
       expandBtn.addEventListener('click', toggleDrawer);
       handle.addEventListener('click', closeDrawer);
@@ -1004,7 +1034,7 @@
           this._stabilizerSVG = svgEl.innerHTML;
         }
         svgEl.innerHTML = FacilityViews.cryogenicPID();
-        svgEl.setAttribute('viewBox', '0 0 1000 850');
+        svgEl.setAttribute('viewBox', '0 0 1000 1050');
       }
     },
 
@@ -1136,11 +1166,15 @@
       if (window.PidZoom) {
         this.pidZoom = new PidZoom();
         this.pidZoom.resetForFacility();
-        document.addEventListener('faceplate:open', (e) => {
+        if (this._faceplateOpenHandler) {
+          document.removeEventListener('faceplate:open', this._faceplateOpenHandler);
+        }
+        this._faceplateOpenHandler = (e) => {
           if (this.pidZoom && e.detail && e.detail.tag) {
             this.pidZoom.highlightLoop(e.detail.tag);
           }
-        });
+        };
+        document.addEventListener('faceplate:open', this._faceplateOpenHandler);
       }
 
       // Trend graph
@@ -1152,10 +1186,10 @@
       if (this.currentFacility === 'cryogenic') {
         const switchBtn = document.getElementById('ms-switch-btn');
         if (switchBtn) {
-          switchBtn.addEventListener('click', (e) => {
+          switchBtn.onclick = (e) => {
             e.stopPropagation();
             this._switchMolSieveBeds();
-          });
+          };
         }
       }
 
@@ -1243,6 +1277,7 @@
       this._compRecoveredUnder8Min = false;
       this._truckLoadsClean = 0;
       this._molsieveCycleComplete = false;
+      this._compTripStartTime = null;
       this._shiftAchievements = [];
       this._shiftChallenges = [];
 
@@ -1269,6 +1304,21 @@
               type: 'event'
             });
           }, 1500);
+        }
+        // Show coach hint after initial crisis announcement
+        if (this.henry && window.CrisisScenarios) {
+          setTimeout(() => {
+            const hint = CrisisScenarios.getCoachHint(this.crisisScenario);
+            if (hint) {
+              this.henry.show({
+                text: hint,
+                mood: 'thinking',
+                position: 'right',
+                duration: 8000,
+                type: 'tip'
+              });
+            }
+          }, 8000);
         }
       } else {
         // Operate/optimize mode — show briefing, start paused
@@ -1545,6 +1595,8 @@
         ms[standbyBed].state = 'adsorbing';
         ms[standbyBed].cycleTime = 0;
 
+        this._molsieveCycleComplete = true;
+
         if (this.henry) {
           const bedLabel = longestAdsorb.replace('bed', '');
           const newLabel = standbyBed.replace('bed', '');
@@ -1613,6 +1665,7 @@
       if (sep && sep.alarmState === 'HIHI' && this.equipment && this.equipment['C-100']) {
         if (this.equipment['C-100'].status === 'running') {
           this.equipment['C-100'].status = 'tripped';
+          this._compTripStartTime = this.sim.gameTimeMinutes;
           this._addRadioMessage('ESD: Compressor C-100 tripped on separator HIHI level — liquid carryover protection.');
           if (this.pnlSystem) this.pnlSystem.applyEventCost(800, 'COMP ESD TRIP');
         }
@@ -2002,9 +2055,9 @@
         today.forEach(ch => { html += renderChallenge(ch); });
       }
 
-      if (weekly && weekly.length > 0) {
+      if (weekly) {
         html += '<div class="challenges-preview-title" style="margin-top:8px">WEEKLY CHALLENGE</div>';
-        weekly.forEach(ch => { html += renderChallenge(ch); });
+        html += renderChallenge(weekly);
       }
 
       container.innerHTML = html;
@@ -2082,6 +2135,18 @@
         this.leaderboard.submitScore(facility, this.currentMode, earnings);
       }
 
+      // Crisis-specific scoring
+      let crisisResult = null;
+      if (this.currentMode === 'crisis' && this.crisisScenario && window.CrisisScenarios) {
+        const recoveryTime = this._crisisRecoveryTime || (this.sim.shiftElapsed / this.sim.timeCompression);
+        const pnlLoss = Math.min(0, earnings);
+        const zeroPenalties = this._noBtexPenalties && this._rvpInSpecEntireShift;
+        crisisResult = CrisisScenarios.scoreScenario(this.crisisScenario, recoveryTime, pnlLoss, zeroPenalties);
+        if (crisisResult) {
+          this._addRadioMessage(`CRISIS RESULT: ${crisisResult.medal} — Score: ${crisisResult.score}`);
+        }
+      }
+
       // Evaluate objectives
       if (this.objectives) this.objectives.evaluate(this);
       const grade = this.objectives ? this.objectives.getGrade() : { letter: 'C' };
@@ -2155,9 +2220,9 @@
       overlay.innerHTML = this.objectives.renderBriefing();
       overlay.style.display = 'flex';
 
-      document.getElementById('obj-start-btn').addEventListener('click', () => {
+      document.getElementById('obj-start-btn').onclick = () => {
         overlay.style.display = 'none';
-      });
+      };
     },
 
     _showObjectivesResults(earnings) {
@@ -2348,6 +2413,8 @@
           facility: this.currentFacility,
           valves: this.valves,
           weather: this.weather,
+          equipment: this.equipment,
+          crisisScenario: this.crisisScenario,
           pnl: {
             shiftEarnings: this.pnlSystem ? this.pnlSystem.shiftEarnings : 0
           }
@@ -2370,6 +2437,8 @@
           if (state.sim) this.sim.loadJSON(state.sim);
           if (state.valves) this.valves = state.valves;
           if (state.weather) this.weather = state.weather;
+          if (state.equipment) this.equipment = state.equipment;
+          if (state.crisisScenario) this.crisisScenario = state.crisisScenario;
           if (state.pnl && this.pnlSystem) {
             this.pnlSystem.shiftEarnings = state.pnl.shiftEarnings || 0;
           }
@@ -2760,6 +2829,28 @@
       if (eth && eth.displayValue() < 92) {
         this._highRecoveryEntireShift = false;
       }
+
+      // Check if expander was tamed (tripped and recovered)
+      if (this.currentFacility === 'cryogenic' && this.equipment.expander) {
+        if (this.equipment.expander.status === 'running' && this.equipment.expander._wasTripped) {
+          this._expanderTamed = true;
+        }
+      }
+
+      // Check compressor trip recovery time
+      if (this.equipment.compressor && this.equipment.compressor.status === 'running' && this._compTripStartTime) {
+        const gameTime = this.sim.gameTimeMinutes;
+        const recoveryMinutes = (gameTime - this._compTripStartTime) / this.sim.timeCompression;
+        if (recoveryMinutes <= 8) this._compRecoveredUnder8Min = true;
+        this._compTripStartTime = null;
+      }
+
+      // Check crisis recovery time
+      if (this.currentMode === 'crisis' && !this._crisisRecoveryTime && this.eventSystem) {
+        if (this.eventSystem.activeEvents.length === 0 && this.eventSystem.eventHistory.length > 0) {
+          this._crisisRecoveryTime = this.sim.shiftElapsed;
+        }
+      }
     },
 
     // ============================================================
@@ -2824,7 +2915,7 @@
       ctx.fillText('$' + rate.toLocaleString() + '/hr', 300, 142);
 
       // Active alarms
-      const alarmCount = this.alarmManager ? this.alarmManager.getAlarmCount() : 0;
+      const alarmCount = this.alarmManager ? (this.alarmManager.alarms || []).length : 0;
       ctx.fillStyle = alarmCount > 0 ? '#E04040' : '#4CAF50';
       ctx.fillText(alarmCount + ' ALARMS', 300, 170);
 

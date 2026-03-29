@@ -838,6 +838,7 @@ html, body {
 #left-panel {
   width: 220px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   border-right: 1px solid var(--border);
   background: var(--bg-panel);
   padding: 4px 0;
@@ -869,8 +870,10 @@ html, body {
   margin: 2px 0;
   transition: border-color 0.2s, background 0.15s;
 }
-.gauge-row:hover {
-  background: var(--bg-input);
+@media (hover: hover) {
+  .gauge-row:hover {
+    background: var(--bg-input);
+  }
 }
 .gauge-row.alarm-hi {
   border-left-color: var(--alarm-lo);
@@ -1010,11 +1013,13 @@ html, body {
   fill: rgba(90, 159, 212, 0.08);
   animation: tag-pulse 3s ease-in-out infinite;
 }
-.tag-bubble:hover {
-  stroke: #7BC0FF !important;
-  stroke-width: 2;
-  fill: rgba(90, 159, 212, 0.15);
-  filter: drop-shadow(0 0 4px rgba(90, 159, 212, 0.5));
+@media (hover: hover) {
+  .tag-bubble:hover {
+    stroke: #7BC0FF !important;
+    stroke-width: 2;
+    fill: rgba(90, 159, 212, 0.15);
+    filter: drop-shadow(0 0 4px rgba(90, 159, 212, 0.5));
+  }
 }
 @keyframes tag-pulse {
   0%, 100% { opacity: 1; }
@@ -1759,7 +1764,7 @@ g[id^="equip-"]:hover line {
 .mobile-speed-dial {
   display: none;
   position: fixed;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   right: 16px;
   z-index: 150;
 }
@@ -1872,9 +1877,7 @@ g[id^="equip-"]:hover line {
   letter-spacing: 0.05em;
   padding: 6px 12px;
   border-radius: 16px;
-  background: rgba(60, 60, 60, 0.85);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(26,26,46,0.95);
   border: 1px solid var(--border);
   color: var(--text-unit);
   cursor: pointer;
@@ -1920,7 +1923,7 @@ g[id^="equip-"]:hover line {
   .gauge-val {
     font-size: 11px;
   }
-  .gauge-desc, .gauge-unit, .gauge-mode {
+  .gauge-desc, .gauge-mode {
     display: none;
   }
   #topbar {
@@ -1948,6 +1951,13 @@ g[id^="equip-"]:hover line {
   .tag-bubble {
     cursor: pointer;
   }
+  .fp-input { font-size: 16px; }
+  .fp-close-btn { min-width: 44px; min-height: 44px; }
+  .fp-mode-btn { min-height: 44px; font-size: 12px; padding: 6px 12px; }
+  .fp-apply-btn { min-height: 44px; }
+  .alarm-ack-btn { min-height: 36px; padding: 4px 12px; font-size: 11px; }
+  .popup-close { min-width: 44px; min-height: 44px; }
+  .pid-zoom-btn { width: 44px; height: 44px; }
 }
 
 /* ---- MOBILE PANEL TOGGLE ---- */
@@ -2802,9 +2812,11 @@ g[id^="equip-"]:hover line {
 .mode-card {
   transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
-.mode-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+@media (hover: hover) {
+  .mode-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
 }
 .mode-card:active {
   transform: translateY(0);
@@ -2814,8 +2826,10 @@ g[id^="equip-"]:hover line {
 .tier-label {
   transition: color 0.2s;
 }
-.mode-card:hover .tier-label {
-  color: var(--accent);
+@media (hover: hover) {
+  .mode-card:hover .tier-label {
+    color: var(--accent);
+  }
 }
 
 /* ============================================================
@@ -2823,8 +2837,10 @@ g[id^="equip-"]:hover line {
    ============================================================ */
 
 /* Clickable valve hover effects */
-g[id^="equip-"]:hover {
-  filter: drop-shadow(0 0 4px rgba(90, 159, 212, 0.3));
+@media (hover: hover) {
+  g[id^="equip-"]:hover {
+    filter: drop-shadow(0 0 4px rgba(90, 159, 212, 0.3));
+  }
 }
 
 /* Equipment status pulsing for faults */
@@ -4105,4 +4121,40 @@ body.cb-tritanopia .spec-row.off-spec {
 #site-footer .footer-sep {
   color: #555;
   margin: 0 8px;
+}
+
+/* ============================================================
+   MOBILE TREND WINDOW
+   ============================================================ */
+@media (max-width: 768px) {
+  .trend-window { width: calc(100% - 16px); right: 8px; left: 8px; }
+}
+
+/* ============================================================
+   LANDSCAPE ORIENTATION HANDLING
+   ============================================================ */
+@media (max-width: 768px) and (orientation: landscape) {
+  #topbar { height: 30px; font-size: 10px; }
+  #alarm-bar { height: 24px; font-size: 9px; }
+  .mobile-pnl-strip { height: 28px; }
+  .mobile-building-pills { bottom: 60px; }
+}
+
+/* ============================================================
+   MOBILE PERFORMANCE: will-change
+   ============================================================ */
+@media (max-width: 768px) {
+  .mobile-info-drawer { will-change: transform; }
+  .speed-dial-ring { will-change: transform, opacity; }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

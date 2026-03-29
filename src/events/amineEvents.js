@@ -14,12 +14,15 @@ function registerAmineEvents(eventSystem) {
     probability: 0.005,
     radioMessage: 'ALARM: AI-A01 H2S OUTLET HIGH — Check amine circulation.',
 
-    data: { severity: 0, evacuationNeeded: false },
+    data: { severity: 0, evacuationNeeded: false, originalSP: null },
 
     onStart: (event, pvMap) => {
       event.data.severity = 0.4 + Math.random() * 0.6;
       const h2s = pvMap['AI-A01'];
       if (h2s) h2s.externalForce += event.data.severity * 2;
+      // Save original setpoint before any changes
+      const flow = pvMap['FI-A01'];
+      if (flow) event.data.originalSP = flow.sp;
     },
 
     onTick: (event, dt, pvMap) => {
@@ -46,6 +49,11 @@ function registerAmineEvents(eventSystem) {
     onEnd: (event, pvMap) => {
       const h2s = pvMap['AI-A01'];
       if (h2s) h2s.externalForce = 0;
+      // Restore setpoint with a small permanent increase (+5 instead of +10)
+      const flow = pvMap['FI-A01'];
+      if (flow && event.data.originalSP !== null) {
+        flow.sp = event.data.originalSP + 5;
+      }
     }
   });
 

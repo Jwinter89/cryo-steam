@@ -105,6 +105,21 @@ class Objectives {
           passed = equip && equip.status === 'running';
           break;
         }
+        case 'recovery-target': {
+          // Check recovery PVs for the current facility
+          const recoveryTag = obj.tag || (game.currentFacility === 'cryogenic' ? 'AI-701' : 'AI-502');
+          const recoveryPV = game.sim ? game.sim.pvMap[recoveryTag] : null;
+          if (recoveryPV) {
+            obj.finalValue = recoveryPV.value.toFixed(1) + '%';
+            passed = recoveryPV.value >= (obj.target || 85);
+          }
+          break;
+        }
+        case 'molsieve-cycle': {
+          passed = game._molsieveCycleComplete === true;
+          obj.finalValue = passed ? 'COMPLETE' : 'INCOMPLETE';
+          break;
+        }
         default:
           passed = true;
       }

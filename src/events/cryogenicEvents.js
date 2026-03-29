@@ -194,6 +194,11 @@ function registerCryogenicEvents(eventSystem) {
       // Cold sep temps rising
       const coldSep = pvMap['TIC-303'];
       if (coldSep) coldSep.externalForce += event.data.severity * 0.5;
+
+      // Track warmup time during warming phase
+      if (event.data.recoveryPhase === 'warming') {
+        event.data.warmupTime = (event.data.warmupTime || 0) + dt;
+      }
     },
 
     onResolve: (event, action, pvMap) => {
@@ -203,12 +208,17 @@ function registerCryogenicEvents(eventSystem) {
         return false; // Needs more time
       }
       if (action === 'complete-warmup' && event.data.recoveryPhase === 'warming') {
-        // Restore normal noise levels
-        ['TIC-301', 'TIC-302', 'TIC-303'].forEach(tag => {
-          const pv = pvMap[tag];
-          if (pv) pv.noise = 0.4;
-        });
-        return true;
+        // Require at least 10 minutes of warming
+        if (event.data.warmupTime && event.data.warmupTime >= 10) {
+          // Restore normal noise levels
+          ['TIC-301', 'TIC-302', 'TIC-303'].forEach(tag => {
+            const pv = pvMap[tag];
+            if (pv) pv.noise = 0.4;
+          });
+          event.data.recoveryPhase = 'complete';
+          return true;
+        }
+        return false; // Not warm enough yet
       }
       return false;
     },
@@ -396,7 +406,9 @@ function registerCryogenicEvents(eventSystem) {
     radioMessage: 'CRITICAL: P-701 BEARING FAILURE — FIRE RISK IN PUMP AREA',
 
     onStart: (event, pvMap) => {
-      // Fire Eye likely trips
+      // Fire eye trips on bearing failure
+      const bearing = pvMap['TIC-403'];
+      if (bearing) bearing.externalForce += 15;
     },
 
     onResolve: (event, action, pvMap) => {
@@ -485,6 +497,14 @@ function registerCryogenicEvents(eventSystem) {
           // Complete
           break;
       }
+    },
+
+    onResolve: (event, action, pvMap) => {
+      if (action === 'confirm-field') {
+        event.data.fieldConfirmed = true;
+        return false; // Don't end event yet
+      }
+      return false;
     },
 
     checkResolved: (event, pvMap) => {

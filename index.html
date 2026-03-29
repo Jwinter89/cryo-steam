@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <title>Cold Creek — Gas Plant Simulator</title>
-  <meta name="description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator with DCS controls, P&amp;ID diagrams, and procedural upsets.">
+  <meta name="description" content="Free gas plant operator training simulator. Practice DCS controls, P&amp;ID diagrams, turboexpander operations, and cryogenic plant upsets. Built by a real cryo operator for 4th class power engineering students and plant operators.">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -24,6 +24,22 @@
   <meta name="twitter:title" content="Cold Creek — Gas Plant Simulator">
   <meta name="twitter:description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator.">
   <meta name="twitter:image" content="https://gasplantsim.com/og-image.png">
+
+  <link rel="canonical" href="https://gasplantsim.com/">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Cold Creek — Gas Plant Simulator",
+    "url": "https://gasplantsim.com",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "description": "A realistic gas plant operator training simulator with DCS controls, P&ID diagrams, and procedural upsets.",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Organization", "name": "Winter Howlers", "url": "https://winterhowlers.com" }
+  }
+  </script>
 
   <!-- PWA -->
   <meta name="theme-color" content="#1a1a2e">
@@ -64,6 +80,12 @@
             <input id="username-input" class="username-input" type="text" placeholder="ENTER CALLSIGN" maxlength="20">
             <button id="username-save" class="menu-btn username-save-btn">SET NAME</button>
           </div>
+        </div>
+
+        <div id="pwa-install-banner" class="pwa-install-banner" style="display:none">
+          <span>Add Cold Creek to your home screen for the best experience</span>
+          <button id="pwa-install-btn" class="menu-btn" style="margin-left:8px;padding:6px 16px;font-size:11px;">INSTALL</button>
+          <button id="pwa-dismiss-btn" style="background:none;border:none;color:var(--text-label);cursor:pointer;padding:8px;">&times;</button>
         </div>
 
         <div class="title-menu">
