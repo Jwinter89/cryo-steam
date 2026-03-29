@@ -187,6 +187,7 @@
       this._updateContinueButton();
       this._showScreen('title-screen');
       this._refreshLeaderboard();
+      this._bindLeaderboardFilters();
       this._updateChallengesPreview();
       this._initHenry();
       this._checkBuildingTabOverflow();
@@ -2064,7 +2065,18 @@
       container.style.display = '';
     },
 
-    async _refreshLeaderboard() {
+    _bindLeaderboardFilters() {
+      document.querySelectorAll('.lb-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.lb-filter').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const filter = btn.dataset.lbFilter;
+          this._refreshLeaderboard(filter === 'all' ? null : filter);
+        });
+      });
+    },
+
+    async _refreshLeaderboard(facility = null) {
       const listEl = document.getElementById('leaderboard-list');
       if (!listEl) return;
 
@@ -2073,7 +2085,7 @@
         setTimeout(() => reject(new Error('timeout')), 5000));
 
       try {
-        const scores = await Promise.race([this.leaderboard.getTopScores(10), timeout]);
+        const scores = await Promise.race([this.leaderboard.getTopScores(10, facility), timeout]);
         if (scores.length === 0) {
           listEl.innerHTML = '<div class="leaderboard-empty">NO SCORES YET — COMPLETE A SHIFT!</div>';
           return;

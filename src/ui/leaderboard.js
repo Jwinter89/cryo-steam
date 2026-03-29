@@ -71,7 +71,7 @@ class Leaderboard {
    * @param {number} limit - Max number of scores to return
    * @returns {Promise<Array>} Sorted by earnings descending
    */
-  async getTopScores(limit = 10) {
+  async getTopScores(limit = 10, facility = null) {
     // Try Firebase first
     if (this.db) {
       try {
@@ -85,16 +85,24 @@ class Leaderboard {
           scores.push(child.val());
         });
 
+        // Filter by facility if specified
+        const filtered = facility
+          ? scores.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
+          : scores;
+
         // Sort descending by earnings, take top N
-        scores.sort((a, b) => b.earnings - a.earnings);
-        return scores.slice(0, limit);
+        filtered.sort((a, b) => b.earnings - a.earnings);
+        return filtered.slice(0, limit);
       } catch (e) {
         console.warn('Leaderboard: Firebase fetch failed, using local', e);
       }
     }
 
     // Fallback to local
-    const sorted = [...this.localScores].sort((a, b) => b.earnings - a.earnings);
+    const filtered = facility
+      ? this.localScores.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
+      : [...this.localScores];
+    const sorted = filtered.sort((a, b) => b.earnings - a.earnings);
     return sorted.slice(0, limit);
   }
 

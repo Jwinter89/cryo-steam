@@ -38,6 +38,10 @@ class FaceplateManager {
       if (this.currentTag) {
         const pv = this.sim.getPV(this.currentTag);
         if (pv && pv.controllable) {
+          if (pv.mode === 'CAS') {
+            this._flashApply(false);
+            return; // CAS mode — controlled by cascade, no manual changes
+          }
           if (pv.mode === 'AUTO') {
             const spInput = document.getElementById('fp-sp');
             const newSP = parseFloat(spInput.value);
@@ -273,6 +277,12 @@ class FaceplateManager {
     const spInput = document.getElementById('fp-sp');
     const outInput = document.getElementById('fp-out');
 
+    // CAS mode: SP is driven by cascade (read-only), OUT follows AUTO behavior
+    if (pv.mode === 'CAS') {
+      spInput.disabled = true;
+      outInput.disabled = true;
+      return;
+    }
     // SP is editable in AUTO mode for controllable PVs
     spInput.disabled = !pv.controllable || pv.mode === 'MAN';
     // OUT is editable in MAN mode for controllable PVs

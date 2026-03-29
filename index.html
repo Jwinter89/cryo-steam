@@ -98,6 +98,12 @@
         <!-- Leaderboard -->
         <div class="leaderboard-box">
           <h3 class="leaderboard-title">LEADERBOARD</h3>
+          <div class="leaderboard-filters">
+            <button class="lb-filter active" data-lb-filter="all">ALL</button>
+            <button class="lb-filter" data-lb-filter="stabilizer">STAB</button>
+            <button class="lb-filter" data-lb-filter="refrigeration">REFRIG</button>
+            <button class="lb-filter" data-lb-filter="cryogenic">CRYO</button>
+          </div>
           <div id="leaderboard-list" class="leaderboard-list">
             <div class="leaderboard-loading">LOADING...</div>
           </div>
@@ -554,6 +560,7 @@
               </div>
               <div class="fp-buttons">
                 <button class="fp-mode-btn" data-mode="AUTO">AUTO</button>
+                <button class="fp-mode-btn" data-mode="CAS">CAS</button>
                 <button class="fp-mode-btn" data-mode="MAN">MAN</button>
                 <button class="fp-mode-btn fp-apply-btn" id="fp-apply">APPLY</button>
               </div>

@@ -37,6 +37,39 @@ class Objectives {
       ]
     };
 
+    // Optimize mode: tighter specs, additional efficiency targets
+    if (mode === 'optimize') {
+      const optimizeOverrides = {
+        stabilizer: [
+          { id: 'rvp-tight', label: 'Keep RVP tightly in spec (9.5–10.5 psi)', tag: 'AI-501', check: 'range', min: 9.5, max: 10.5, metric: 'psi', priority: 'primary' },
+          { id: 'no-hihi', label: 'Zero HIHI/LOLO alarms', check: 'no-critical-alarms', priority: 'primary' },
+          { id: 'max-profit', label: 'Earn above $8,000 shift earnings', check: 'positive-earnings', priority: 'primary' },
+          { id: 'sep-level', label: 'Keep separator level 40–60%', tag: 'LIC-302', check: 'range', min: 40, max: 60, metric: '%', priority: 'secondary' },
+          { id: 'tank-level', label: 'Keep product tank 40–80%', tag: 'LIC-303', check: 'range', min: 40, max: 80, metric: '%', priority: 'secondary' },
+          { id: 'handle-pig', label: 'Survive a pig with zero alarms', check: 'pig-no-trip', priority: 'bonus' },
+          { id: 'efficiency', label: 'Maintain throughput above 95%', check: 'recovery-target', tag: 'FIC-401', target: 95, priority: 'bonus' }
+        ],
+        refrigeration: [
+          { id: 'moisture-tight', label: 'Keep TEG moisture below 5.0 lb/MMSCF', tag: 'AI-TEG', check: 'max', max: 5.0, metric: 'lb/MMSCF', priority: 'primary' },
+          { id: 'no-hihi', label: 'Zero HIHI/LOLO alarms', check: 'no-critical-alarms', priority: 'primary' },
+          { id: 'max-profit', label: 'Earn above $12,000 shift earnings', check: 'positive-earnings', priority: 'primary' },
+          { id: 'recovery-c3', label: 'Maintain >93% C3+ recovery', check: 'recovery-target', tag: 'AI-503', target: 93, priority: 'secondary' },
+          { id: 'recovery-c2', label: 'Push ethane recovery above 75%', check: 'recovery-target', tag: 'AI-502', target: 75, priority: 'bonus' },
+          { id: 'btu-tight', label: 'Keep residue BTU 1000–1050', tag: 'AI-BTU', check: 'range', min: 1000, max: 1050, metric: 'BTU', priority: 'secondary' }
+        ],
+        cryogenic: [
+          { id: 'no-hihi', label: 'Zero HIHI/LOLO alarms', check: 'no-critical-alarms', priority: 'primary' },
+          { id: 'max-profit', label: 'Earn above $25,000 shift earnings', check: 'positive-earnings', priority: 'primary' },
+          { id: 'expander-up', label: 'Keep expander running full shift', check: 'equipment-running', equipId: 'EX-400', priority: 'primary' },
+          { id: 'recovery-c2', label: 'Maximize ethane recovery >92%', check: 'recovery-target', tag: 'AI-701', target: 92, priority: 'secondary' },
+          { id: 'recovery-c3', label: 'Push propane recovery above 98%', check: 'recovery-target', tag: 'AI-702', target: 98, priority: 'secondary' },
+          { id: 'molsieve', label: 'Complete mol sieve cycle', check: 'molsieve-cycle', priority: 'bonus' },
+          { id: 'moisture', label: 'Keep moisture below 0.05 ppm', tag: 'AI-201', check: 'max', max: 0.05, metric: 'ppm', priority: 'bonus' }
+        ]
+      };
+      return optimizeOverrides[facility] || optimizeOverrides.stabilizer;
+    }
+
     return base[facility] || base.stabilizer;
   }
 

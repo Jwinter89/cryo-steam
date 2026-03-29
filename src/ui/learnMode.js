@@ -18,12 +18,19 @@ class LearnMode {
     // Active waitFor listener cleanup
     this._waitCleanup = null;
 
-    this.lessons = this._buildLessons();
+    this.facility = 'stabilizer';
+    this.lessons = this._buildLessons(this.facility);
 
     this.nextBtn.addEventListener('click', () => this._nextStep());
   }
 
-  _buildLessons() {
+  _buildLessons(facility) {
+    if (facility === 'refrigeration') return this._buildRefrigerationLessons();
+    if (facility === 'cryogenic') return this._buildCryogenicLessons();
+    return this._buildStabilizerLessons();
+  }
+
+  _buildStabilizerLessons() {
     return {
       1: { // Day 1 — Observe
         title: 'DAY 1 — OBSERVE',

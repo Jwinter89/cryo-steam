@@ -3,7 +3,7 @@
  * Enables offline caching and PWA install prompt.
  */
 
-const CACHE_NAME = 'cold-creek-v1';
+const CACHE_NAME = 'cold-creek-v2';
 
 // Core assets to cache on install
 const PRECACHE_ASSETS = [
@@ -14,6 +14,48 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
   '/icon-192.svg',
   '/icon-512.svg',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/src/engine/simulationTick.js',
+  '/src/engine/cascadeEngine.js',
+  '/src/engine/processVariable.js',
+  '/src/data/stabilizerConfig.js',
+  '/src/data/refrigerationConfig.js',
+  '/src/data/cryogenicConfig.js',
+  '/src/data/amineConfig.js',
+  '/src/events/eventSystem.js',
+  '/src/events/equipmentEvents.js',
+  '/src/events/refrigerationEvents.js',
+  '/src/events/cryogenicEvents.js',
+  '/src/events/amineEvents.js',
+  '/src/events/pigEvents.js',
+  '/src/events/crisisScenarios.js',
+  '/src/ui/alarmManager.js',
+  '/src/ui/faceplateManager.js',
+  '/src/ui/facilityViews.js',
+  '/src/ui/gaugeManager.js',
+  '/src/ui/pidDiagram.js',
+  '/src/ui/pidZoom.js',
+  '/src/ui/trendManager.js',
+  '/src/ui/pnlManager.js',
+  '/src/ui/eventActionPanel.js',
+  '/src/ui/henry.js',
+  '/src/ui/kimrayWidget.js',
+  '/src/ui/gcDisplay.js',
+  '/src/ui/multiPlantManager.js',
+  '/src/ui/fieldNotes.js',
+  '/src/ui/learnMode.js',
+  '/src/ui/objectives.js',
+  '/src/ui/achievements.js',
+  '/src/ui/careerProgression.js',
+  '/src/ui/operatorProfile.js',
+  '/src/ui/challenges.js',
+  '/src/ui/debriefScreen.js',
+  '/src/ui/glossary.js',
+  '/src/ui/colorBlindMode.js',
+  '/src/ui/leaderboard.js',
+  '/src/audio/audioManager.js',
+  '/src/capacitor/storageBridge.js',
 ];
 
 // Install — precache core assets

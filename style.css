@@ -1890,6 +1890,20 @@ g[id^="equip-"]:hover line {
   border-color: var(--accent);
 }
 
+@media (max-width: 600px) {
+  #left-panel {
+    position: absolute;
+    z-index: 80;
+    left: 0; top: 0; bottom: 0;
+    width: 200px;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  #left-panel.open { transform: translateX(0); }
+  #left-panel.collapsed { transform: translateX(-100%); }
+  #center-panel { margin-left: 0; }
+}
+
 @media (max-width: 480px) {
   #left-panel {
     position: absolute;

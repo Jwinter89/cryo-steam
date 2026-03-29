@@ -51,6 +51,19 @@ class PidDiagram {
     this._updateTankFill('tank-level-fill', 'LIC-303', 66);
     // Flash drum level (amine)
     this._updateLevelLine('flash-level', 'LIC-A02', 45);
+
+    // Refrigeration levels
+    const pvMap = this.sim.getAllPVs ? this.sim.getAllPVs() : {};
+    this._setLevel(pvMap, 'LIC-201', 'contactor-level-fill', 'contactor-level-line');
+    this._setLevel(pvMap, 'LIC-202', 'flash-tank-level-fill', null);
+    this._setLevel(pvMap, 'LIC-501', 'product-tank-level-fill', null);
+
+    // Cryogenic levels
+    this._setLevel(pvMap, 'LIC-301', 'cold-sep-level-fill', null);
+    this._setLevel(pvMap, 'LIC-501', 'demet-sump-level-fill', 'demet-level-line');
+    this._setLevel(pvMap, 'LIC-701', 'cryo-product-level-fill', null);
+    this._setLevel(pvMap, 'LIC-A01', 'absorber-level-fill', null);
+    this._setLevel(pvMap, 'LIC-A03', 'regen-sump-level-fill', null);
   }
 
   _updateSepFill(elementId, pvTag, vesselHeight) {
@@ -173,8 +186,39 @@ class PidDiagram {
   }
 
   _updateFlowLines() {
-    // Could update flow line colors based on valve positions / equipment status
-    // Keeping it simple — flow lines stay at their default state
+    const pvMap = this.sim.getAllPVs ? this.sim.getAllPVs() : {};
+    // Update flow line colors based on valve/flow state
+    const flowLines = document.querySelectorAll('.flow-line');
+    flowLines.forEach(line => {
+      const tag = line.dataset.tag;
+      if (!tag) return;
+      const pv = pvMap[tag];
+      if (!pv) return;
+
+      // Color based on flow percentage of normal
+      const ratio = pv.sp > 0 ? pv.value / pv.sp : 1;
+      if (ratio < 0.3) {
+        line.style.stroke = '#E04040'; // Low/no flow - red
+        line.classList.remove('flowing');
+      } else if (ratio < 0.7) {
+        line.style.stroke = '#D4A843'; // Reduced flow - amber
+        line.classList.add('flowing');
+      } else {
+        line.style.stroke = ''; // Normal - default color
+        line.classList.add('flowing');
+      }
+    });
+
+    // Update valve position indicators
+    const valveEls = document.querySelectorAll('[data-valve]');
+    valveEls.forEach(el => {
+      const tag = el.dataset.valve;
+      const pv = pvMap[tag];
+      if (!pv) return;
+      const pct = Math.round(pv.output || pv.value);
+      const label = el.querySelector('.valve-pct');
+      if (label) label.textContent = pct + '%';
+    });
   }
 
   _updatePigStatus() {
