@@ -2,37 +2,41 @@
  * Leaderboard — Username management and score tracking.
  * Uses Firebase Realtime Database for shared leaderboard,
  * with localStorage fallback for offline play.
+ *
+ * Seed scores are hardcoded and merged at display time only.
+ * They are NEVER written to localStorage — this prevents duplication.
  */
 
 class Leaderboard {
   constructor() {
+    // Seed scores live here in code — never in localStorage
     this.seeds = [
-      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771 },
-      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911 },
-      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587 },
-      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429 }
+      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771, isSeed: true },
+      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, isSeed: true },
+      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587, isSeed: true },
+      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429, isSeed: true }
     ];
-    // Build a set of seed keys for fast lookup
-    this._seedKeys = new Set(this.seeds.map(s => s.username + '|' + s.earnings));
 
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
-    this._ensureSeeds();
+    this._purgeOldSeeds();
     this.db = null;
     this._initFirebase();
   }
 
-  // Strip every seed entry from local scores, then add each seed back exactly once.
-  _ensureSeeds() {
-    // Remove ALL existing seed entries (matches by username + earnings)
+  // One-time cleanup: remove any seed entries that previous buggy code
+  // wrote into localStorage. Keyed so it only runs once.
+  _purgeOldSeeds() {
+    if (localStorage.getItem('coldcreek-lb-purged')) return;
+    const seedKeys = new Set(this.seeds.map(s => s.username + '|' + s.earnings));
+    const before = this.localScores.length;
     this.localScores = this.localScores.filter(s =>
-      !this._seedKeys.has(s.username + '|' + s.earnings)
+      !seedKeys.has((s.username || '') + '|' + (s.earnings || 0))
     );
-    // Add each seed exactly once
-    for (const seed of this.seeds) {
-      this.localScores.push({ ...seed, timestamp: Date.now() - 86400000 });
+    if (this.localScores.length < before) {
+      this._saveLocalScores();
     }
-    this._saveLocalScores();
+    localStorage.setItem('coldcreek-lb-purged', '1');
   }
 
   _initFirebase() {
@@ -90,11 +94,15 @@ class Leaderboard {
   // ── Fetch Scores ──────────────────────────────────────────
 
   /**
-   * Returns top scores. Uses Firebase if available, else local.
+   * Returns top scores. Merges hardcoded seeds with real scores.
+   * Uses Firebase if available, else local + seeds.
    * @param {number} limit - Max number of scores to return
+   * @param {string|null} facility - Filter by facility
    * @returns {Promise<Array>} Sorted by earnings descending
    */
   async getTopScores(limit = 10, facility = null) {
+    let realScores = [];
+
     // Try Firebase first
     if (this.db) {
       try {
@@ -103,30 +111,28 @@ class Leaderboard {
           .limitToLast(limit * 2)
           .once('value');
 
-        const scores = [];
         snapshot.forEach(child => {
-          scores.push(child.val());
+          realScores.push(child.val());
         });
-
-        // Filter by facility if specified
-        const filtered = facility
-          ? scores.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
-          : scores;
-
-        // Sort descending by earnings, take top N
-        filtered.sort((a, b) => b.earnings - a.earnings);
-        return filtered.slice(0, limit);
       } catch (e) {
         console.warn('Leaderboard: Firebase fetch failed, using local', e);
+        realScores = [...this.localScores];
       }
+    } else {
+      realScores = [...this.localScores];
     }
 
-    // Fallback to local
+    // Merge seeds into real scores
+    const combined = [...realScores, ...this.seeds];
+
+    // Filter by facility if specified
     const filtered = facility
-      ? this.localScores.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
-      : [...this.localScores];
-    const sorted = filtered.sort((a, b) => b.earnings - a.earnings);
-    return sorted.slice(0, limit);
+      ? combined.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
+      : combined;
+
+    // Sort descending by earnings, take top N
+    filtered.sort((a, b) => b.earnings - a.earnings);
+    return filtered.slice(0, limit);
   }
 
   // ── Local Storage ─────────────────────────────────────────
