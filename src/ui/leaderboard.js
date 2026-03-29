@@ -8,9 +8,27 @@ class Leaderboard {
   constructor() {
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
+    this._deduplicateLocal();
     this._seedScores();
     this.db = null;
     this._initFirebase();
+  }
+
+  // Remove duplicate entries already in localStorage (same username + earnings + facility)
+  _deduplicateLocal() {
+    const seen = new Set();
+    const cleaned = [];
+    for (const s of this.localScores) {
+      const key = (s.username || '') + '|' + (s.facility || '') + '|' + (s.earnings || 0);
+      if (!seen.has(key)) {
+        seen.add(key);
+        cleaned.push(s);
+      }
+    }
+    if (cleaned.length < this.localScores.length) {
+      this.localScores = cleaned;
+      this._saveLocalScores();
+    }
   }
 
   // Seed leaderboard with notable scores (deduplicated)
