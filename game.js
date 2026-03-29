@@ -72,7 +72,7 @@
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
       { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'] },
       { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
-      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'AI-705', 'LIC-701'] },
+      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'TIC-601', 'TIC-602', 'TIC-603', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'AI-705', 'LIC-701'] },
       { header: 'UTILITIES', tags: ['TIC-801', 'TIC-901', 'AI-801'] }
     ]
   };
@@ -104,7 +104,7 @@
       coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
       expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'],
       demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
-      residue: ['PIC-601', 'PIC-602', 'AI-705'],
+      residue: ['PIC-601', 'PIC-602', 'TIC-601', 'TIC-602', 'TIC-603', 'AI-705'],
       product: ['AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701', 'AI-801'],
       hotoil: ['TIC-801']
     }
@@ -1257,9 +1257,9 @@
       this.sim.onAlarm = (report) => {
         this.alarmManager.onAlarmChange(report);
         if (this.audioManager && this.audioManager.alarmsEnabled) {
-          if (report.newState === 'HIHI' || report.newState === 'LOLO') {
+          if (report.newAlarm === 'HIHI' || report.newAlarm === 'LOLO') {
             this.audioManager.playAlarm('critical');
-          } else if (report.newState === 'HI' || report.newState === 'LO') {
+          } else if (report.newAlarm === 'HI' || report.newAlarm === 'LO') {
             this.audioManager.playAlarm('high');
           }
         }
@@ -1711,11 +1711,13 @@
         }
       }
 
-      // Tower sump HIHI → flooding damages packing
-      const sump = pvMap['LIC-301'];
-      if (sump && sump.alarmState === 'HIHI') {
-        if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
-          this.pnlSystem.applyEventCost(200, 'TOWER FLOODING');
+      // Tower sump HIHI → flooding damages packing (stabilizer only — LIC-301 is cold sep in cryo)
+      if (this.currentFacility === 'stabilizer') {
+        const sump = pvMap['LIC-301'];
+        if (sump && sump.alarmState === 'HIHI') {
+          if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
+            this.pnlSystem.applyEventCost(200, 'TOWER FLOODING');
+          }
         }
       }
     },
@@ -2676,7 +2678,7 @@
       }
 
       // NGL recovery dropping (cryo)
-      const nglPV = pvMap['AI-801'] || pvMap['AI-701'];
+      const nglPV = pvMap['AI-701'] || pvMap['AI-502'];
       if (nglPV && nglPV.value < 85 && !this._henryTipCooldown('recovery-drop')) {
         this.henry.operatorTip('recovery-dropping');
         this._setHenryTipCooldown('recovery-drop', 400);
@@ -2874,8 +2876,9 @@
     _updateShiftTimerWarning(gameTime) {
       const timeEl = document.getElementById('game-time');
       if (!timeEl) return;
-      // Shift is 12 hours game time (06:00 to 18:00)
-      const shiftEnd = 18 * 60; // 1080 minutes
+      const shiftStart = this.sim ? this.sim.shiftStartTime || 360 : 360;
+      const shiftDuration = this.sim ? this.sim.shiftDurationMinutes || 480 : 480;
+      const shiftEnd = shiftStart + shiftDuration;
       const minsLeft = shiftEnd - gameTime;
 
       if (minsLeft <= 30 && minsLeft > 10) {
@@ -2937,14 +2940,16 @@
       }
 
       // Check if expander was tamed (tripped and recovered)
-      if (this.currentFacility === 'cryogenic' && this.equipment.expander) {
-        if (this.equipment.expander.status === 'running' && this.equipment.expander._wasTripped) {
+      const expander = this.currentFacility === 'cryogenic' && this.equipment['EX-400'];
+      if (expander) {
+        if (expander.status === 'running' && expander._wasTripped) {
           this._expanderTamed = true;
         }
       }
 
       // Check compressor trip recovery time
-      if (this.equipment.compressor && this.equipment.compressor.status === 'running' && this._compTripStartTime) {
+      const compressor = this.equipment['C-100'] || this.equipment['C-200'];
+      if (compressor && compressor.status === 'running' && this._compTripStartTime) {
         const gameTime = this.sim.gameTimeMinutes;
         const recoveryMinutes = (gameTime - this._compTripStartTime) / this.sim.timeCompression;
         if (recoveryMinutes <= 8) this._compRecoveredUnder8Min = true;
