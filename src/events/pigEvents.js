@@ -255,6 +255,13 @@ function registerPigEvents(eventSystem) {
 
     checkResolved: (event, pvMap) => {
       return event.data.pigs.every(p => p.phase === 'done');
+    },
+
+    onEnd: (event, pvMap) => {
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
+      if (feedPV) feedPV.externalForce = 0;
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
+      if (sepPV) sepPV.externalForce = 0;
     }
   });
 }
