@@ -129,6 +129,16 @@ class Glossary {
     this._tooltip.style.top = top + 'px';
   }
 
+  tagDynamic(selector) {
+    // Tag dynamically generated elements
+    document.querySelectorAll(selector).forEach(el => {
+      if (!el.dataset.glossaryTagged) {
+        this._tagElement(el);
+        el.dataset.glossaryTagged = 'true';
+      }
+    });
+  }
+
   /** Render the full glossary popup HTML */
   renderFullGlossary() {
     const terms = Glossary.TERMS;

@@ -267,8 +267,11 @@ function registerRefrigerationEvents(eventSystem) {
     },
 
     onTick: (event, dt, pvMap) => {
-      // Product flow gradually drops
-      // No alarm on this — player must notice flow trend
+      // Product flow gradually drops due to cavitation
+      const productFlow = pvMap['FI-501'];
+      if (productFlow) productFlow.externalForce -= 0.5;
+      const pumpTemp = pvMap['TIC-302'];
+      if (pumpTemp) pumpTemp.externalForce += 0.3;
     },
 
     duration: 25,

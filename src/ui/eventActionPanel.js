@@ -324,6 +324,11 @@ class EventActionPanel {
     if (resolved) {
       this.game._addRadioMessage(`Event resolved: ${eventId}`);
       if (this.game.audioManager) this.game.audioManager.playEffect('alarm-ack');
+
+      // Track truck loads for achievement
+      if (eventId === 'truck-arrival') {
+        this.game._truckLoadsClean = (this.game._truckLoadsClean || 0) + 1;
+      }
     } else {
       // Action attempted but not fully resolved
       if (this.game.audioManager) this.game.audioManager.playEffect('beep');

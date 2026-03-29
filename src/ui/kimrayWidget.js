@@ -195,6 +195,20 @@ class KimrayWidget {
     // Will be bound when SVG is loaded
   }
 
+  bindSVG() {
+    // Bind click on Kimray pump area in SVG
+    const svgEl = document.getElementById('pid-svg');
+    if (!svgEl) return;
+
+    // Use event delegation for dynamically loaded SVGs
+    svgEl.addEventListener('click', (e) => {
+      const kimrayGroup = e.target.closest('#kimray-pump-area, [data-equip="kimray"]');
+      if (kimrayGroup) {
+        this.toggle();
+      }
+    });
+  }
+
   show() {
     this.visible = true;
     this.container.style.display = 'block';

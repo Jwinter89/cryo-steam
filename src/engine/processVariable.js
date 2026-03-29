@@ -28,8 +28,8 @@ class ProcessVariable {
     this.tag = config.tag;
     this.desc = config.desc || '';
     this.unit = config.unit || '';
-    this.value = config.value || 0;
-    this.sp = config.sp || config.value || 0;
+    this.value = config.value != null ? config.value : 0;
+    this.sp = config.sp != null ? config.sp : (config.value != null ? config.value : 0);
     this.min = config.min || 0;
     this.max = config.max || 100;
     this.hh = config.hh != null ? config.hh : null;

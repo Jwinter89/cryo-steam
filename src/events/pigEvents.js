@@ -78,18 +78,18 @@ function registerPigEvents(eventSystem) {
         d.liquidSurge = Math.max(0, d.liquidSurge - d.peakSurge * 0.05 * dt);
       }
 
-      // Apply liquid surge to feed flow — higher FIC-401 SP = better handling
-      const feedPV = pvMap['FIC-401'];
+      // Apply liquid surge to feed flow — higher feed SP = better handling
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (feedPV) {
-        // If operator ramped up FIC-401 SP, they can absorb surge better
+        // If operator ramped up feed SP, they can absorb surge better
         const spRatio = feedPV.sp / 120; // 1.0 = normal, >1 = ramped up
         const dampening = Math.min(1.0, 1.0 / spRatio);
         feedPV.externalForce += d.liquidSurge * 0.05 * dampening;
       }
 
-      const sepPV = pvMap['LIC-302'];
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
       if (sepPV && d.liquidSurge > 0) {
-        // Higher FIC-401 SP = pulling more liquid off separator = less level rise
+        // Higher feed SP = pulling more liquid off separator = less level rise
         const feedSP = feedPV ? feedPV.sp : 120;
         const pullFactor = Math.max(0.5, 1.0 - (feedSP - 120) / 300);
         sepPV.externalForce += d.liquidSurge * 0.03 * pullFactor;
@@ -103,7 +103,7 @@ function registerPigEvents(eventSystem) {
 
     onEnd: (event, pvMap) => {
       // Cleanup — remove surge forces
-      const feedPV = pvMap['FIC-401'];
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (feedPV) feedPV.externalForce = 0;
     }
   });
@@ -177,14 +177,14 @@ function registerPigEvents(eventSystem) {
         d.liquidSurge = Math.max(0, d.liquidSurge - d.peakSurge * 0.07 * dt);
       }
 
-      const feedPV = pvMap['FIC-401'];
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (feedPV) {
         const spRatio = feedPV.sp / 120;
         const dampening = Math.min(1.0, 1.0 / spRatio);
         feedPV.externalForce += d.liquidSurge * 0.06 * dampening;
       }
 
-      const sepPV = pvMap['LIC-302'];
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
       if (sepPV && d.liquidSurge > 0) {
         const feedSP = feedPV ? feedPV.sp : 120;
         const pullFactor = Math.max(0.5, 1.0 - (feedSP - 120) / 300);
@@ -197,7 +197,7 @@ function registerPigEvents(eventSystem) {
     },
 
     onEnd: (event, pvMap) => {
-      const feedPV = pvMap['FIC-401'];
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (feedPV) feedPV.externalForce = 0;
     }
   });
@@ -246,15 +246,22 @@ function registerPigEvents(eventSystem) {
         totalSurge += pig.surge;
       }
 
-      const feedPV = pvMap['FIC-401'];
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (feedPV) feedPV.externalForce += totalSurge * 0.05;
 
-      const sepPV = pvMap['LIC-302'];
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
       if (sepPV && totalSurge > 0) sepPV.externalForce += totalSurge * 0.035;
     },
 
     checkResolved: (event, pvMap) => {
       return event.data.pigs.every(p => p.phase === 'done');
+    },
+
+    onEnd: (event, pvMap) => {
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
+      if (feedPV) feedPV.externalForce = 0;
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
+      if (sepPV) sepPV.externalForce = 0;
     }
   });
 }

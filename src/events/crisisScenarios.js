@@ -205,7 +205,7 @@ const CrisisScenarios = {
       id: 'crisis-h2s-evacuation',
       name: 'SOUR GAS EMERGENCY',
       description: 'H2S leak in amine area. Evacuate. Find the source. Isolate. Wind direction matters.',
-      facility: 'amine',
+      facility: 'cryogenic',
       tier: 4,
       difficulty: 'EXTREME',
       timeLimit: 30,

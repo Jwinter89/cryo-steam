@@ -51,6 +51,52 @@ class PidDiagram {
     this._updateTankFill('tank-level-fill', 'LIC-303', 66);
     // Flash drum level (amine)
     this._updateLevelLine('flash-level', 'LIC-A02', 45);
+
+    // Refrigeration levels
+    const pvMap = this.sim.getAllPVs ? this.sim.getAllPVs() : {};
+    this._setLevel(pvMap, 'LIC-201', 'contactor-level-fill', 'contactor-level-line');
+    this._setLevel(pvMap, 'LIC-202', 'flash-tank-level-fill', null);
+    this._setLevel(pvMap, 'LIC-501', 'product-tank-level-fill', null);
+
+    // Cryogenic levels
+    this._setLevel(pvMap, 'LIC-301', 'cold-sep-level-fill', null);
+    this._setLevel(pvMap, 'LIC-501', 'demet-sump-level-fill', 'demet-level-line');
+    this._setLevel(pvMap, 'LIC-701', 'cryo-product-level-fill', null);
+    this._setLevel(pvMap, 'LIC-A01', 'absorber-level-fill', null);
+    this._setLevel(pvMap, 'LIC-A03', 'regen-sump-level-fill', null);
+  }
+
+  _setLevel(pvMap, tag, fillId, lineId) {
+    const pv = pvMap[tag];
+    if (!pv) return;
+    const pct = Math.max(0, Math.min(100, pv.value));
+
+    const fill = document.getElementById(fillId);
+    if (fill) {
+      const maxH = parseFloat(fill.getAttribute('data-max-height') || fill.getAttribute('height') || 40);
+      fill.setAttribute('height', maxH * pct / 100);
+      fill.setAttribute('y', parseFloat(fill.getAttribute('data-base-y') || fill.getAttribute('y')) + maxH * (1 - pct / 100));
+      // Color based on alarm state
+      if (pv.value > (pv.hh || 999) || pv.value < (pv.ll || -999)) {
+        fill.setAttribute('fill', '#E04040');
+      } else if (pv.value > (pv.hi || 999) || pv.value < (pv.lo || -999)) {
+        fill.setAttribute('fill', '#D4A843');
+      } else {
+        fill.setAttribute('fill', '#2E86C1');
+      }
+    }
+
+    if (lineId) {
+      const line = document.getElementById(lineId);
+      if (line) {
+        const parent = fill || line.parentElement;
+        const baseY = parseFloat(line.getAttribute('data-base-y') || line.getAttribute('y1') || 0);
+        const maxH = parseFloat(line.getAttribute('data-max-height') || 40);
+        const y = baseY + maxH * (1 - pct / 100);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+      }
+    }
   }
 
   _updateSepFill(elementId, pvTag, vesselHeight) {
@@ -173,8 +219,39 @@ class PidDiagram {
   }
 
   _updateFlowLines() {
-    // Could update flow line colors based on valve positions / equipment status
-    // Keeping it simple — flow lines stay at their default state
+    const pvMap = this.sim.getAllPVs ? this.sim.getAllPVs() : {};
+    // Update flow line colors based on valve/flow state
+    const flowLines = document.querySelectorAll('.flow-line');
+    flowLines.forEach(line => {
+      const tag = line.dataset.tag;
+      if (!tag) return;
+      const pv = pvMap[tag];
+      if (!pv) return;
+
+      // Color based on flow percentage of normal
+      const ratio = pv.sp > 0 ? pv.value / pv.sp : 1;
+      if (ratio < 0.3) {
+        line.style.stroke = '#E04040'; // Low/no flow - red
+        line.classList.remove('flowing');
+      } else if (ratio < 0.7) {
+        line.style.stroke = '#D4A843'; // Reduced flow - amber
+        line.classList.add('flowing');
+      } else {
+        line.style.stroke = ''; // Normal - default color
+        line.classList.add('flowing');
+      }
+    });
+
+    // Update valve position indicators
+    const valveEls = document.querySelectorAll('[data-valve]');
+    valveEls.forEach(el => {
+      const tag = el.dataset.valve;
+      const pv = pvMap[tag];
+      if (!pv) return;
+      const pct = Math.round(pv.output || pv.value);
+      const label = el.querySelector('.valve-pct');
+      if (label) label.textContent = pct + '%';
+    });
   }
 
   _updatePigStatus() {

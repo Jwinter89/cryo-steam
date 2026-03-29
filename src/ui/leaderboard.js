@@ -8,8 +8,29 @@ class Leaderboard {
   constructor() {
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
+    this._seedScores();
     this.db = null;
     this._initFirebase();
+  }
+
+  // Seed leaderboard with notable scores (only added once)
+  _seedScores() {
+    if (localStorage.getItem('coldcreek-lb-seeded')) return;
+    const seeds = [
+      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771, timestamp: Date.now() - 86400000 },
+      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, timestamp: Date.now() - 43200000 }
+    ];
+    this.localScores.push(...seeds);
+    this._saveLocalScores();
+    localStorage.setItem('coldcreek-lb-seeded', '1');
+    // Also push to Firebase if available
+    setTimeout(() => {
+      if (this.db) {
+        seeds.forEach(s => {
+          try { this.db.ref('leaderboard').push(s); } catch(e) {}
+        });
+      }
+    }, 2000);
   }
 
   _initFirebase() {
@@ -71,7 +92,7 @@ class Leaderboard {
    * @param {number} limit - Max number of scores to return
    * @returns {Promise<Array>} Sorted by earnings descending
    */
-  async getTopScores(limit = 10) {
+  async getTopScores(limit = 10, facility = null) {
     // Try Firebase first
     if (this.db) {
       try {
@@ -85,16 +106,24 @@ class Leaderboard {
           scores.push(child.val());
         });
 
+        // Filter by facility if specified
+        const filtered = facility
+          ? scores.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
+          : scores;
+
         // Sort descending by earnings, take top N
-        scores.sort((a, b) => b.earnings - a.earnings);
-        return scores.slice(0, limit);
+        filtered.sort((a, b) => b.earnings - a.earnings);
+        return filtered.slice(0, limit);
       } catch (e) {
         console.warn('Leaderboard: Firebase fetch failed, using local', e);
       }
     }
 
     // Fallback to local
-    const sorted = [...this.localScores].sort((a, b) => b.earnings - a.earnings);
+    const filtered = facility
+      ? this.localScores.filter(s => (s.facility || '').toLowerCase() === facility.toLowerCase())
+      : [...this.localScores];
+    const sorted = filtered.sort((a, b) => b.earnings - a.earnings);
     return sorted.slice(0, limit);
   }
 
