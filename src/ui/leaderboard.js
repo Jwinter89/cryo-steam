@@ -6,61 +6,33 @@
 
 class Leaderboard {
   constructor() {
+    this.seeds = [
+      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771 },
+      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911 },
+      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587 },
+      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429 }
+    ];
+    // Build a set of seed keys for fast lookup
+    this._seedKeys = new Set(this.seeds.map(s => s.username + '|' + s.earnings));
+
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
-    this._deduplicateLocal();
-    this._seedScores();
+    this._ensureSeeds();
     this.db = null;
     this._initFirebase();
   }
 
-  // Remove duplicate entries already in localStorage (same username + earnings + facility)
-  _deduplicateLocal() {
-    const seen = new Set();
-    const cleaned = [];
-    for (const s of this.localScores) {
-      const key = (s.username || '') + '|' + (s.facility || '') + '|' + (s.earnings || 0);
-      if (!seen.has(key)) {
-        seen.add(key);
-        cleaned.push(s);
-      }
-    }
-    if (cleaned.length < this.localScores.length) {
-      this.localScores = cleaned;
-      this._saveLocalScores();
-    }
-  }
-
-  // Seed leaderboard with notable scores (deduplicated)
-  _seedScores() {
-    const allSeeds = [
-      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771, timestamp: Date.now() - 86400000 },
-      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, timestamp: Date.now() - 43200000 },
-      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587, timestamp: Date.now() - 72000000 },
-      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429, timestamp: Date.now() - 36000000 }
-    ];
-
-    const currentVersion = 'v2';
-    if (localStorage.getItem('coldcreek-lb-seed-' + currentVersion)) return;
-
-    // Filter out seeds that already exist in local scores (by username + earnings)
-    const newSeeds = allSeeds.filter(seed =>
-      !this.localScores.some(s => s.username === seed.username && s.earnings === seed.earnings)
+  // Strip every seed entry from local scores, then add each seed back exactly once.
+  _ensureSeeds() {
+    // Remove ALL existing seed entries (matches by username + earnings)
+    this.localScores = this.localScores.filter(s =>
+      !this._seedKeys.has(s.username + '|' + s.earnings)
     );
-
-    if (newSeeds.length > 0) {
-      this.localScores.push(...newSeeds);
-      this._saveLocalScores();
-      // Also push new ones to Firebase if available
-      setTimeout(() => {
-        if (this.db) {
-          newSeeds.forEach(s => {
-            try { this.db.ref('leaderboard').push(s); } catch(e) {}
-          });
-        }
-      }, 2000);
+    // Add each seed exactly once
+    for (const seed of this.seeds) {
+      this.localScores.push({ ...seed, timestamp: Date.now() - 86400000 });
     }
-    localStorage.setItem('coldcreek-lb-seed-' + currentVersion, '1');
+    this._saveLocalScores();
   }
 
   _initFirebase() {
