@@ -9,13 +9,16 @@
 
 class Leaderboard {
   constructor() {
-    // Seed scores live here in code — never in localStorage
+    // Seed scores — hardcoded, never written to storage.
+    // Merged at display time in getTopScores() after stripping
+    // any matching entries from the data source (Firebase/local).
     this.seeds = [
-      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771, isSeed: true },
-      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911, isSeed: true },
-      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587, isSeed: true },
-      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429, isSeed: true }
+      { username: 'LITTLE BLACK BOX', facility: 'stabilizer', mode: 'operate', earnings: 19771 },
+      { username: 'END OF SHIFT', facility: 'cryogenic', mode: 'operate', earnings: 38911 },
+      { username: 'FLATTOP', facility: 'refrigeration', mode: 'operate', earnings: 30587 },
+      { username: 'ENGUISH', facility: 'cryogenic', mode: 'operate', earnings: 32429 }
     ];
+    this._seedKeys = new Set(this.seeds.map(s => s.username + '|' + s.earnings));
 
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
@@ -24,19 +27,18 @@ class Leaderboard {
     this._initFirebase();
   }
 
-  // One-time cleanup: remove any seed entries that previous buggy code
-  // wrote into localStorage. Keyed so it only runs once.
+  // Returns true if an entry matches a seed (by username + earnings)
+  _isSeed(entry) {
+    return this._seedKeys.has((entry.username || '') + '|' + (entry.earnings || 0));
+  }
+
+  // Remove seed entries from localStorage (old buggy code wrote them there)
   _purgeOldSeeds() {
-    if (localStorage.getItem('coldcreek-lb-purged')) return;
-    const seedKeys = new Set(this.seeds.map(s => s.username + '|' + s.earnings));
     const before = this.localScores.length;
-    this.localScores = this.localScores.filter(s =>
-      !seedKeys.has((s.username || '') + '|' + (s.earnings || 0))
-    );
+    this.localScores = this.localScores.filter(s => !this._isSeed(s));
     if (this.localScores.length < before) {
       this._saveLocalScores();
     }
-    localStorage.setItem('coldcreek-lb-purged', '1');
   }
 
   _initFirebase() {
@@ -122,7 +124,12 @@ class Leaderboard {
       realScores = [...this.localScores];
     }
 
-    // Merge seeds into real scores
+    // Strip any seed entries from the data source (old code pushed seeds
+    // to Firebase/localStorage — remove them so hardcoded seeds are the
+    // single source of truth)
+    realScores = realScores.filter(s => !this._isSeed(s));
+
+    // Merge hardcoded seeds with real player scores
     const combined = [...realScores, ...this.seeds];
 
     // Filter by facility if specified
