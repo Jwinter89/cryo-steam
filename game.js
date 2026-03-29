@@ -221,6 +221,20 @@
         if (banner) banner.style.display = '';
       });
 
+      // iOS Safari: show manual add-to-home-screen hint
+      // (beforeinstallprompt never fires on iOS)
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.navigator.standalone === true;
+      if (isIOS && !isStandalone && !localStorage.getItem('coldcreek-pwa-dismissed')) {
+        const banner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (banner) {
+          banner.querySelector('span').textContent = 'Tap the share button (\u2B06) then "Add to Home Screen" for the best experience';
+          if (installBtn) installBtn.style.display = 'none';
+          banner.style.display = '';
+        }
+      }
+
       const installBtn = document.getElementById('pwa-install-btn');
       if (installBtn) {
         installBtn.addEventListener('click', async () => {
@@ -236,6 +250,7 @@
       if (dismissBtn) {
         dismissBtn.addEventListener('click', () => {
           document.getElementById('pwa-install-banner').style.display = 'none';
+          localStorage.setItem('coldcreek-pwa-dismissed', '1');
         });
       }
     },
@@ -250,21 +265,6 @@
         btn.addEventListener('click', () => {
           switch (btn.dataset.action) {
             case 'new-game':
-              // Nudge player to set callsign if they haven't
-              if (!localStorage.getItem('coldcreek-username')) {
-                const promptEl = document.getElementById('username-prompt');
-                const inputEl = document.getElementById('username-input');
-                if (promptEl && inputEl) {
-                  promptEl.classList.add('callsign-nudge');
-                  inputEl.setAttribute('placeholder', 'SET CALLSIGN TO CONTINUE');
-                  inputEl.focus();
-                  setTimeout(() => {
-                    promptEl.classList.remove('callsign-nudge');
-                    inputEl.setAttribute('placeholder', 'ENTER CALLSIGN');
-                  }, 3000);
-                  break;
-                }
-              }
               this._showScreen('mode-screen');
               break;
             case 'continue':
@@ -1922,6 +1922,25 @@
         });
       }
 
+      // Lead Operator Mode (Henry's hints & coaching)
+      const leadOpToggle = document.getElementById('setting-lead-operator');
+      if (leadOpToggle) {
+        const saved = localStorage.getItem('coldcreek-lead-operator');
+        leadOpToggle.checked = saved !== 'off';
+        this.leadOperatorMode = leadOpToggle.checked;
+        leadOpToggle.addEventListener('change', () => {
+          this.leadOperatorMode = leadOpToggle.checked;
+          localStorage.setItem('coldcreek-lead-operator', leadOpToggle.checked ? 'on' : 'off');
+          // Hide Henry immediately if turning off
+          if (!leadOpToggle.checked && this.henry) {
+            this.henry.hide();
+          }
+          // Hide/show coach button
+          const coachBtn = document.getElementById('btn-coach');
+          if (coachBtn) coachBtn.style.display = leadOpToggle.checked ? '' : 'none';
+        });
+      }
+
       // Color-blind mode
       const cbSelect = document.getElementById('setting-colorblind');
       if (cbSelect) {
@@ -2566,7 +2585,7 @@
     },
 
     _henryAnnounceEvent(event) {
-      if (!this.henry) return;
+      if (!this.henry || !this.leadOperatorMode) return;
 
       // Custom messages per event type for personality
       const messages = {
@@ -2608,7 +2627,7 @@
     },
 
     _henryGameplayTips(dt, gameTime) {
-      if (!this.henry || this.henry.isVisible) return;
+      if (!this.henry || !this.leadOperatorMode || this.henry.isVisible) return;
       if (!this.sim || !this.pnlSystem) return;
 
       // Only check every ~60 ticks (about every minute of game time)
