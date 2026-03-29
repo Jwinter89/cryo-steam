@@ -856,7 +856,7 @@ class LearnMode {
 
       case 'complete-day2':
         // Save progress
-        this.game.saveProgress({ day2Complete: true });
+        this.game.saveProgress({ [`${this.facility}Day2Complete`]: true });
         break;
 
       case 'start-pig-scenario':
@@ -901,7 +901,7 @@ class LearnMode {
     }
 
     if (this.currentDay < 5) {
-      this.game.saveProgress({ [`day${this.currentDay}Complete`]: true });
+      this.game.saveProgress({ [`${this.facility}Day${this.currentDay}Complete`]: true });
       this._showQuiz(this.currentDay);
     } else {
       const completionKey = this.facility + 'Complete';

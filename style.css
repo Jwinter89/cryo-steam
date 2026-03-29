@@ -1804,14 +1804,14 @@ g[id^="equip-"]:hover line {
     display: none;
   }
 
-  /* Show mobile speed dial */
+  /* Show mobile speed dial (must override base display:none below) */
   .mobile-speed-dial {
-    display: block;
+    display: block !important;
   }
 
-  /* Show mobile building pill strip */
+  /* Show mobile building pill strip (must override base display:none below) */
   .mobile-building-pills {
-    display: flex;
+    display: flex !important;
   }
 }
 
@@ -1822,18 +1822,18 @@ g[id^="equip-"]:hover line {
   display: none;
   position: fixed;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  right: 16px;
+  left: 12px;
   z-index: 150;
 }
 .speed-dial-fab {
-  width: 52px;
-  height: 52px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--accent);
   border: 2px solid rgba(255,255,255,0.15);
   color: #fff;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -1848,14 +1848,14 @@ g[id^="equip-"]:hover line {
   transform: scale(0.92);
 }
 .speed-dial-fab .fab-label {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
 }
 
 .speed-dial-ring {
   position: absolute;
-  bottom: 60px;
-  right: 0;
+  bottom: 52px;
+  left: 0;
   display: flex;
   flex-direction: column-reverse;
   gap: 8px;
@@ -1871,14 +1871,14 @@ g[id^="equip-"]:hover line {
   transform: translateY(0) scale(1);
 }
 .sd-btn {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-normal);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -1914,9 +1914,9 @@ g[id^="equip-"]:hover line {
 .mobile-building-pills {
   display: none;
   position: fixed;
-  bottom: 76px;
-  left: 8px;
-  right: 76px;
+  bottom: 68px;
+  left: 64px;
+  right: 8px;
   z-index: 100;
   gap: 6px;
   overflow-x: auto;

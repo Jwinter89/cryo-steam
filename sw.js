@@ -3,7 +3,7 @@
  * Enables offline caching and PWA install prompt.
  */
 
-const CACHE_NAME = 'cold-creek-v2';
+const CACHE_NAME = 'cold-creek-v3';
 
 // Core assets to cache on install
 const PRECACHE_ASSETS = [

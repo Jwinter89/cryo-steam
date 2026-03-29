@@ -35,7 +35,7 @@ class PnlManager {
 
     // ---- THROUGHPUT-BASED REVENUE ----
     // Revenue scales with product flow — no flow, no money
-    const productFlow = pvMap['FI-402'] || pvMap['FI-702'];
+    const productFlow = pvMap['FI-402'] || pvMap['FI-501'] || pvMap['FI-100'];
     const baseRate = econ.baseRevenuePerHour || 1800;
     if (productFlow) {
       // Normalize: 100 bbl/hr is nominal. Revenue scales linearly.

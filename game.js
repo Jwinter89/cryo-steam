@@ -60,10 +60,11 @@
     ],
     refrigeration: [
       { header: 'INLET / COMP', tags: ['PIC-101', 'PIC-102', 'TIC-110', 'TIC-111'] },
-      { header: 'TEG DEHYDRATION', tags: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201'] },
-      { header: 'BTEX / FUEL GAS', tags: ['XI-210', 'PIC-401', 'AI-401'] },
-      { header: 'REFRIGERATION', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
-      { header: 'PRODUCT / RECOVERY', tags: ['AI-502', 'AI-503', 'FI-501', 'AI-601'] }
+      { header: 'TEG DEHYDRATION', tags: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201', 'LIC-202', 'LIC-203'] },
+      { header: 'BTEX / FUEL GAS', tags: ['XI-210', 'TIC-210', 'PIC-401', 'AI-401'] },
+      { header: 'REFRIGERATION', tags: ['TIC-301', 'TIC-302', 'TIC-303', 'PIC-301'] },
+      { header: 'PRODUCT / RECOVERY', tags: ['AI-501', 'AI-502', 'AI-503', 'FI-501', 'AI-601', 'AI-602', 'LIC-501'] },
+      { header: 'RESIDUE', tags: ['PIC-501', 'TIC-501'] }
     ],
     cryogenic: [
       { header: 'INLET / MOL SIEVE', tags: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'] },
@@ -71,7 +72,7 @@
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
       { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'] },
       { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
-      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701'] },
+      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'TIC-601', 'TIC-602', 'TIC-603', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'AI-705', 'LIC-701'] },
       { header: 'UTILITIES', tags: ['TIC-801', 'TIC-901', 'AI-801'] }
     ]
   };
@@ -90,11 +91,11 @@
     refrigeration: {
       overview: null, // null = show all
       'inlet-comp': ['PIC-101', 'PIC-102', 'TIC-110', 'TIC-111'],
-      teg: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201'],
-      btex: ['XI-210', 'PIC-401', 'AI-401'],
-      refrig: ['TIC-301', 'TIC-302', 'TIC-303'],
-      residue: ['AI-502', 'AI-503', 'FI-501'],
-      product: ['AI-601']
+      teg: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201', 'LIC-202', 'LIC-203'],
+      btex: ['XI-210', 'TIC-210', 'PIC-401', 'AI-401'],
+      refrig: ['TIC-301', 'TIC-302', 'TIC-303', 'PIC-301'],
+      residue: ['PIC-501', 'TIC-501', 'AI-502', 'AI-503', 'FI-501'],
+      product: ['AI-501', 'AI-601', 'AI-602', 'LIC-501']
     },
     cryogenic: {
       overview: null,
@@ -103,7 +104,7 @@
       coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
       expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'],
       demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
-      residue: ['PIC-601', 'PIC-602', 'AI-705'],
+      residue: ['PIC-601', 'PIC-602', 'TIC-601', 'TIC-602', 'TIC-603', 'AI-705'],
       product: ['AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701', 'AI-801'],
       hotoil: ['TIC-801']
     }
@@ -176,7 +177,7 @@
     // ============================================================
 
     init() {
-      this.leaderboard = new Leaderboard();
+      try { this.leaderboard = new Leaderboard(); } catch (e) { console.error('Leaderboard init failed', e); this.leaderboard = { hasUsername() { return false; }, getUsername() { return ''; }, setUsername() {}, submitScore() {}, getTopScores() { return Promise.resolve([]); } }; }
       this._loadProgress();
       this._bindScreenNav();
       this._bindTimeControls();
@@ -221,6 +222,20 @@
         if (banner) banner.style.display = '';
       });
 
+      // iOS Safari: show manual add-to-home-screen hint
+      // (beforeinstallprompt never fires on iOS)
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const isStandalone = window.navigator.standalone === true;
+      if (isIOS && !isStandalone && !localStorage.getItem('coldcreek-pwa-dismissed')) {
+        const banner = document.getElementById('pwa-install-banner');
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (banner) {
+          banner.querySelector('span').textContent = 'Tap the share button (\u2B06) then "Add to Home Screen" for the best experience';
+          if (installBtn) installBtn.style.display = 'none';
+          banner.style.display = '';
+        }
+      }
+
       const installBtn = document.getElementById('pwa-install-btn');
       if (installBtn) {
         installBtn.addEventListener('click', async () => {
@@ -236,6 +251,7 @@
       if (dismissBtn) {
         dismissBtn.addEventListener('click', () => {
           document.getElementById('pwa-install-banner').style.display = 'none';
+          localStorage.setItem('coldcreek-pwa-dismissed', '1');
         });
       }
     },
@@ -250,21 +266,6 @@
         btn.addEventListener('click', () => {
           switch (btn.dataset.action) {
             case 'new-game':
-              // Nudge player to set callsign if they haven't
-              if (!localStorage.getItem('coldcreek-username')) {
-                const promptEl = document.getElementById('username-prompt');
-                const inputEl = document.getElementById('username-input');
-                if (promptEl && inputEl) {
-                  promptEl.classList.add('callsign-nudge');
-                  inputEl.setAttribute('placeholder', 'SET CALLSIGN TO CONTINUE');
-                  inputEl.focus();
-                  setTimeout(() => {
-                    promptEl.classList.remove('callsign-nudge');
-                    inputEl.setAttribute('placeholder', 'ENTER CALLSIGN');
-                  }, 3000);
-                  break;
-                }
-              }
               this._showScreen('mode-screen');
               break;
             case 'continue':
@@ -1256,9 +1257,9 @@
       this.sim.onAlarm = (report) => {
         this.alarmManager.onAlarmChange(report);
         if (this.audioManager && this.audioManager.alarmsEnabled) {
-          if (report.newState === 'HIHI' || report.newState === 'LOLO') {
+          if (report.newAlarm === 'HIHI' || report.newAlarm === 'LOLO') {
             this.audioManager.playAlarm('critical');
-          } else if (report.newState === 'HI' || report.newState === 'LO') {
+          } else if (report.newAlarm === 'HI' || report.newAlarm === 'LO') {
             this.audioManager.playAlarm('high');
           }
         }
@@ -1710,11 +1711,13 @@
         }
       }
 
-      // Tower sump HIHI → flooding damages packing
-      const sump = pvMap['LIC-301'];
-      if (sump && sump.alarmState === 'HIHI') {
-        if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
-          this.pnlSystem.applyEventCost(200, 'TOWER FLOODING');
+      // Tower sump HIHI → flooding damages packing (stabilizer only — LIC-301 is cold sep in cryo)
+      if (this.currentFacility === 'stabilizer') {
+        const sump = pvMap['LIC-301'];
+        if (sump && sump.alarmState === 'HIHI') {
+          if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
+            this.pnlSystem.applyEventCost(200, 'TOWER FLOODING');
+          }
         }
       }
     },
@@ -1919,6 +1922,25 @@
         tipsToggle.checked = localStorage.getItem('coldcreek-tips') !== 'off';
         tipsToggle.addEventListener('change', () => {
           if (this.alarmManager) this.alarmManager.setTipsEnabled(tipsToggle.checked);
+        });
+      }
+
+      // Lead Operator Mode (Henry's hints & coaching)
+      const leadOpToggle = document.getElementById('setting-lead-operator');
+      if (leadOpToggle) {
+        const saved = localStorage.getItem('coldcreek-lead-operator');
+        leadOpToggle.checked = saved !== 'off';
+        this.leadOperatorMode = leadOpToggle.checked;
+        leadOpToggle.addEventListener('change', () => {
+          this.leadOperatorMode = leadOpToggle.checked;
+          localStorage.setItem('coldcreek-lead-operator', leadOpToggle.checked ? 'on' : 'off');
+          // Hide Henry immediately if turning off
+          if (!leadOpToggle.checked && this.henry) {
+            this.henry.hide();
+          }
+          // Hide/show coach button
+          const coachBtn = document.getElementById('btn-coach');
+          if (coachBtn) coachBtn.style.display = leadOpToggle.checked ? '' : 'none';
         });
       }
 
@@ -2566,7 +2588,7 @@
     },
 
     _henryAnnounceEvent(event) {
-      if (!this.henry) return;
+      if (!this.henry || !this.leadOperatorMode) return;
 
       // Custom messages per event type for personality
       const messages = {
@@ -2608,7 +2630,7 @@
     },
 
     _henryGameplayTips(dt, gameTime) {
-      if (!this.henry || this.henry.isVisible) return;
+      if (!this.henry || !this.leadOperatorMode || this.henry.isVisible) return;
       if (!this.sim || !this.pnlSystem) return;
 
       // Only check every ~60 ticks (about every minute of game time)
@@ -2656,7 +2678,7 @@
       }
 
       // NGL recovery dropping (cryo)
-      const nglPV = pvMap['AI-801'] || pvMap['AI-701'];
+      const nglPV = pvMap['AI-701'] || pvMap['AI-502'];
       if (nglPV && nglPV.value < 85 && !this._henryTipCooldown('recovery-drop')) {
         this.henry.operatorTip('recovery-dropping');
         this._setHenryTipCooldown('recovery-drop', 400);
@@ -2854,8 +2876,9 @@
     _updateShiftTimerWarning(gameTime) {
       const timeEl = document.getElementById('game-time');
       if (!timeEl) return;
-      // Shift is 12 hours game time (06:00 to 18:00)
-      const shiftEnd = 18 * 60; // 1080 minutes
+      const shiftStart = this.sim ? this.sim.shiftStartTime || 360 : 360;
+      const shiftDuration = this.sim ? this.sim.shiftDurationMinutes || 480 : 480;
+      const shiftEnd = shiftStart + shiftDuration;
       const minsLeft = shiftEnd - gameTime;
 
       if (minsLeft <= 30 && minsLeft > 10) {
@@ -2917,14 +2940,16 @@
       }
 
       // Check if expander was tamed (tripped and recovered)
-      if (this.currentFacility === 'cryogenic' && this.equipment.expander) {
-        if (this.equipment.expander.status === 'running' && this.equipment.expander._wasTripped) {
+      const expander = this.currentFacility === 'cryogenic' && this.equipment['EX-400'];
+      if (expander) {
+        if (expander.status === 'running' && expander._wasTripped) {
           this._expanderTamed = true;
         }
       }
 
       // Check compressor trip recovery time
-      if (this.equipment.compressor && this.equipment.compressor.status === 'running' && this._compTripStartTime) {
+      const compressor = this.equipment['C-100'] || this.equipment['C-200'];
+      if (compressor && compressor.status === 'running' && this._compTripStartTime) {
         const gameTime = this.sim.gameTimeMinutes;
         const recoveryMinutes = (gameTime - this._compTripStartTime) / this.sim.timeCompression;
         if (recoveryMinutes <= 8) this._compRecoveredUnder8Min = true;
