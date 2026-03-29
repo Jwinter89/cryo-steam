@@ -1804,14 +1804,14 @@ g[id^="equip-"]:hover line {
     display: none;
   }
 
-  /* Show mobile speed dial */
+  /* Show mobile speed dial (must override base display:none below) */
   .mobile-speed-dial {
-    display: block;
+    display: block !important;
   }
 
-  /* Show mobile building pill strip */
+  /* Show mobile building pill strip (must override base display:none below) */
   .mobile-building-pills {
-    display: flex;
+    display: flex !important;
   }
 }
 

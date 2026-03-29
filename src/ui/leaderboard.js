@@ -22,7 +22,7 @@ class Leaderboard {
 
     this.username = localStorage.getItem('coldcreek-username') || '';
     this.localScores = this._loadLocalScores();
-    this._purgeOldSeeds();
+    try { this._purgeOldSeeds(); } catch (e) { console.warn('Leaderboard: purge failed', e); }
     this.db = null;
     this._initFirebase();
   }
@@ -147,7 +147,8 @@ class Leaderboard {
   _loadLocalScores() {
     try {
       const data = localStorage.getItem('coldcreek-leaderboard');
-      return data ? JSON.parse(data) : [];
+      const parsed = data ? JSON.parse(data) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
       return [];
     }

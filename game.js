@@ -176,7 +176,7 @@
     // ============================================================
 
     init() {
-      this.leaderboard = new Leaderboard();
+      try { this.leaderboard = new Leaderboard(); } catch (e) { console.error('Leaderboard init failed', e); this.leaderboard = { hasUsername() { return false; }, getUsername() { return ''; }, setUsername() {}, submitScore() {}, getTopScores() { return Promise.resolve([]); } }; }
       this._loadProgress();
       this._bindScreenNav();
       this._bindTimeControls();
