@@ -22,10 +22,10 @@ class Objectives {
         { id: 'handle-pig', label: 'Survive a pig arrival without trip', check: 'pig-no-trip', priority: 'bonus' }
       ],
       refrigeration: [
-        { id: 'moisture-spec', label: 'Keep TEG moisture below 7 lb/MMSCF', tag: 'AI-TEG', check: 'max', max: 7, metric: 'lb/MMSCF', priority: 'primary' },
+        { id: 'moisture-spec', label: 'Keep TEG moisture below 7 lb/MMSCF', tag: 'AI-201', check: 'max', max: 7, metric: 'lb/MMSCF', priority: 'primary' },
         { id: 'no-hihi', label: 'Avoid any HIHI/LOLO alarms', check: 'no-critical-alarms', priority: 'primary' },
         { id: 'profit', label: 'End shift with positive earnings', check: 'positive-earnings', priority: 'primary' },
-        { id: 'btu-spec', label: 'Keep residue BTU in spec', tag: 'AI-BTU', check: 'range', min: 950, max: 1100, metric: 'BTU', priority: 'secondary' },
+        { id: 'btu-spec', label: 'Keep residue BTU in spec', tag: 'AI-601', check: 'range', min: 950, max: 1100, metric: 'BTU', priority: 'secondary' },
         { id: 'recovery', label: 'Maintain >85% C3+ recovery', check: 'recovery-target', priority: 'bonus' }
       ],
       cryogenic: [
@@ -50,12 +50,12 @@ class Objectives {
           { id: 'efficiency', label: 'Maintain throughput above 95%', check: 'recovery-target', tag: 'FIC-401', target: 95, priority: 'bonus' }
         ],
         refrigeration: [
-          { id: 'moisture-tight', label: 'Keep TEG moisture below 5.0 lb/MMSCF', tag: 'AI-TEG', check: 'max', max: 5.0, metric: 'lb/MMSCF', priority: 'primary' },
+          { id: 'moisture-tight', label: 'Keep TEG moisture below 5.0 lb/MMSCF', tag: 'AI-201', check: 'max', max: 5.0, metric: 'lb/MMSCF', priority: 'primary' },
           { id: 'no-hihi', label: 'Zero HIHI/LOLO alarms', check: 'no-critical-alarms', priority: 'primary' },
           { id: 'max-profit', label: 'Earn above $12,000 shift earnings', check: 'positive-earnings', priority: 'primary' },
           { id: 'recovery-c3', label: 'Maintain >93% C3+ recovery', check: 'recovery-target', tag: 'AI-503', target: 93, priority: 'secondary' },
           { id: 'recovery-c2', label: 'Push ethane recovery above 75%', check: 'recovery-target', tag: 'AI-502', target: 75, priority: 'bonus' },
-          { id: 'btu-tight', label: 'Keep residue BTU 1000–1050', tag: 'AI-BTU', check: 'range', min: 1000, max: 1050, metric: 'BTU', priority: 'secondary' }
+          { id: 'btu-tight', label: 'Keep residue BTU 1000–1050', tag: 'AI-601', check: 'range', min: 1000, max: 1050, metric: 'BTU', priority: 'secondary' }
         ],
         cryogenic: [
           { id: 'no-hihi', label: 'Zero HIHI/LOLO alarms', check: 'no-critical-alarms', priority: 'primary' },
@@ -141,7 +141,7 @@ class Objectives {
         case 'recovery-target': {
           // Check recovery PVs for the current facility
           const recoveryTag = obj.tag || (game.currentFacility === 'cryogenic' ? 'AI-701' : 'AI-502');
-          const recoveryPV = game.sim ? game.sim.pvMap[recoveryTag] : null;
+          const recoveryPV = game.sim ? (game.sim.getPV ? game.sim.getPV(recoveryTag) : game.sim.pvMap[recoveryTag]) : null;
           if (recoveryPV) {
             obj.finalValue = recoveryPV.value.toFixed(1) + '%';
             passed = recoveryPV.value >= (obj.target || 85);

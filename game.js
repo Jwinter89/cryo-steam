@@ -60,10 +60,11 @@
     ],
     refrigeration: [
       { header: 'INLET / COMP', tags: ['PIC-101', 'PIC-102', 'TIC-110', 'TIC-111'] },
-      { header: 'TEG DEHYDRATION', tags: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201'] },
-      { header: 'BTEX / FUEL GAS', tags: ['XI-210', 'PIC-401', 'AI-401'] },
-      { header: 'REFRIGERATION', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
-      { header: 'PRODUCT / RECOVERY', tags: ['AI-502', 'AI-503', 'FI-501', 'AI-601'] }
+      { header: 'TEG DEHYDRATION', tags: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201', 'LIC-202', 'LIC-203'] },
+      { header: 'BTEX / FUEL GAS', tags: ['XI-210', 'TIC-210', 'PIC-401', 'AI-401'] },
+      { header: 'REFRIGERATION', tags: ['TIC-301', 'TIC-302', 'TIC-303', 'PIC-301'] },
+      { header: 'PRODUCT / RECOVERY', tags: ['AI-501', 'AI-502', 'AI-503', 'FI-501', 'AI-601', 'AI-602', 'LIC-501'] },
+      { header: 'RESIDUE', tags: ['PIC-501', 'TIC-501'] }
     ],
     cryogenic: [
       { header: 'INLET / MOL SIEVE', tags: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'] },
@@ -90,11 +91,11 @@
     refrigeration: {
       overview: null, // null = show all
       'inlet-comp': ['PIC-101', 'PIC-102', 'TIC-110', 'TIC-111'],
-      teg: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201'],
-      btex: ['XI-210', 'PIC-401', 'AI-401'],
-      refrig: ['TIC-301', 'TIC-302', 'TIC-303'],
-      residue: ['AI-502', 'AI-503', 'FI-501'],
-      product: ['AI-601']
+      teg: ['TIC-201', 'AI-201', 'FI-201', 'LIC-201', 'LIC-202', 'LIC-203'],
+      btex: ['XI-210', 'TIC-210', 'PIC-401', 'AI-401'],
+      refrig: ['TIC-301', 'TIC-302', 'TIC-303', 'PIC-301'],
+      residue: ['PIC-501', 'TIC-501', 'AI-502', 'AI-503', 'FI-501'],
+      product: ['AI-501', 'AI-601', 'AI-602', 'LIC-501']
     },
     cryogenic: {
       overview: null,
