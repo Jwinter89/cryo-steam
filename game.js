@@ -72,7 +72,7 @@
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
       { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'] },
       { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
-      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701'] },
+      { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'AI-705', 'LIC-701'] },
       { header: 'UTILITIES', tags: ['TIC-801', 'TIC-901', 'AI-801'] }
     ]
   };
