@@ -45,7 +45,7 @@ const RefrigerationConfig = {
     {
       tag: 'TIC-201', desc: 'TEG REBOILER', unit: 'degF',
       value: 390, sp: 400, min: 300, max: 450,
-      hi: 420, hh: 410, lo: 370, ll: 350,
+      hi: 405, hh: 410, lo: 370, ll: 350,
       controllable: true, mode: 'AUTO', noise: 0.8, responseRate: 0.03,
       maxRateOfChange: 3
     },
