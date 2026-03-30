@@ -134,7 +134,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://*.vercel-insights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://apis.google.com https://*.firebaseapp.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://*.vercel-insights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://apis.google.com https://cold-creek.firebaseapp.com https://*.firebaseapp.com;">
 
   <link rel="stylesheet" href="style.css?v=5">
 </head>
@@ -926,13 +926,13 @@
     // Firebase config — Cold Creek Leaderboard
     if (typeof firebase !== 'undefined') {
       firebase.initializeApp({
-        apiKey: "AIzaSyCiFasCuaLKxZ-0wwzXc_MIkJjhdgNP-6g",
-        authDomain: "cryo-bd332.firebaseapp.com",
-        databaseURL: "https://cryo-bd332-default-rtdb.firebaseio.com",
-        projectId: "cryo-bd332",
-        storageBucket: "cryo-bd332.firebasestorage.app",
-        messagingSenderId: "895328674793",
-        appId: "1:895328674793:web:8cc7b6e1fa953ab03be178"
+        apiKey: "AIzaSyB1HdEcizWpnUIu0GS3v8MsW_Uap6lqjaQ",
+        authDomain: "cold-creek.firebaseapp.com",
+        databaseURL: "https://cold-creek-default-rtdb.firebaseio.com",
+        projectId: "cold-creek",
+        storageBucket: "cold-creek.firebasestorage.app",
+        messagingSenderId: "1067500023569",
+        appId: "1:1067500023569:web:5c5f56b172251de15ce6b0"
       });
       // Sign in anonymously for security rules enforcement
       firebase.auth().signInAnonymously().catch(function(err) {
