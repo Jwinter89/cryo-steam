@@ -871,10 +871,11 @@ html, body {
 #game-screen {
   flex-direction: column;
   background-color: var(--bg-panel);
-  background-image: linear-gradient(to bottom, rgba(26,26,30,0.92) 0%, rgba(26,26,30,0.95) 100%), url('/gameplay-bg.jpg');
+  background-image: linear-gradient(to bottom, rgba(26,26,30,0.75) 0%, rgba(26,26,30,0.80) 100%), url('/gameplay-bg.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* ---- TOP BAR ---- */
@@ -884,7 +885,7 @@ html, body {
   align-items: center;
   height: 36px;
   padding: 0 12px;
-  background: var(--bg-deep);
+  background: rgba(20, 20, 25, 0.92);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -1007,7 +1008,7 @@ html, body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   border-right: 1px solid var(--border);
-  background: var(--bg-panel);
+  background: rgba(30, 30, 35, 0.92);
   padding: 4px 0;
   flex-shrink: 0;
 }
@@ -1128,7 +1129,7 @@ html, body {
   flex: 1;
   overflow: hidden;
   position: relative;
-  background: var(--bg-panel);
+  background: rgba(30, 30, 35, 0.88);
   display: flex;
   align-items: center;
   justify-content: center;
