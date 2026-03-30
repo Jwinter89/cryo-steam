@@ -1785,6 +1785,8 @@ g[id^="equip-"]:hover line {
 @media (max-width: 768px) {
   #title-screen {
     padding-top: env(safe-area-inset-top, 16px);
+    background-size: 100% auto;
+    background-position: center top;
   }
   .title-content {
     padding-top: 16px;
