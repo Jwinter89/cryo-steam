@@ -62,25 +62,61 @@ class Glossary {
     targets.forEach(el => this._tagElement(el));
   }
 
-  /** Tag jargon terms within an element's text content */
+  /** Tag jargon terms within an element's text content (text nodes only, not attributes) */
   _tagElement(el) {
     if (!el || el.dataset.glossaryTagged) return;
     el.dataset.glossaryTagged = '1';
 
     const terms = Glossary.TERMS;
-    let html = el.innerHTML;
-
-    // Sort terms by length (longest first) to avoid partial matches
     const sorted = Object.keys(terms).sort((a, b) => b.length - a.length);
 
-    for (const key of sorted) {
-      const regex = new RegExp(`\\b(${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-      html = html.replace(regex, (match) => {
-        return `<span class="glossary-term" data-term="${key}">${match}</span>`;
-      });
-    }
+    // Walk text nodes only to avoid corrupting HTML attributes
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
 
-    el.innerHTML = html;
+    for (const textNode of textNodes) {
+      // Skip if already inside a glossary-term span
+      if (textNode.parentElement && textNode.parentElement.classList.contains('glossary-term')) continue;
+
+      let text = textNode.textContent;
+      let hasMatch = false;
+      for (const key of sorted) {
+        const regex = new RegExp(`\\b(${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+        if (regex.test(text)) { hasMatch = true; break; }
+      }
+      if (!hasMatch) continue;
+
+      // Replace text node with a fragment containing tagged terms
+      const frag = document.createDocumentFragment();
+      let remaining = text;
+      while (remaining.length > 0) {
+        let earliest = null;
+        let earliestKey = null;
+        for (const key of sorted) {
+          const regex = new RegExp(`\\b(${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+          const m = regex.exec(remaining);
+          if (m && (!earliest || m.index < earliest.index)) {
+            earliest = m;
+            earliestKey = key;
+          }
+        }
+        if (!earliest) {
+          frag.appendChild(document.createTextNode(remaining));
+          break;
+        }
+        if (earliest.index > 0) {
+          frag.appendChild(document.createTextNode(remaining.substring(0, earliest.index)));
+        }
+        const span = document.createElement('span');
+        span.className = 'glossary-term';
+        span.dataset.term = earliestKey;
+        span.textContent = earliest[0];
+        frag.appendChild(span);
+        remaining = remaining.substring(earliest.index + earliest[0].length);
+      }
+      textNode.parentNode.replaceChild(frag, textNode);
+    }
 
     // Bind events
     el.querySelectorAll('.glossary-term').forEach(term => {

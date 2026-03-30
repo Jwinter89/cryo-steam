@@ -35,7 +35,7 @@ class PnlManager {
 
     // ---- THROUGHPUT-BASED REVENUE ----
     // Revenue scales with product flow — no flow, no money
-    const productFlow = pvMap['FI-402'] || pvMap['FI-501'] || pvMap['FI-100'];
+    const productFlow = pvMap['FI-402'] || pvMap['FI-501'] || pvMap['FI-100'] || pvMap['FI-A01'];
     const baseRate = econ.baseRevenuePerHour || 1800;
     if (productFlow) {
       // Normalize: 100 bbl/hr is nominal. Revenue scales linearly.
@@ -113,10 +113,10 @@ class PnlManager {
       }
     }
 
-    // BTEX pilot out
+    // BTEX pilot out (penalty is per-hour, scale by dt in game-hours)
     const btexPilot = pvMap['XI-210'];
     if (btexPilot && btexPilot.value < 0.5 && econ.btexViolationPenalty) {
-      penalties += econ.btexViolationPenalty / 60; // per minute converted to tick rate
+      penalties += econ.btexViolationPenalty;
       this.penaltyReasons.push('BTEX VIOLATION');
     }
 

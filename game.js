@@ -127,7 +127,7 @@
     kimrayWidget: null,
     multiPlantManager: null,
     eventActionPanel: null,
-    fieldNotes: null,
+    fieldNotes: null, // initialized via window.FieldNotes
     gcDisplay: null,
     henry: null,
 
@@ -170,7 +170,6 @@
     },
 
     progress: {},
-    uiUpdateInterval: null,
 
     // ============================================================
     // INITIALIZATION
@@ -444,6 +443,23 @@
       // Mobile info drawer (also handles backdrop)
       this._bindMobileInfoDrawer();
 
+      // Close gauge sheet on tap outside (mobile)
+      document.addEventListener('click', (e) => {
+        const sheet = document.getElementById('gauge-sheet');
+        if (!sheet || !sheet.classList.contains('open')) return;
+        // Don't close if clicking inside the sheet, on a building tab/pill, or on the faceplate
+        if (e.target.closest('#gauge-sheet') ||
+            e.target.closest('.building-tab') ||
+            e.target.closest('.mobile-building-pill') ||
+            e.target.closest('.faceplate') ||
+            e.target.closest('.faceplate-backdrop')) return;
+        this._closeGaugeSheet();
+        this._activeBuilding = null;
+        document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
+        const first = document.querySelector('.building-tab');
+        if (first) first.classList.add('active');
+      });
+
       // Mobile speed dial FAB
       this._bindMobileSpeedDial();
     },
@@ -469,13 +485,13 @@
 
       const closeDrawer = () => {
         drawer.classList.remove('open');
-        expandBtn.innerHTML = 'INFO &#9650;';
-        backdrop.style.display = 'none';
+        if (expandBtn) expandBtn.innerHTML = 'INFO &#9650;';
+        if (backdrop) backdrop.style.display = 'none';
       };
       const openDrawer = () => {
         drawer.classList.add('open');
-        expandBtn.innerHTML = 'INFO &#9660;';
-        backdrop.style.display = 'block';
+        if (expandBtn) expandBtn.innerHTML = 'INFO &#9660;';
+        if (backdrop) backdrop.style.display = 'block';
         this._updateMobileInfoContent('pnl');
       };
       const toggleDrawer = () => {
@@ -483,8 +499,8 @@
         else openDrawer();
       };
 
-      expandBtn.addEventListener('click', toggleDrawer);
-      handle.addEventListener('click', closeDrawer);
+      if (expandBtn) expandBtn.addEventListener('click', toggleDrawer);
+      if (handle) handle.addEventListener('click', closeDrawer);
 
       // Add close button inside drawer
       const closeBtn = document.createElement('button');
@@ -499,8 +515,12 @@
       if (backdrop) {
         backdrop.addEventListener('click', () => {
           if (drawer.classList.contains('open')) closeDrawer();
-          const fp = document.getElementById('faceplate');
-          if (fp) fp.style.display = 'none';
+          if (this.faceplateManager) {
+            this.faceplateManager.close();
+          } else {
+            const fp = document.getElementById('faceplate');
+            if (fp) fp.style.display = 'none';
+          }
         });
       }
 
@@ -526,7 +546,6 @@
       if (!dial || !fab) return;
 
       const speedLabels = { 0: '\u23F8', 1: '1x', 2: '2x', 4: '4x' };
-      let currentSpeed = 0;
 
       const closeDial = () => dial.classList.remove('open');
       const openDial = () => dial.classList.add('open');
@@ -547,7 +566,6 @@
       ring.querySelectorAll('.sd-btn[data-speed]').forEach(btn => {
         btn.addEventListener('click', () => {
           const speed = parseInt(btn.dataset.speed, 10);
-          currentSpeed = speed;
 
           // Trigger the desktop button click to keep them in sync
           if (speed === 0) {
@@ -615,7 +633,7 @@
               <div class="pnl-row pnl-total-row"><span class="pnl-label">NET</span><span class="pnl-val" style="color:${net >= 0 ? '#4CAF50' : '#E04040'}">$${net.toLocaleString()}/hr</span></div>
               <div class="pnl-row"><span class="pnl-label">SHIFT</span><span class="pnl-val" style="color:${shift >= 0 ? '#4CAF50' : '#E04040'}">$${shift.toLocaleString()}</span></div>
               <div class="pnl-row"><span class="pnl-label">TARGET</span><span class="pnl-val" style="color:var(--text-label)">$${target.toLocaleString()} (${pct}%)</span></div>
-              ${reasons.length > 0 ? `<div style="margin-top:4px;font-size:9px;color:#E04040;font-family:var(--font-mono)">${reasons.join(' | ')}</div>` : ''}
+              ${reasons.length > 0 ? `<div style="margin-top:4px;font-size:9px;color:#E04040;font-family:var(--font-mono)">${reasons.map(r => this._escapeHtml(r)).join(' | ')}</div>` : ''}
             </div>
           </div>`;
       } else if (tab === 'events') {
@@ -869,13 +887,15 @@
         sheet.appendChild(gcBody);
         this.gcDisplay.render(gcBody);
         sheet.classList.add('open');
-        document.getElementById('gauge-sheet-close').addEventListener('click', () => {
+        this._hideGaugeSheetOverlaps(true);
+        const gcCloseBtn = document.getElementById('gauge-sheet-close');
+        if (gcCloseBtn) gcCloseBtn.onclick = () => {
           this._closeGaugeSheet();
           this._activeBuilding = null;
           document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
           const first = document.querySelector('.building-tab');
           if (first) first.classList.add('active');
-        });
+        };
         return;
       }
 
@@ -915,15 +935,17 @@
       html += '</div>';
       sheet.innerHTML = html;
       sheet.classList.add('open');
+      this._hideGaugeSheetOverlaps(true);
 
-      // Bind close button
-      document.getElementById('gauge-sheet-close').addEventListener('click', () => {
+      // Bind close button (use onclick to prevent listener accumulation)
+      const closeBtn = document.getElementById('gauge-sheet-close');
+      if (closeBtn) closeBtn.onclick = () => {
         this._closeGaugeSheet();
         this._activeBuilding = null;
         document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
         const first = document.querySelector('.building-tab');
         if (first) first.classList.add('active');
-      });
+      };
 
       // Bind row taps to open faceplate
       sheet.querySelectorAll('.gauge-sheet-row').forEach(row => {
@@ -940,6 +962,23 @@
     _closeGaugeSheet() {
       const sheet = document.getElementById('gauge-sheet');
       if (sheet) sheet.classList.remove('open');
+      this._hideGaugeSheetOverlaps(false);
+      // Also sync mobile pills — deactivate all, reactivate first
+      const pillBar = document.getElementById('mobile-building-pills');
+      if (pillBar) {
+        pillBar.querySelectorAll('.mobile-building-pill').forEach(p => p.classList.remove('active'));
+        const first = pillBar.querySelector('.mobile-building-pill');
+        if (first) first.classList.add('active');
+      }
+    },
+
+    _hideGaugeSheetOverlaps(hide) {
+      const pills = document.getElementById('mobile-building-pills');
+      const pnlStrip = document.getElementById('mobile-pnl-strip');
+      const speedDial = document.querySelector('.mobile-speed-dial');
+      if (pills) pills.classList.toggle('gauge-sheet-hidden', hide);
+      if (pnlStrip) pnlStrip.classList.toggle('gauge-sheet-hidden', hide);
+      if (speedDial) speedDial.classList.toggle('gauge-sheet-hidden', hide);
     },
 
     _updateGaugeSheet() {
@@ -1188,6 +1227,14 @@
       this._loadFacilityPID(this.currentFacility);
       this._enrichTagBubbleTooltips(config);
 
+      // Cache config and DOM refs for hot-path tick functions
+      this._cachedConfig = config;
+      this._cachedWeatherEls = {
+        temp: document.getElementById('weather-temp'),
+        wind: document.getElementById('weather-wind'),
+        precip: document.getElementById('weather-precip')
+      };
+
       // On small mobile, start with left panel collapsed
       if (window.innerWidth <= 480) {
         const lp = document.getElementById('left-panel');
@@ -1385,6 +1432,20 @@
         }
       }
 
+      // Restore saved state if continuing a game (must happen after sim is created)
+      if (this._pendingRestoreState) {
+        const state = this._pendingRestoreState;
+        this._pendingRestoreState = null;
+        if (state.sim && this.sim) this.sim.loadJSON(state.sim);
+        if (state.valves) this.valves = state.valves;
+        if (state.weather) this.weather = state.weather;
+        if (state.equipment) this.equipment = state.equipment;
+        if (state.crisisScenario) this.crisisScenario = state.crisisScenario;
+        if (state.pnl && this.pnlSystem) {
+          this.pnlSystem.shiftEarnings = state.pnl.shiftEarnings || 0;
+        }
+      }
+
       // After game starts, check building tab overflow
       setTimeout(() => this._checkBuildingTabOverflow(), 100);
     },
@@ -1507,6 +1568,9 @@
     // ============================================================
 
     _onSimTick(dt, gameTime) {
+      // Keep alarm manager in sync with game time
+      if (this.alarmManager) this.alarmManager.gameTimeMinutes = gameTime;
+
       // Update time display
       document.getElementById('game-time').textContent = this.sim.getTimeString();
       document.getElementById('shift-label').textContent = this.sim.getShiftLabel();
@@ -1747,9 +1811,9 @@
       const board = document.getElementById('spec-board');
       if (!board) return;
 
-      const config = FACILITY_CONFIGS[this.currentFacility]
+      const config = this._cachedConfig || (FACILITY_CONFIGS[this.currentFacility]
         ? FACILITY_CONFIGS[this.currentFacility]()
-        : StabilizerConfig;
+        : StabilizerConfig);
 
       const specs = config.specs || {};
 
@@ -1777,10 +1841,10 @@
           const pv = pvMap['AI-201'];
           if (pv) val = pv.displayValue();
         } else if (key === 'h2s') {
-          const pv = pvMap['AI-A01'];
+          const pv = pvMap['AI-A02'] || pvMap['AI-705'];
           if (pv) val = pv.displayValue();
         } else if (key === 'h2sOutlet') {
-          const pv = pvMap['AI-A01'];
+          const pv = pvMap['AI-A01'] || pvMap['AI-705'];
           if (pv) val = pv.displayValue();
         } else if (key === 'ethaneRecovery') {
           const pv = pvMap['AI-701'] || pvMap['AI-502'];
@@ -2009,6 +2073,7 @@
 
       // Fallback: simple text display
       const eventBlock = document.getElementById('event-status');
+      if (!eventBlock) return;
       const active = this.eventSystem.getActiveEventsSummary();
       if (active.length === 0) {
         eventBlock.innerHTML = '<span class="event-item">NO ACTIVE EVENTS</span>';
@@ -2027,6 +2092,7 @@
 
     _addRadioMessage(msg) {
       const radioLog = document.getElementById('radio-log');
+      if (!radioLog) return;
       const msgEl = document.createElement('span');
       msgEl.className = 'radio-msg new';
       msgEl.textContent = msg;
@@ -2043,9 +2109,11 @@
     },
 
     _updateWeatherDisplay() {
-      document.getElementById('weather-temp').textContent = `${this.weather.ambientTemp} degF`;
-      document.getElementById('weather-wind').textContent = `${this.weather.windDirection} ${this.weather.windSpeed} mph`;
-      document.getElementById('weather-precip').textContent = this.weather.precipitation;
+      const els = this._cachedWeatherEls;
+      if (!els) return;
+      if (els.temp) els.temp.textContent = `${this.weather.ambientTemp} degF`;
+      if (els.wind) els.wind.textContent = `${this.weather.windDirection} ${this.weather.windSpeed} mph`;
+      if (els.precip) els.precip.textContent = this.weather.precipitation;
     },
 
     // ============================================================
@@ -2176,8 +2244,8 @@
           return `<div class="lb-row${selfClass}">
             <span class="lb-rank${rankClass}">${rank}</span>
             <span class="lb-name">${this._escapeHtml(s.username)}</span>
-            <span class="lb-facility">${facility}</span>
-            <span class="lb-score${scoreClass}">${earnings}</span>
+            <span class="lb-facility">${this._escapeHtml(facility)}</span>
+            <span class="lb-score${scoreClass}">${this._escapeHtml(earnings)}</span>
           </div>`;
         }).join('');
       } catch (e) {
@@ -2206,7 +2274,8 @@
     _checkStreak() {
       const today = new Date().toDateString();
       const lastLogin = localStorage.getItem('coldcreek-last-login');
-      let streak = parseInt(localStorage.getItem('coldcreek-streak') || '0');
+      let streak = parseInt(localStorage.getItem('coldcreek-streak') || '0', 10);
+      if (isNaN(streak) || streak < 0) streak = 0;
 
       if (lastLogin === today) return; // Already logged in today
 
@@ -2237,10 +2306,11 @@
       this.sim.pause();
       this._updateTimeButtons(0);
 
-      // Apply streak bonus
-      const streak = parseInt(localStorage.getItem('coldcreek-streak') || '0');
+      // Apply streak bonus (only to positive earnings)
+      const rawStreak = parseInt(localStorage.getItem('coldcreek-streak') || '0', 10);
+      const streak = isNaN(rawStreak) ? 0 : Math.max(0, rawStreak);
       const streakBonus = Math.min(streak * 0.02, 0.20); // Max 20% bonus
-      if (streakBonus > 0 && this.pnlSystem) {
+      if (streakBonus > 0 && this.pnlSystem && this.pnlSystem.shiftEarnings > 0) {
         this.pnlSystem.shiftEarnings *= (1 + streakBonus);
       }
 
@@ -2530,7 +2600,6 @@
         try {
           const username = localStorage.getItem('coldcreek-username');
           if (username) {
-            const safeKey = this._sanitizeFirebaseKey(username);
             const uid = firebase.auth().currentUser.uid;
             firebase.database().ref('profiles/' + uid + '/progress').set(this.progress);
           }
@@ -2578,17 +2647,10 @@
           const state = JSON.parse(data);
           this.currentMode = state.mode || 'operate';
           this.currentFacility = state.facility || 'stabilizer';
-          this._startGame();
 
-          // Restore state
-          if (state.sim) this.sim.loadJSON(state.sim);
-          if (state.valves) this.valves = state.valves;
-          if (state.weather) this.weather = state.weather;
-          if (state.equipment) this.equipment = state.equipment;
-          if (state.crisisScenario) this.crisisScenario = state.crisisScenario;
-          if (state.pnl && this.pnlSystem) {
-            this.pnlSystem.shiftEarnings = state.pnl.shiftEarnings || 0;
-          }
+          // Store pending state so it can be restored after boot sequence completes
+          this._pendingRestoreState = state;
+          this._startGame();
         }
       } catch (e) {
         // No saved state — start fresh
@@ -3004,11 +3066,11 @@
         }
       }
 
-      // Check compressor trip recovery time
+      // Check compressor trip recovery time (in game-minutes)
       const compressor = this.equipment['C-100'] || this.equipment['C-200'];
       if (compressor && compressor.status === 'running' && this._compTripStartTime) {
         const gameTime = this.sim.gameTimeMinutes;
-        const recoveryMinutes = (gameTime - this._compTripStartTime) / this.sim.timeCompression;
+        const recoveryMinutes = gameTime - this._compTripStartTime;
         if (recoveryMinutes <= 8) this._compRecoveredUnder8Min = true;
         this._compTripStartTime = null;
       }
@@ -3032,7 +3094,7 @@
         content.innerHTML = this.operatorProfile.render();
         const closeBtn = document.getElementById('profile-close-btn');
         if (closeBtn) {
-          closeBtn.addEventListener('click', () => this._showScreen('title-screen'));
+          closeBtn.onclick = () => this._showScreen('title-screen');
         }
       }
       this._showScreen('profile-screen');
@@ -3133,27 +3195,27 @@
       // Draw the P&L chart after DOM is ready
       setTimeout(() => this.debriefScreen.drawChart(), 50);
 
-      // Bind action buttons
+      // Bind action buttons (use onclick to avoid listener accumulation)
       const doneBtn = document.getElementById('debrief-done-btn');
       if (doneBtn) {
-        doneBtn.addEventListener('click', () => {
+        doneBtn.onclick = () => {
           overlay.style.display = 'none';
           this._showScreen('title-screen');
           this._updateContinueButton();
-        });
+        };
       }
 
       const profileBtn = document.getElementById('debrief-profile-btn');
       if (profileBtn) {
-        profileBtn.addEventListener('click', () => {
+        profileBtn.onclick = () => {
           overlay.style.display = 'none';
           this._showProfileScreen();
-        });
+        };
       }
 
       const shareBtn = document.getElementById('debrief-share-btn');
       if (shareBtn) {
-        shareBtn.addEventListener('click', async () => {
+        shareBtn.onclick = async () => {
           shareBtn.textContent = 'GENERATING...';
           shareBtn.disabled = true;
           try {
@@ -3168,7 +3230,7 @@
           } catch (e) { /* ok */ }
           shareBtn.textContent = 'SHARE SHIFT';
           shareBtn.disabled = false;
-        });
+        };
       }
     },
 
@@ -3186,9 +3248,9 @@
 
       const dismissBtn = document.getElementById('promotion-dismiss');
       if (dismissBtn) {
-        dismissBtn.addEventListener('click', () => {
+        dismissBtn.onclick = () => {
           overlay.style.display = 'none';
-        });
+        };
       }
 
       // Auto-dismiss after 6 seconds

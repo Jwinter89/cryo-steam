@@ -85,13 +85,15 @@ class Challenges {
       let completed = false;
       switch (ch.check) {
         case 'zero-penalties':
-          completed = penalties === 0 && game.pnlSystem && game.pnlSystem.penaltiesPerHour === 0;
+          // Check cumulative event costs, not just current tick rate
+          completed = penalties === 0 && game.pnlSystem && game.pnlSystem.eventCosts === 0;
           break;
         case 'no-alarms':
           completed = alarmMgr && alarmMgr.alarmHistory && alarmMgr.alarmHistory.length === 0;
           break;
         case 'speed-run':
-          completed = earnings > 0 && game.sim && game.sim.speed === 4;
+          // Check that the majority of shift was at 4x speed via time compression setting
+          completed = earnings > 0 && game.sim && game.sim.timeCompression >= 4;
           break;
         case 'pig-rush':
           if (game.eventSystem && facility === 'stabilizer') {

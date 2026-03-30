@@ -8,6 +8,7 @@ class AlarmManager {
     this.alarms = []; // Active alarms
     this.alarmHistory = []; // All alarms this shift
     this.tipsEnabled = localStorage.getItem('coldcreek-tips') !== 'off';
+    this.gameTimeMinutes = 360; // Updated externally by game tick
 
     this.barEl = document.getElementById('alarm-bar');
     this.countEl = document.getElementById('alarm-count');
@@ -94,8 +95,11 @@ class AlarmManager {
   }
 
   _formatTime() {
-    const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    // Use game time instead of wall-clock time
+    const totalMinutes = Math.floor(this.gameTimeMinutes);
+    const hours = Math.floor(totalMinutes / 60) % 24;
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   }
 
   _updateBar() {

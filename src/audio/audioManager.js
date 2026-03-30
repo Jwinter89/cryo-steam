@@ -71,7 +71,11 @@ class AudioManager {
     if (this.ambientNode) {
       this.ambientNode.osc1.stop();
       this.ambientNode.osc2.stop();
-      this.ambientNode.noise.stop();
+      if (this.ambientNode.noise._source) {
+        this.ambientNode.noise._source.stop();
+      } else if (this.ambientNode.noise.stop) {
+        this.ambientNode.noise.stop();
+      }
       this.ambientNode = null;
     }
   }
@@ -194,7 +198,7 @@ class AudioManager {
     const gain = this.ctx.createGain();
     osc.type = type || 'sine';
     osc.frequency.value = freq;
-    gain.gain.value = vol;
+    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + duration);
     osc.connect(gain);
     gain.connect(this.masterGain);
@@ -205,7 +209,7 @@ class AudioManager {
   _playRadioStatic() {
     const noise = this._createNoise(0.05);
     const gain = this.ctx.createGain();
-    gain.gain.value = 0.05;
+    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
     gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3);
     noise.connect(gain);
     gain.connect(this.masterGain);
@@ -226,9 +230,11 @@ class AudioManager {
     gain.gain.value = volume;
     source.connect(gain);
     source.start();
-    // Return gain node (source accessible via gain)
-    source._gainNode = gain;
-    return source;
+    // Return gain node so callers connect the volume-controlled output
+    // Attach source ref for stop() calls
+    gain._source = source;
+    gain.stop = function (when) { source.stop(when); };
+    return gain;
   }
 
   /**

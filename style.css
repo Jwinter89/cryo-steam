@@ -55,6 +55,11 @@
   /* Selection accent — used sparingly */
   --accent:           #4ab3f4;
 
+  /* Additional UI colors */
+  --bg-gauge:         #383838;
+  --border-subtle:    #505050;
+  --text-primary:     #E8E8E8;
+
   /* Font stack */
   --font-mono: "Courier New", Consolas, "Liberation Mono", monospace;
   --font-sans: Arial, "Helvetica Neue", sans-serif;
@@ -1785,15 +1790,22 @@ g[id^="equip-"]:hover line {
 @media (max-width: 768px) {
   #title-screen {
     padding-top: env(safe-area-inset-top, 16px);
+    background-size: 100% auto;
+    background-position: center top;
   }
   .title-content {
-    padding-top: 16px;
+    /* Push content below the background image area on mobile */
+    padding-top: 56vw;
   }
   .title-logo {
     margin-bottom: 2px;
   }
   .title-sub {
     margin-bottom: 20px;
+  }
+  .username-section {
+    margin-top: 16px;
+    margin-bottom: 24px;
   }
   #left-panel {
     width: 170px;
@@ -1890,12 +1902,19 @@ g[id^="equip-"]:hover line {
   .title-logo {
     font-size: 32px;
   }
+  .screen-bg-modes,
+  .screen-bg-facility {
+    background-size: 100% auto;
+    background-position: center top;
+  }
   .mode-grid,
   .mode-grid-4,
   .mode-grid-3 {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     padding: 16px 12px;
+    /* Push cards below the background image on mobile */
+    margin-top: 40vw;
   }
   .mode-card-styled {
     padding: 14px 10px;
@@ -2089,6 +2108,7 @@ g[id^="equip-"]:hover line {
   .mode-grid-4,
   .mode-grid-3 {
     grid-template-columns: 1fr;
+    margin-top: 35vw;
   }
   #left-panel {
     position: absolute;
@@ -2190,17 +2210,22 @@ g[id^="equip-"]:hover line {
   z-index: 199;
 }
 
+/* Hide overlapping elements when gauge sheet is open */
+.gauge-sheet-hidden {
+  display: none !important;
+}
+
 /* ---- GAUGE BOTTOM SHEET (Mobile) ---- */
 .gauge-sheet {
-  display: none;
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.25s ease;
+  visibility: hidden;
 }
 .gauge-sheet.open {
-  display: block;
+  visibility: visible;
   max-height: 45vh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

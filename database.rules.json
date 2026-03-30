@@ -4,7 +4,7 @@
       ".read": true,
       ".write": "auth != null",
       "$pushId": {
-        ".validate": "newData.hasChildren(['username', 'facility', 'mode', 'earnings', 'timestamp', 'uid']) && newData.child('username').isString() && newData.child('username').val().length <= 20 && newData.child('earnings').isNumber() && newData.child('earnings').val() >= -100000 && newData.child('earnings').val() <= 500000 && newData.child('uid').val() === auth.uid"
+        ".validate": "newData.hasChildren(['username', 'facility', 'mode', 'earnings', 'timestamp', 'uid']) && newData.child('username').isString() && newData.child('username').val().length >= 1 && newData.child('username').val().length <= 20 && newData.child('facility').isString() && newData.child('facility').val().length <= 30 && newData.child('mode').isString() && newData.child('mode').val().length <= 20 && newData.child('earnings').isNumber() && newData.child('earnings').val() >= -100000 && newData.child('earnings').val() <= 500000 && newData.child('timestamp').isNumber() && newData.child('uid').val() === auth.uid && !data.exists()"
       }
     },
     "profiles": {
@@ -12,13 +12,13 @@
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
         "progress": {
-          ".validate": true
+          ".validate": "newData.val().length <= 10000"
         },
         "stats": {
-          ".validate": true
+          ".validate": "newData.val().length <= 10000"
         },
         "achievements": {
-          ".validate": true
+          ".validate": "newData.val().length <= 10000"
         }
       }
     },
@@ -26,7 +26,7 @@
       ".read": false,
       ".write": "auth != null",
       "$pushId": {
-        ".validate": "newData.hasChildren(['email', 'timestamp', 'uid']) && newData.child('email').isString() && newData.child('email').val().length <= 100 && newData.child('uid').val() === auth.uid"
+        ".validate": "newData.hasChildren(['email', 'timestamp', 'uid']) && newData.child('email').isString() && newData.child('email').val().matches(/^[^@]+@[^@]+$/) && newData.child('email').val().length <= 100 && newData.child('uid').val() === auth.uid && !data.exists()"
       }
     },
     "$other": {

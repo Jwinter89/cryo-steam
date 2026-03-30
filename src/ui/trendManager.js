@@ -86,12 +86,15 @@ class TrendManager {
       offsetX = e.clientX - this._panel.offsetLeft;
       offsetY = e.clientY - this._panel.offsetTop;
     });
-    document.addEventListener('mousemove', (e) => {
+    // Use named handlers so they can be cleaned up
+    this._onDocMouseMove = (e) => {
       if (!isDragging) return;
       this._panel.style.left = (e.clientX - offsetX) + 'px';
       this._panel.style.top = (e.clientY - offsetY) + 'px';
-    });
-    document.addEventListener('mouseup', () => { isDragging = false; });
+    };
+    this._onDocMouseUp = () => { isDragging = false; };
+    document.addEventListener('mousemove', this._onDocMouseMove);
+    document.addEventListener('mouseup', this._onDocMouseUp);
 
     document.getElementById('trend-close-btn').addEventListener('click', () => this.hide());
   }
@@ -208,6 +211,14 @@ class TrendManager {
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+  }
+
+  destroy() {
+    if (this._onDocMouseMove) document.removeEventListener('mousemove', this._onDocMouseMove);
+    if (this._onDocMouseUp) document.removeEventListener('mouseup', this._onDocMouseUp);
+    if (this._panel && this._panel.parentNode) this._panel.parentNode.removeChild(this._panel);
+    this._panel = null;
+    this._canvas = null;
   }
 }
 
