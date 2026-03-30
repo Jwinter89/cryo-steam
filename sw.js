@@ -56,7 +56,6 @@ const PRECACHE_ASSETS = [
   '/src/ui/debriefScreen.js',
   '/src/ui/glossary.js',
   '/src/ui/colorBlindMode.js',
-  '/src/ui/adManager.js',
   '/src/ui/leaderboard.js',
   '/src/audio/audioManager.js',
   '/src/capacitor/storageBridge.js',

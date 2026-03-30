@@ -2026,7 +2026,7 @@ g[id^="equip-"]:hover line {
   .fp-close-btn { min-width: 44px; min-height: 44px; }
   .fp-mode-btn { min-height: 44px; font-size: 12px; padding: 6px 12px; }
   .fp-apply-btn { min-height: 44px; }
-  .alarm-ack-btn { min-height: 36px; padding: 4px 12px; font-size: 11px; }
+  .alarm-ack-btn { min-height: 44px; padding: 6px 12px; font-size: 11px; }
   .popup-close { min-width: 44px; min-height: 44px; }
   .pid-zoom-btn { width: 44px; height: 44px; }
 }
