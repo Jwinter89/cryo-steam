@@ -134,12 +134,9 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://tpc.googlesyndication.com https://js.stripe.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://pagead2.googlesyndication.com https://*.google.com https://api.stripe.com; img-src 'self' data: blob: https://pagead2.googlesyndication.com https://*.google.com https://*.googleusercontent.com https://*.stripe.com; font-src 'self'; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://js.stripe.com https://checkout.stripe.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com https://js.stripe.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://api.stripe.com; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; frame-src https://js.stripe.com https://checkout.stripe.com;">
 
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4033673224873505" crossorigin="anonymous"></script>
-
-  <!-- Stripe.js (ad-free purchase) -->
+  <!-- Stripe.js (donation) -->
   <script async src="https://js.stripe.com/v3/"></script>
 
   <link rel="stylesheet" href="style.css">
@@ -149,26 +146,16 @@
     <!-- Title Screen -->
     <div id="title-screen" class="screen active">
       <div class="title-content">
-        <div class="new-version-banner">
-          <span class="new-version-tag">NEW VERSION</span>
-          <span class="new-version-text">Major update! Improved gameplay, new features, and mobile fixes. See below.</span>
-        </div>
-        <div class="update-banner">
-          <span class="update-banner-tag">WHAT'S NEW</span>
-          <ul class="update-banner-list">
-            <li>Optimize Mode — tighter specs, efficiency targets, competitive scoring</li>
-            <li>Learn Mode now available for Refrigeration &amp; Cryogenic facilities</li>
-            <li>CAS (Cascade) mode added to faceplates</li>
-            <li>Crisis scoring with gold/silver/bronze medals &amp; coach hints</li>
-            <li>50+ bug fixes — achievements, alarms, save/load, events all improved</li>
-            <li>Mobile overhaul — touch targets, smooth scrolling, landscape support</li>
-            <li>Per-facility leaderboards &amp; daily login streaks</li>
-            <li>Install as app — add to your home screen for offline play</li>
-          </ul>
-        </div>
         <h1 class="title-logo">COLD CREEK</h1>
         <p class="title-sub">GAS PLANT SIMULATOR</p>
         <div id="title-tagline" class="title-tagline"></div>
+
+        <div class="title-menu">
+          <button class="menu-btn" data-action="new-game">NEW GAME</button>
+          <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
+          <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
+          <button class="menu-btn" data-action="settings">SETTINGS</button>
+        </div>
 
         <!-- Username display / edit -->
         <div id="username-section" class="username-section">
@@ -183,34 +170,10 @@
           </div>
         </div>
 
-        <div id="pwa-install-banner" class="pwa-install-banner" style="display:none">
-          <span>Add Cold Creek to your home screen for the best experience</span>
-          <button id="pwa-install-btn" class="menu-btn" style="margin-left:8px;padding:6px 16px;font-size:11px;">INSTALL</button>
-          <button id="pwa-dismiss-btn" style="background:none;border:none;color:var(--text-label);cursor:pointer;padding:8px;">&times;</button>
-        </div>
-
-        <div class="title-menu">
-          <button class="menu-btn" data-action="new-game">NEW GAME</button>
-          <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
-          <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
-          <button class="menu-btn" data-action="settings">SETTINGS</button>
-        </div>
-
-        <!-- Title Screen Ad Banner (hidden for ad-free users) -->
-        <div id="ad-title-banner" class="ad-title-banner" style="display:none">
-          <div class="ad-label">ADVERTISEMENT</div>
-          <ins class="adsbygoogle"
-               style="display:block"
-               data-ad-client="ca-pub-4033673224873505"
-               data-ad-slot=""
-               data-ad-format="horizontal"
-               data-full-width-responsive="true"></ins>
-        </div>
-
-        <!-- Ad-Free Upgrade Banner -->
-        <div id="ad-free-banner" class="ad-free-upgrade-banner" style="display:none">
-          <span>Remove ads for a one-time purchase</span>
-          <button id="ad-free-buy-btn" class="menu-btn" style="margin-left:8px;padding:4px 12px;font-size:10px;">GO AD-FREE</button>
+        <!-- Donation Banner -->
+        <div id="donation-banner" class="donation-banner">
+          <span>Support Cold Creek development</span>
+          <button id="donate-btn" class="menu-btn" style="margin-left:8px;padding:4px 12px;font-size:10px;">DONATE $2.99</button>
         </div>
 
         <!-- Leaderboard -->
@@ -227,44 +190,16 @@
           </div>
         </div>
 
-        <!-- Feedback Boys -->
-        <div class="feedback-box">
-          <h3 class="feedback-title">SEND FEEDBACK</h3>
-          <textarea id="feedback-text" class="feedback-textarea" rows="3" placeholder="Tell us what you think..."></textarea>
-          <input id="feedback-name" class="feedback-input" type="text" placeholder="Your name (optional)">
-          <button id="feedback-send" class="menu-btn feedback-btn">SEND FEEDBACK</button>
-        </div>
-
-        <div class="cta-banner">
-          <div class="cta-text">The full version includes advanced scenarios, detailed analytics, and mobile app.</div>
-          <div class="cta-form">
-            <input type="email" id="cta-email" class="cta-email-input" placeholder="Enter email for launch notification">
-            <button id="cta-notify" class="menu-btn cta-btn">NOTIFY ME</button>
-          </div>
-          <span class="cta-label">FULL VERSION COMING TO APP STORE SOON</span>
-        </div>
-
-        <!-- Winter Howlers CTA -->
-        <div class="wh-cta-banner">
-          <div class="wh-cta-text">Need a custom simulator, app, or web tool built for your operation?</div>
-          <a href="https://www.winterhowlers.com" target="_blank" rel="noopener" class="menu-btn wh-cta-btn">GET A QUOTE &rarr;</a>
-          <span class="wh-cta-sub">winterhowlers.com &mdash; We build tools that work as hard as you do</span>
-        </div>
-
         <!-- Daily Challenges Preview -->
         <div id="title-challenges-preview" class="challenges-preview-box"></div>
 
-        <div class="title-footer-links">
-          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="support-btn-link">&#9734; SUPPORT THE DEV</a>
-        </div>
-        <div class="title-footer-social">
-          <a href="https://www.facebook.com/share/1C9cvkkY7V/?mibextid=wwXIfr" target="_blank" rel="noopener" class="social-link fb-link">FOLLOW US ON FACEBOOK</a>
-        </div>
-        <div class="title-footer-links" style="margin-top:8px">
-          <a href="https://www.winterhowlers.com" target="_blank" rel="noopener" class="donate-link">Built by Winter Howlers</a>
+        <div id="pwa-install-banner" class="pwa-install-banner" style="display:none">
+          <span>Add Cold Creek to your home screen for the best experience</span>
+          <button id="pwa-install-btn" class="menu-btn" style="margin-left:8px;padding:6px 16px;font-size:11px;">INSTALL</button>
+          <button id="pwa-dismiss-btn" style="background:none;border:none;color:var(--text-label);cursor:pointer;padding:8px;">&times;</button>
         </div>
 
-        <p class="title-credit">Designed by a decade-experienced cryogenic plant operator</p>
+        <p class="title-credit">Built by a cryogenic plant operator with 10 years of field experience</p>
       </div>
     </div>
 
@@ -1054,7 +989,7 @@
   <script src="src/ui/glossary.js"></script>
   <script src="src/ui/colorBlindMode.js"></script>
   <script src="src/ui/pidZoom.js"></script>
-  <script src="src/ui/adManager.js"></script>
+  <!-- adManager.js removed — ads disabled for now -->
 
   <!-- Main game -->
   <script src="game.js"></script>

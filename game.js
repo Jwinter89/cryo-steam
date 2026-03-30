@@ -263,26 +263,32 @@
     // ============================================================
 
     _bindAdFree() {
-      const buyBtn = document.getElementById('ad-free-buy-btn');
-      if (buyBtn) {
-        buyBtn.addEventListener('click', () => {
-          if (this.adManager) {
-            this.adManager.startPurchase();
+      const donateBtn = document.getElementById('donate-btn');
+      if (donateBtn) {
+        donateBtn.addEventListener('click', () => {
+          // Stripe Checkout for one-time donation
+          if (window.Stripe) {
+            const stripe = window.Stripe('pk_live_51TGPTUArAkbyMDHnQNKuGNE7SGcsMWcIbiWxP8TmsiMt97Hch7aNdnu1XDJVzV24CW5wT9Ni5O4FHQsQnNkIKIIO00umjQIBp2');
+            stripe.redirectToCheckout({
+              lineItems: [{ price: 'price_1TGTJdArAkbyMDHnak0Ym0D4', quantity: 1 }],
+              mode: 'payment',
+              successUrl: window.location.origin + '/?donated=thanks',
+              cancelUrl: window.location.origin + '/',
+            }).catch(function() {});
           }
         });
       }
 
-      // If user just returned from successful purchase, show toast
-      if (this.adManager && this.adManager.isAdFree()) {
+      // Check for successful donation return
+      try {
         const params = new URLSearchParams(window.location.search);
-        // Only show toast on fresh return (URL was already cleaned by adManager)
-        if (localStorage.getItem('coldcreek-ad-free') === 'true' && !this._adFreeToastShown) {
-          this._adFreeToastShown = true;
+        if (params.get('donated') === 'thanks') {
+          window.history.replaceState({}, '', window.location.pathname);
           setTimeout(() => {
-            this.showToast('AD-FREE ACTIVATED', 'Thanks for your support! Ads have been removed.', 'PURCHASE COMPLETE');
+            this.showToast('THANK YOU', 'Your support keeps Cold Creek free for everyone.', 'DONATION RECEIVED');
           }, 500);
         }
-      }
+      } catch (e) {}
     },
 
     // ============================================================
@@ -689,16 +695,6 @@
       // Refresh leaderboard when returning to title
       if (screenId === 'title-screen') {
         this._refreshLeaderboard();
-        // Show title banner ad
-        if (this.adManager) {
-          this.adManager.showTitleBanner();
-          // Show upgrade banner for non-ad-free users
-          const upgradeBanner = document.getElementById('ad-free-banner');
-          if (upgradeBanner) upgradeBanner.style.display = this.adManager.isAdFree() ? 'none' : '';
-        }
-      } else {
-        // Hide banner ad on non-title screens
-        if (this.adManager) this.adManager.hideTitleBanner();
       }
     },
 
@@ -2423,16 +2419,8 @@
 
       document.getElementById('obj-done-btn').addEventListener('click', () => {
         overlay.style.display = 'none';
-        // Show interstitial ad between shifts (throttled to max 1 per 5 min)
-        if (this.adManager) {
-          this.adManager.showInterstitial(() => {
-            this._showScreen('title-screen');
-            this._updateContinueButton();
-          });
-        } else {
-          this._showScreen('title-screen');
-          this._updateContinueButton();
-        }
+        this._showScreen('title-screen');
+        this._updateContinueButton();
       });
     },
 

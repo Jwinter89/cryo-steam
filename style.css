@@ -4306,14 +4306,14 @@ body.cb-tritanopia .spec-row.off-spec {
   margin-bottom: 4px;
   text-transform: uppercase;
 }
-.ad-free-upgrade-banner {
+.donation-banner {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: 6px auto;
+  margin: 10px auto;
   padding: 6px 12px;
-  max-width: 400px;
+  max-width: 360px;
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 4px;
