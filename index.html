@@ -136,7 +136,7 @@
   <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://*.vercel-insights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://apis.google.com https://cold-creek.firebaseapp.com https://*.firebaseapp.com;">
 
-  <link rel="stylesheet" href="style.css?v=9">
+  <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
   <div id="app">
@@ -144,6 +144,30 @@
     <div id="title-screen" class="screen active">
       <div class="title-content">
         <div id="title-tagline" class="title-tagline"></div>
+
+        <!-- Streak Badge (returning users) -->
+        <div id="streak-badge" class="streak-badge" style="display:none">
+          <span class="streak-flame">&#128293;</span>
+          <span id="streak-count" class="streak-count">0</span>
+          <span class="streak-label">DAY STREAK</span>
+        </div>
+
+        <!-- Quick-start for returning users (hidden by default) -->
+        <div id="quick-start" class="quick-start" style="display:none">
+          <button id="btn-quick-start" class="menu-btn menu-btn-primary" data-action="quick-start">
+            <span class="qs-icon">&#9654;</span> PLAY AGAIN
+            <span id="qs-detail" class="qs-detail">STABILIZER - OPERATE</span>
+          </button>
+        </div>
+
+        <!-- First-time user CTA (hidden by default, shown for new users) -->
+        <div id="new-user-cta" class="new-user-cta" style="display:none">
+          <button id="btn-start-training" class="menu-btn menu-btn-primary" data-action="start-training">
+            START TRAINING
+            <span class="qs-detail">LEARN MODE - GUIDED WALKTHROUGH</span>
+          </button>
+          <p class="new-user-hint">No account needed. Jump right in.</p>
+        </div>
 
         <div class="title-menu">
           <button class="menu-btn" data-action="new-game">NEW GAME</button>
@@ -165,11 +189,8 @@
           </div>
         </div>
 
-        <!-- Donation Banner -->
-        <div id="donation-banner" class="donation-banner">
-          <span>Support Cold Creek development</span>
-          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="menu-btn" style="margin-left:8px;padding:4px 12px;font-size:10px;text-decoration:none;display:inline-block;">DONATE $2.99</a>
-        </div>
+        <!-- Daily Challenges Preview -->
+        <div id="title-challenges-preview" class="challenges-preview-box"></div>
 
         <!-- Leaderboard -->
         <div class="leaderboard-box">
@@ -185,8 +206,11 @@
           </div>
         </div>
 
-        <!-- Daily Challenges Preview -->
-        <div id="title-challenges-preview" class="challenges-preview-box"></div>
+        <!-- Donation Banner -->
+        <div id="donation-banner" class="donation-banner">
+          <span>Support Cold Creek development</span>
+          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="menu-btn" style="margin-left:8px;padding:4px 12px;font-size:10px;text-decoration:none;display:inline-block;">DONATE $2.99</a>
+        </div>
 
         <div id="pwa-install-banner" class="pwa-install-banner" style="display:none">
           <span>Add Cold Creek to your home screen for the best experience</span>
@@ -993,7 +1017,7 @@
   <script src="src/capacitor/storageBridge.js"></script>
 
   <!-- Main game -->
-  <script src="game.js?v=7"></script>
+  <script src="game.js?v=8"></script>
 
   <!-- Global Error Handler -->
   <script>
