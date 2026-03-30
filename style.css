@@ -693,6 +693,34 @@ html, body {
   flex-direction: column;
   background: var(--bg-panel);
 }
+
+/* ---- Styled screen backgrounds ---- */
+.screen-bg-modes {
+  background-color: #1a1a1a;
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 30%, rgba(26,26,26,0.85) 70%, #1a1a1a 100%), url('/modes-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+.screen-bg-facility {
+  background-color: #1a1a1a;
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 30%, rgba(26,26,26,0.85) 70%, #1a1a1a 100%), url('/facility-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+.screen-bg-modes .mode-header,
+.screen-bg-facility .mode-header {
+  background: transparent;
+  border-bottom: none;
+}
+.screen-bg-modes .mode-header h2,
+.screen-bg-facility .mode-header h2 {
+  font-size: 22px;
+  letter-spacing: 0.15em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
 .mode-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -700,6 +728,60 @@ html, body {
   padding: 24px 20px;
   max-width: 900px;
 }
+.mode-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+  max-width: 960px;
+}
+.mode-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 800px;
+}
+
+/* ---- Styled mode/facility cards ---- */
+.mode-card-styled {
+  background: rgba(20, 20, 30, 0.85);
+  border: 1px solid rgba(100, 100, 120, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.mode-card-styled:hover {
+  border-color: rgba(150, 150, 170, 0.6);
+  background: rgba(30, 30, 45, 0.9);
+}
+.mode-card-styled h3 {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.mode-card-styled p {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-label);
+}
+.mode-card-styled .tier-label {
+  margin-top: 12px;
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-unit);
+}
+
+/* Mode card indicator dots */
+.mode-card-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+}
+.mode-dot-green { background: #4CAF50; box-shadow: 0 0 8px rgba(76,175,80,0.5); }
+.mode-dot-yellow { background: #FFC107; box-shadow: 0 0 8px rgba(255,193,7,0.5); }
+.mode-dot-red { background: #E04040; box-shadow: 0 0 8px rgba(224,64,64,0.5); }
+.mode-dot-gold { background: #FFD700; box-shadow: 0 0 8px rgba(255,215,0,0.5); }
+
 .mode-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -786,7 +868,11 @@ html, body {
    ============================================================ */
 #game-screen {
   flex-direction: column;
-  background: var(--bg-panel);
+  background-color: var(--bg-panel);
+  background-image: linear-gradient(to bottom, rgba(26,26,30,0.92) 0%, rgba(26,26,30,0.95) 100%), url('/gameplay-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* ---- TOP BAR ---- */
@@ -1801,8 +1887,21 @@ g[id^="equip-"]:hover line {
   .title-logo {
     font-size: 32px;
   }
-  .mode-grid {
-    grid-template-columns: 1fr;
+  .mode-grid,
+  .mode-grid-4,
+  .mode-grid-3 {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+  .mode-card-styled {
+    padding: 14px 10px;
+  }
+  .mode-card-styled h3 {
+    font-size: 11px;
+  }
+  .mode-card-styled p {
+    font-size: 10px;
   }
   /* Faceplate as fixed overlay on mobile */
   .faceplate {
@@ -1984,6 +2083,10 @@ g[id^="equip-"]:hover line {
 }
 
 @media (max-width: 480px) {
+  .mode-grid-4,
+  .mode-grid-3 {
+    grid-template-columns: 1fr;
+  }
   #left-panel {
     position: absolute;
     top: 0;
@@ -2475,13 +2578,22 @@ g[id^="equip-"]:hover line {
   border-color: var(--accent);
 }
 
-/* ---- Henry Character (CSS art) ---- */
+/* ---- Henry Character (image-based) ---- */
 .henry-character {
-  width: 64px;
-  height: 100px;
+  width: 80px;
+  height: 110px;
   position: relative;
   flex-shrink: 0;
+  background-image: url('/henry-character.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  border-radius: 6px;
   animation: henry-idle 3s ease-in-out infinite;
+}
+/* Hide all CSS art children — replaced by image */
+.henry-character > * {
+  display: none;
 }
 
 @keyframes henry-idle {
@@ -2842,8 +2954,8 @@ g[id^="equip-"]:hover line {
     align-items: flex-end;
   }
   .henry-character {
-    width: 48px;
-    height: 75px;
+    width: 60px;
+    height: 85px;
     transform: scale(0.75);
     transform-origin: bottom right;
   }

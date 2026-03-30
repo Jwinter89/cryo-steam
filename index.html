@@ -136,7 +136,7 @@
   <!-- Content Security Policy -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://*.vercel-insights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://apis.google.com https://cold-creek.firebaseapp.com https://*.firebaseapp.com;">
 
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <div id="app">
@@ -204,29 +204,29 @@
     </div>
 
     <!-- Mode Select Screen -->
-    <div id="mode-screen" class="screen">
+    <div id="mode-screen" class="screen screen-bg-modes">
       <div class="mode-header">
         <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
-        <h2>SELECT MODE</h2>
+        <h2>SELECT YOUR SHIFT</h2>
       </div>
-      <div class="mode-grid">
-        <div class="mode-card" data-mode="learn">
-          <span class="mode-icon">&#9679;</span>
+      <div class="mode-grid mode-grid-4">
+        <div class="mode-card mode-card-styled" data-mode="learn">
+          <div class="mode-card-dot mode-dot-green"></div>
           <h3>LEARN MODE</h3>
           <p>Guided walkthrough with P&amp;ID overlays. No failure state. Build your mental model.</p>
         </div>
-        <div class="mode-card" data-mode="operate">
-          <span class="mode-icon mode-yellow">&#9679;</span>
+        <div class="mode-card mode-card-styled" data-mode="operate">
+          <div class="mode-card-dot mode-dot-yellow"></div>
           <h3>OPERATE MODE</h3>
           <p>Real-time plant operation. Manage throughput, respond to upsets, hit P&amp;L targets.</p>
         </div>
-        <div class="mode-card" data-mode="crisis">
-          <span class="mode-icon mode-red">&#9679;</span>
+        <div class="mode-card mode-card-styled" data-mode="crisis">
+          <div class="mode-card-dot mode-dot-red"></div>
           <h3>CRISIS MODE</h3>
           <p>Timed upset scenarios. Leaderboard ranked by recovery time and P&amp;L saved.</p>
         </div>
-        <div class="mode-card" data-mode="optimize">
-          <span class="mode-icon mode-gold">&#9670;</span>
+        <div class="mode-card mode-card-styled" data-mode="optimize">
+          <div class="mode-card-dot mode-dot-gold"></div>
           <h3>OPTIMIZE MODE</h3>
           <p>Maximize NGL recovery and shift earnings. Pure tuning. Competitive leaderboard.</p>
         </div>
@@ -234,23 +234,23 @@
     </div>
 
     <!-- Facility Select Screen -->
-    <div id="facility-screen" class="screen">
+    <div id="facility-screen" class="screen screen-bg-facility">
       <div class="mode-header">
         <button class="back-btn" data-screen="mode-screen">&#9664; BACK</button>
         <h2>SELECT FACILITY</h2>
       </div>
-      <div class="mode-grid">
-        <div class="mode-card" data-facility="stabilizer">
+      <div class="mode-grid mode-grid-3">
+        <div class="mode-card mode-card-styled" data-facility="stabilizer">
           <h3>STABILIZER SCHOOL</h3>
           <p>Tutorial facility. Learn the fundamentals: reboiler control, RVP management, pig arrivals.</p>
           <span class="tier-label">TIER 1</span>
         </div>
-        <div class="mode-card" data-facility="refrigeration">
+        <div class="mode-card mode-card-styled" data-facility="refrigeration">
           <h3>REFRIGERATION PLANT</h3>
           <p>TEG dehydration, Kimray glycol pump, BTEX compliance. Intermediate operations.</p>
           <span class="tier-label">TIER 2</span>
         </div>
-        <div class="mode-card" data-facility="cryogenic">
+        <div class="mode-card mode-card-styled" data-facility="cryogenic">
           <h3>CRYO PLANT</h3>
           <p>110 MMcfd. Turboexpander, mol sieve, demethanizer. Mode switching. Three-plant endgame.</p>
           <span class="tier-label">TIER 3</span>
@@ -993,7 +993,7 @@
   <script src="src/capacitor/storageBridge.js"></script>
 
   <!-- Main game -->
-  <script src="game.js?v=5"></script>
+  <script src="game.js?v=6"></script>
 
   <!-- Global Error Handler -->
   <script>
