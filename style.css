@@ -1902,12 +1902,19 @@ g[id^="equip-"]:hover line {
   .title-logo {
     font-size: 32px;
   }
+  .screen-bg-modes,
+  .screen-bg-facility {
+    background-size: 100% auto;
+    background-position: center top;
+  }
   .mode-grid,
   .mode-grid-4,
   .mode-grid-3 {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     padding: 16px 12px;
+    /* Push cards below the background image on mobile */
+    margin-top: 40vw;
   }
   .mode-card-styled {
     padding: 14px 10px;
@@ -2101,6 +2108,7 @@ g[id^="equip-"]:hover line {
   .mode-grid-4,
   .mode-grid-3 {
     grid-template-columns: 1fr;
+    margin-top: 35vw;
   }
   #left-panel {
     position: absolute;
