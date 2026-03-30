@@ -23,6 +23,7 @@ const items = [
   'src',
   'apple-touch-icon.png',
   'og-image.png',
+  'landing-bg.jpg',
   'manifest.json',
   'sw.js',
   'favicon.svg',

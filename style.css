@@ -109,9 +109,22 @@ html, body {
   align-items: center;
   justify-content: flex-start;
   background: var(--bg-deep);
+  background-image: url('/landing-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: env(safe-area-inset-top, 20px) 16px 20px;
+  position: relative;
+}
+#title-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 40%, rgba(26,26,26,0.95) 70%, #1a1a1a 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 .title-content {
   text-align: center;
@@ -119,6 +132,8 @@ html, body {
   max-width: 500px;
   padding-top: 24px;
   margin: auto 0;
+  position: relative;
+  z-index: 1;
 }
 .title-logo {
   font-family: var(--font-mono);
