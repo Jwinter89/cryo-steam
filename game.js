@@ -185,6 +185,7 @@
       this._bindUsername();
       this._updateUnlockStates();
       this._updateContinueButton();
+      this._updateLandingPage();
       this._showScreen('title-screen');
       this._refreshLeaderboard();
       this._bindLeaderboardFilters();
@@ -285,6 +286,14 @@
               break;
             case 'continue':
               this._continueGame();
+              break;
+            case 'quick-start':
+              this._quickStart();
+              break;
+            case 'start-training':
+              this.currentMode = 'learn';
+              this.currentFacility = 'stabilizer';
+              this._startGame();
               break;
             case 'profile':
               this._showProfileScreen();
@@ -691,9 +700,12 @@
         this._stopTaglineRotation();
       }
 
-      // Refresh leaderboard when returning to title
+      // Refresh landing page when returning to title
       if (screenId === 'title-screen') {
         this._refreshLeaderboard();
+        this._updateContinueButton();
+        this._updateLandingPage();
+        this._updateChallengesPreview();
       }
     },
 
@@ -702,6 +714,70 @@
       if (btn) {
         btn.style.display = this.progress.hasGameState ? '' : 'none';
       }
+    },
+
+    // ============================================================
+    // LANDING PAGE — QUICK START / NEW USER / STREAK
+    // ============================================================
+
+    _updateLandingPage() {
+      const facilityNames = { stabilizer: 'STABILIZER', refrigeration: 'REFRIGERATION', cryogenic: 'CRYOGENIC' };
+      const modeNames = { learn: 'LEARN', operate: 'OPERATE', crisis: 'CRISIS', optimize: 'OPTIMIZE' };
+
+      const isReturningUser = this.progress.hasGameState ||
+        this.progress.stabilizerShiftsComplete > 0 ||
+        this.progress.refrigerationShiftsComplete > 0 ||
+        this.progress.cryogenicShiftsComplete > 0;
+
+      const quickStartEl = document.getElementById('quick-start');
+      const newUserEl = document.getElementById('new-user-cta');
+      const streakEl = document.getElementById('streak-badge');
+
+      if (isReturningUser) {
+        // Show quick-start with last played facility/mode
+        if (quickStartEl) {
+          const lastFacility = this.progress.lastFacility || 'stabilizer';
+          const lastMode = this.progress.lastMode || 'operate';
+          const detail = document.getElementById('qs-detail');
+          if (detail) detail.textContent = (facilityNames[lastFacility] || 'STABILIZER') + ' \u2014 ' + (modeNames[lastMode] || 'OPERATE');
+          quickStartEl.style.display = '';
+        }
+        if (newUserEl) newUserEl.style.display = 'none';
+      } else {
+        // First-time user — show prominent training CTA
+        if (newUserEl) newUserEl.style.display = '';
+        if (quickStartEl) quickStartEl.style.display = 'none';
+      }
+
+      // Streak badge
+      const streak = parseInt(localStorage.getItem('coldcreek-streak') || '0', 10);
+      if (streakEl && streak > 1) {
+        document.getElementById('streak-count').textContent = streak;
+        streakEl.style.display = '';
+      }
+    },
+
+    _quickStart() {
+      const lastFacility = this.progress.lastFacility || 'stabilizer';
+      const lastMode = this.progress.lastMode || 'operate';
+
+      // If there's a saved game for this facility+mode, continue it
+      if (this.progress.hasGameState) {
+        try {
+          const data = localStorage.getItem('coldcreek-gamestate');
+          if (data) {
+            const state = JSON.parse(data);
+            if (state.facility === lastFacility) {
+              this._continueGame();
+              return;
+            }
+          }
+        } catch (e) { /* fall through to new game */ }
+      }
+
+      this.currentMode = lastMode;
+      this.currentFacility = lastFacility;
+      this._startGame();
     },
 
     // ============================================================
@@ -2329,7 +2405,8 @@
       this.saveProgress({
         [key]: (this.progress[key] || 0) + 1,
         lastShiftEarnings: earnings,
-        lastFacility: facility
+        lastFacility: facility,
+        lastMode: this.currentMode
       });
 
       this._updateUnlockStates();
@@ -2960,7 +3037,9 @@
       '"Your reboiler is your paycheck."',
       '"Rate of change matters more than current value."',
       'Three facilities. Four modes. One leaderboard.',
-      '"Don\'t stare at the alarm. Trace the flow."'
+      '"Don\'t stare at the alarm. Trace the flow."',
+      'Used by operators and engineering students worldwide.',
+      'Train like it\'s real. Because it was.'
     ],
 
     _startTaglineRotation() {
