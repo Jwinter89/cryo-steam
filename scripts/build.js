@@ -38,6 +38,7 @@ const items = [
   'robots.txt',
   'sitemap.xml',
   'ads.txt',
+  '9082f7ccb22045ca8bf17e20eff4afcb.txt',
 ];
 
 function copyRecursive(src, dest) {
