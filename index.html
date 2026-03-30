@@ -999,8 +999,8 @@
   <script>
     window.addEventListener('error', function(e) {
       // Pause simulation on critical errors to prevent runaway setInterval
-      if (window._coldCreekGame && window._coldCreekGame.sim) {
-        try { window._coldCreekGame.sim.pause(); } catch(_) {}
+      if (window.coldCreekGame && window.coldCreekGame.sim) {
+        try { window.coldCreekGame.sim.pause(); } catch(_) {}
       }
     });
     window.addEventListener('unhandledrejection', function(e) {
