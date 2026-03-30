@@ -134,10 +134,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com https://js.stripe.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://api.stripe.com; img-src 'self' data: blob: https://*.stripe.com; font-src 'self'; frame-src https://js.stripe.com https://checkout.stripe.com;">
-
-  <!-- Stripe.js (donation) -->
-  <script async src="https://js.stripe.com/v3/"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self';">
 
   <link rel="stylesheet" href="style.css">
 </head>

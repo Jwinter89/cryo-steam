@@ -3,7 +3,7 @@
  * Enables offline caching and PWA install prompt.
  */
 
-const CACHE_NAME = 'cold-creek-v4';
+const CACHE_NAME = 'cold-creek-v5';
 
 // Core assets to cache on install
 const PRECACHE_ASSETS = [
@@ -17,6 +17,7 @@ const PRECACHE_ASSETS = [
   '/icon-maskable-192.png',
   '/icon-maskable-512.png',
   '/apple-touch-icon.png',
+  '/landing-bg.jpg',
   '/favicon.svg',
   '/icon-192.svg',
   '/icon-512.svg',

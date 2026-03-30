@@ -266,44 +266,10 @@
       const donateBtn = document.getElementById('donate-btn');
       if (donateBtn) {
         donateBtn.addEventListener('click', () => {
-          // Stripe Checkout for one-time donation
-          if (typeof Stripe !== 'undefined') {
-            try {
-              const stripe = Stripe('pk_live_51TGPTUArAkbyMDHnQNKuGNE7SGcsMWcIbiWxP8TmsiMt97Hch7aNdnu1XDJVzV24CW5wT9Ni5O4FHQsQnNkIKIIO00umjQIBp2');
-              stripe.redirectToCheckout({
-                lineItems: [{ price: 'price_1TGTJdArAkbyMDHnak0Ym0D4', quantity: 1 }],
-                mode: 'payment',
-                successUrl: window.location.origin + '/?donated=thanks',
-                cancelUrl: window.location.origin + '/',
-              }).then(function(result) {
-                if (result.error) {
-                  // Fallback: open Buy Me a Coffee
-                  window.open('https://buymeacoffee.com/GasPlantSim', '_blank');
-                }
-              }).catch(function() {
-                window.open('https://buymeacoffee.com/GasPlantSim', '_blank');
-              });
-            } catch (e) {
-              // Stripe failed to init — fallback
-              window.open('https://buymeacoffee.com/GasPlantSim', '_blank');
-            }
-          } else {
-            // Stripe.js not loaded — fallback to Buy Me a Coffee
-            window.open('https://buymeacoffee.com/GasPlantSim', '_blank');
-          }
+          // Open Buy Me a Coffee for donations
+          window.open('https://buymeacoffee.com/GasPlantSim', '_blank');
         });
       }
-
-      // Check for successful donation return
-      try {
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('donated') === 'thanks') {
-          window.history.replaceState({}, '', window.location.pathname);
-          setTimeout(() => {
-            this.showToast('THANK YOU', 'Your support keeps Cold Creek free for everyone.', 'DONATION RECEIVED');
-          }, 500);
-        }
-      } catch (e) {}
     },
 
     // ============================================================
