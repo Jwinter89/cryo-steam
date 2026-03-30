@@ -691,6 +691,8 @@ html, body {
 }
 #mode-screen, #facility-screen, #settings-screen, #crisis-screen, #profile-screen {
   flex-direction: column;
+}
+#settings-screen, #crisis-screen, #profile-screen {
   background: var(--bg-panel);
 }
 
