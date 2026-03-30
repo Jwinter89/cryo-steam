@@ -266,10 +266,22 @@
       const buyBtn = document.getElementById('ad-free-buy-btn');
       if (buyBtn) {
         buyBtn.addEventListener('click', () => {
-          // Placeholder — wire to Stripe Checkout when keys are provided
-          // For now, show a message
-          this.showToast('COMING SOON', 'Ad-free purchase will be available shortly', 'AD-FREE');
+          if (this.adManager) {
+            this.adManager.startPurchase();
+          }
         });
+      }
+
+      // If user just returned from successful purchase, show toast
+      if (this.adManager && this.adManager.isAdFree()) {
+        const params = new URLSearchParams(window.location.search);
+        // Only show toast on fresh return (URL was already cleaned by adManager)
+        if (localStorage.getItem('coldcreek-ad-free') === 'true' && !this._adFreeToastShown) {
+          this._adFreeToastShown = true;
+          setTimeout(() => {
+            this.showToast('AD-FREE ACTIVATED', 'Thanks for your support! Ads have been removed.', 'PURCHASE COMPLETE');
+          }, 500);
+        }
       }
     },
 

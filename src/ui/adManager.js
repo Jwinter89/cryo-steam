@@ -16,12 +16,18 @@
 
   const AD_FREE_KEY = 'coldcreek-ad-free';
   const INTERSTITIAL_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+  const STRIPE_PK = 'pk_live_51TGPTUArAkbyMDHnQNKuGNE7SGcsMWcIbiWxP8TmsiMt97Hch7aNdnu1XDJVzV24CW5wT9Ni5O4FHQsQnNkIKIIO00umjQIBp2';
+  const STRIPE_PRICE_ID = 'price_1TGTJdArAkbyMDHnak0Ym0D4';
 
   class AdManager {
     constructor() {
       this._lastInterstitialTime = 0;
       this._adsLoaded = false;
       this._adFree = this._checkAdFree();
+      this._stripe = null;
+
+      // Check for successful purchase return
+      this._checkPurchaseReturn();
 
       if (!this._adFree) {
         this._initAds();
@@ -168,6 +174,47 @@
       this.hideTitleBanner();
       const interstitial = document.getElementById('ad-interstitial-overlay');
       if (interstitial) interstitial.remove();
+
+      // Hide ad-free upgrade banner
+      const upgradeBanner = document.getElementById('ad-free-banner');
+      if (upgradeBanner) upgradeBanner.style.display = 'none';
+
+      // Hide the title banner slot
+      const titleBanner = document.getElementById('ad-title-banner');
+      if (titleBanner) titleBanner.style.display = 'none';
+    }
+
+    /** Redirect to Stripe Checkout for ad-free purchase */
+    startPurchase() {
+      if (!window.Stripe) {
+        // Stripe.js not loaded yet
+        return;
+      }
+
+      if (!this._stripe) {
+        this._stripe = window.Stripe(STRIPE_PK);
+      }
+
+      this._stripe.redirectToCheckout({
+        lineItems: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
+        mode: 'payment',
+        successUrl: window.location.origin + '/?adfree=success',
+        cancelUrl: window.location.origin + '/?adfree=cancel',
+      }).catch(function () {
+        // Checkout failed — user stays on page
+      });
+    }
+
+    /** Check URL params for successful purchase return */
+    _checkPurchaseReturn() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('adfree') === 'success') {
+          this.setAdFree(true);
+          // Clean URL without reload
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+      } catch (e) { /* ok */ }
     }
   }
 

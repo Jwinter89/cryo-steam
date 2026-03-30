@@ -48,10 +48,13 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://tpc.googlesyndication.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://pagead2.googlesyndication.com https://*.google.com; img-src 'self' data: blob: https://pagead2.googlesyndication.com https://*.google.com https://*.googleusercontent.com; font-src 'self'; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://*.vercel-insights.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://tpc.googlesyndication.com https://js.stripe.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://pagead2.googlesyndication.com https://*.google.com https://api.stripe.com; img-src 'self' data: blob: https://pagead2.googlesyndication.com https://*.google.com https://*.googleusercontent.com https://*.stripe.com; font-src 'self'; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://js.stripe.com https://checkout.stripe.com;">
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4033673224873505" crossorigin="anonymous"></script>
+
+  <!-- Stripe.js (ad-free purchase) -->
+  <script async src="https://js.stripe.com/v3/"></script>
 
   <link rel="stylesheet" href="style.css">
 </head>
