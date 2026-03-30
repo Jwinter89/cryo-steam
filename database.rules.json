@@ -29,6 +29,13 @@
         ".validate": "newData.hasChildren(['email', 'timestamp', 'uid']) && newData.child('email').isString() && newData.child('email').val().matches(/^[^@]+@[^@]+$/) && newData.child('email').val().length <= 100 && newData.child('uid').val() === auth.uid && !data.exists()"
       }
     },
+    "enterprise-leads": {
+      ".read": false,
+      ".write": "auth != null",
+      "$pushId": {
+        ".validate": "newData.hasChildren(['email', 'timestamp', 'uid']) && newData.child('email').isString() && newData.child('email').val().matches(/^[^@]+@[^@]+$/) && newData.child('email').val().length <= 200 && newData.child('name').isString() && newData.child('name').val().length <= 100 && newData.child('uid').val() === auth.uid && !data.exists()"
+      }
+    },
     "$other": {
       ".read": false,
       ".write": false

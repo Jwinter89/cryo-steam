@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cold Creek for Teams — Gas Plant Operator Training Platform</title>
+  <meta name="description" content="Train your operators on realistic gas plant simulations. DCS control, P&ID diagrams, alarm management, crisis response. Built by a cryogenic plant operator with 10 years of field experience. Volume licensing available.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://gasplantsim.com/teams">
+  <meta property="og:title" content="Cold Creek for Teams — Operator Training Platform">
+  <meta property="og:description" content="Train your operators on realistic gas plant simulations. DCS control, alarm management, crisis response. Volume licensing available.">
+  <meta property="og:image" content="https://gasplantsim.com/og-image.png">
+
+  <link rel="canonical" href="https://gasplantsim.com/teams">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://formsubmit.co; img-src 'self' data:; frame-src 'none';">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Cold Creek for Teams",
+    "description": "Gas plant operator training simulator platform with DCS control, PID loops, alarm management, and crisis scenarios. Three facility tiers, four training modes, progress tracking.",
+    "brand": { "@type": "Organization", "name": "Winter Howlers", "url": "https://www.winterhowlers.com" },
+    "url": "https://gasplantsim.com/teams",
+    "image": "https://gasplantsim.com/og-image.png",
+    "category": "Industrial Training Software",
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "description": "Volume licensing available. Contact for team pricing."
+    }
+  }
+  </script>
+
+  <style>
+    /* ============================================================
+       COLD CREEK FOR TEAMS — Enterprise Landing Page
+       Same DCS aesthetic as the simulator
+       ============================================================ */
+    :root {
+      --bg-deep:     #2E2E2E;
+      --bg-panel:    #3C3C3C;
+      --bg-card:     #424242;
+      --bg-input:    #505050;
+      --border:      #606060;
+      --text-normal: #E8E8E8;
+      --text-label:  #A0A0A0;
+      --text-unit:   #808080;
+      --text-tag:    #C8C8C8;
+      --accent:      #5A9BD4;
+      --font-mono:   "Courier New", Consolas, "Liberation Mono", monospace;
+      --font-condensed: "Arial Narrow", Arial, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-condensed);
+      background: var(--bg-deep);
+      color: var(--text-normal);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ---- NAV BAR ---- */
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--text-normal);
+      text-decoration: none;
+    }
+    .nav-brand:hover { text-decoration: none; }
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--text-label);
+      text-decoration: none;
+    }
+    .nav-link:hover { color: var(--text-normal); text-decoration: none; }
+    .nav-cta {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      padding: 8px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-cta:hover { background: #4A8BD4; text-decoration: none; }
+
+    /* ---- HERO ---- */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      border: 1px solid rgba(90,155,212,0.4);
+      display: inline-block;
+      padding: 4px 16px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      line-height: 1.3;
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 16px;
+      color: var(--text-label);
+      max-width: 600px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+    .hero-cta {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      padding: 16px 40px;
+      background: linear-gradient(135deg, #2A5A8A, #3A7BBF);
+      border: 1px solid #4A8BD4;
+      color: #fff;
+      cursor: pointer;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .hero-cta:hover { background: linear-gradient(135deg, #3A6A9A, #4A8BD4); text-decoration: none; }
+    .hero-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-unit);
+      letter-spacing: 0.1em;
+      margin-top: 12px;
+    }
+
+    /* ---- SECTION ---- */
+    .section {
+      padding: 60px 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .section-dark {
+      background: var(--bg-panel);
+      max-width: 100%;
+      padding: 60px 24px;
+    }
+    .section-dark .section-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    .section-heading {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 40px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ---- USE CASE CARDS ---- */
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .use-case {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 28px 20px;
+    }
+    .use-case-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    .use-case h3 {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      margin-bottom: 10px;
+    }
+    .use-case p {
+      font-size: 13px;
+      color: var(--text-label);
+      line-height: 1.6;
+    }
+
+    /* ---- CURRICULUM ---- */
+    .curriculum {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .tier {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 24px 20px;
+      position: relative;
+    }
+    .tier-badge {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .tier h3 {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    .tier ul {
+      list-style: none;
+      padding: 0;
+    }
+    .tier li {
+      font-size: 12px;
+      color: var(--text-label);
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(96,96,96,0.3);
+    }
+    .tier li::before {
+      content: "\25B8 ";
+      color: var(--text-unit);
+    }
+
+    /* ---- MODES ---- */
+    .modes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 32px;
+    }
+    .mode-box {
+      text-align: center;
+      padding: 20px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .mode-num {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .mode-name {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+    .mode-desc {
+      font-size: 11px;
+      color: var(--text-unit);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* ---- FEATURES LIST ---- */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 32px;
+      margin-top: 12px;
+    }
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .feature-check {
+      color: #4CAF50;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-text {
+      font-size: 13px;
+      color: var(--text-label);
+    }
+
+    /* ---- CREDIBILITY ---- */
+    .credibility {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .cred-quote {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-style: italic;
+      color: var(--text-normal);
+      max-width: 600px;
+      margin: 0 auto 16px;
+      line-height: 1.6;
+    }
+    .cred-author {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-unit);
+      letter-spacing: 0.1em;
+    }
+
+    /* ---- CONTACT / LEAD FORM ---- */
+    .form-section {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+    .form-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--text-unit);
+    }
+    .form-input, .form-select, .form-textarea {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 10px 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      color: var(--text-normal);
+      outline: none;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent);
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23808080'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .form-submit {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      padding: 14px 40px;
+      background: linear-gradient(135deg, #2A5A8A, #3A7BBF);
+      border: 1px solid #4A8BD4;
+      color: #fff;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .form-submit:hover { background: linear-gradient(135deg, #3A6A9A, #4A8BD4); }
+    .form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .form-note {
+      font-size: 11px;
+      color: var(--text-unit);
+      text-align: center;
+      margin-top: 12px;
+    }
+    .form-success {
+      text-align: center;
+      padding: 32px;
+      display: none;
+    }
+    .form-success h3 {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      color: #4CAF50;
+      margin-bottom: 8px;
+    }
+    .form-success p {
+      font-size: 13px;
+      color: var(--text-label);
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .footer-links {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-unit);
+      letter-spacing: 0.1em;
+    }
+    .footer-links a { color: var(--text-label); }
+    .footer-links .sep { margin: 0 10px; color: var(--border); }
+    .footer-copy {
+      font-size: 11px;
+      color: var(--text-unit);
+      margin-top: 8px;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .hero { padding: 48px 20px 40px; }
+      .hero h1 { font-size: 22px; }
+      .hero p { font-size: 14px; }
+      .use-cases { grid-template-columns: 1fr; gap: 12px; }
+      .curriculum { grid-template-columns: 1fr; gap: 12px; }
+      .modes { grid-template-columns: 1fr 1fr; }
+      .features { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .nav-links { gap: 12px; }
+      .nav-link { display: none; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 18px; }
+      .modes { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-brand">COLD CREEK</a>
+    <div class="nav-links">
+      <a href="/" class="nav-link">PLAY FREE</a>
+      <a href="#contact" class="nav-cta">GET A DEMO</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">OPERATOR TRAINING PLATFORM</div>
+    <h1>Train Your Operators on the Real Thing</h1>
+    <p>Cold Creek is a realistic gas plant simulator built by a cryogenic plant operator with 10 years of field experience. DCS control, P&amp;ID diagrams, alarm management, and crisis response &mdash; in a browser.</p>
+    <a href="#contact" class="hero-cta">REQUEST A DEMO</a>
+    <div class="hero-sub">No install required. Runs on any device.</div>
+  </section>
+
+  <!-- USE CASES -->
+  <div class="section-dark">
+    <div class="section-inner">
+      <div class="section-title">WHO IT'S FOR</div>
+      <h2 class="section-heading">Three Use Cases, One Platform</h2>
+      <div class="use-cases">
+        <div class="use-case">
+          <div class="use-case-icon">&#9881;</div>
+          <h3>OPERATOR TRAINING</h3>
+          <p>Onboard new hires on DCS operations before they touch a live board. Practice upset response, alarm management, and normal operations in a safe environment.</p>
+        </div>
+        <div class="use-case">
+          <div class="use-case-icon">&#127891;</div>
+          <h3>ENGINEERING EDUCATION</h3>
+          <p>Give students hands-on experience with real process control. Interactive P&amp;ID diagrams, PID tuning, cascade control, and NGL recovery &mdash; not just textbook theory.</p>
+        </div>
+        <div class="use-case">
+          <div class="use-case-icon">&#9888;</div>
+          <h3>SAFETY &amp; COMPETENCY</h3>
+          <p>Run crisis scenarios for annual competency testing. Compressor trips, H&#8322;S releases, freeze-offs, column floods &mdash; measure response time and decision quality.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURRICULUM / TIERS -->
+  <section class="section">
+    <div class="section-title">CURRICULUM</div>
+    <h2 class="section-heading">Three Facilities. Progressive Complexity.</h2>
+    <div class="curriculum">
+      <div class="tier">
+        <div class="tier-badge">TIER 1</div>
+        <h3>Condensate Stabilizer</h3>
+        <ul>
+          <li>Reboiler temperature control</li>
+          <li>Column pressure management</li>
+          <li>Hot oil system operations</li>
+          <li>Compression &amp; tank gauging</li>
+          <li>RVP specification control</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="tier-badge">TIER 2</div>
+        <h3>Refrigeration Plant</h3>
+        <ul>
+          <li>TEG dehydration operations</li>
+          <li>BTEX compliance monitoring</li>
+          <li>Propane refrigeration system</li>
+          <li>Inlet compression</li>
+          <li>Product recovery &amp; NGL</li>
+        </ul>
+      </div>
+      <div class="tier">
+        <div class="tier-badge">TIER 3</div>
+        <h3>Cryogenic Gas Plant</h3>
+        <ul>
+          <li>Turboexpander operations</li>
+          <li>Mol sieve dehydration</li>
+          <li>Amine treating (H&#8322;S removal)</li>
+          <li>Demethanizer column control</li>
+          <li>Full NGL recovery chain</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- TRAINING MODES -->
+    <div class="modes">
+      <div class="mode-box">
+        <div class="mode-num">01</div>
+        <div class="mode-name">LEARN</div>
+        <div class="mode-desc">Guided P&amp;ID walkthrough with annotations</div>
+      </div>
+      <div class="mode-box">
+        <div class="mode-num">02</div>
+        <div class="mode-name">OPERATE</div>
+        <div class="mode-desc">Full shift operations with P&amp;L tracking</div>
+      </div>
+      <div class="mode-box">
+        <div class="mode-num">03</div>
+        <div class="mode-name">CRISIS</div>
+        <div class="mode-desc">Scored emergency scenarios with time pressure</div>
+      </div>
+      <div class="mode-box">
+        <div class="mode-num">04</div>
+        <div class="mode-name">OPTIMIZE</div>
+        <div class="mode-desc">Maximize throughput and revenue targets</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <div class="section-dark">
+    <div class="section-inner">
+      <div class="section-title">WHAT'S INCLUDED</div>
+      <h2 class="section-heading">Real Physics. Real Standards.</h2>
+      <div class="features">
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">PID control loops with AUTO / MAN / CASCADE modes</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Interactive P&amp;ID diagrams with zoom and annotation</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">ISA-101 compliant HMI (color = alarm only)</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Real-time alarm management with priority and acknowledgment</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Shift P&amp;L tracking with revenue and penalty accounting</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Weather events, equipment failures, and process upsets</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Gas chromatograph simulation</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Post-shift debrief with performance analytics</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Leaderboard and competitive ranking</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Works on desktop, tablet, and mobile &mdash; no install</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Daily challenges and achievement tracking</span>
+        </div>
+        <div class="feature">
+          <span class="feature-check">&#10003;</span>
+          <span class="feature-text">Field notes and glossary with ISA terminology</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREDIBILITY -->
+  <div class="credibility">
+    <p class="cred-quote">"I built this because the training I got as a new operator was a binder and a handshake. There has to be a better way."</p>
+    <p class="cred-author">&mdash; JOSH WINTER, CRYOGENIC PLANT OPERATOR, 10 YEARS FIELD EXPERIENCE</p>
+  </div>
+
+  <!-- CONTACT / LEAD FORM -->
+  <section class="section" id="contact">
+    <div class="form-section">
+      <div class="section-title">GET STARTED</div>
+      <h2 class="section-heading">Request a Demo or Custom Build</h2>
+
+      <form id="lead-form" class="form-grid" action="https://formsubmit.co/josh.winter5276@gmail.com" method="POST">
+        <!-- FormSubmit config -->
+        <input type="hidden" name="_subject" value="Cold Creek Enterprise Lead">
+        <input type="hidden" name="_captcha" value="true">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_next" value="https://gasplantsim.com/teams?submitted=true">
+        <!-- Honeypot -->
+        <input type="text" name="_honey" style="display:none">
+
+        <div class="form-group">
+          <label class="form-label">NAME *</label>
+          <input class="form-input" type="text" name="name" required placeholder="Your name" maxlength="100" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">EMAIL *</label>
+          <input class="form-input" type="email" name="email" required placeholder="you@company.com" maxlength="200" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">COMPANY / INSTITUTION</label>
+          <input class="form-input" type="text" name="company" placeholder="Company or school name" maxlength="200" autocomplete="organization">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ROLE</label>
+          <select class="form-select" name="role">
+            <option value="">Select your role</option>
+            <option value="training-manager">Training / HSE Manager</option>
+            <option value="operations-manager">Operations Manager</option>
+            <option value="professor">Professor / Instructor</option>
+            <option value="hr">HR / Workforce Development</option>
+            <option value="engineer">Process Engineer</option>
+            <option value="operator">Plant Operator</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">INDUSTRY</label>
+          <select class="form-select" name="industry">
+            <option value="">Select your industry</option>
+            <option value="gas-processing">Gas Processing / Midstream</option>
+            <option value="refining">Refining</option>
+            <option value="chemical">Chemical / Petrochemical</option>
+            <option value="power-gen">Power Generation</option>
+            <option value="lng">LNG</option>
+            <option value="education">Education / University</option>
+            <option value="government">Government / Military</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">NUMBER OF USERS</label>
+          <select class="form-select" name="team_size">
+            <option value="">Estimated team size</option>
+            <option value="1-10">1 - 10</option>
+            <option value="11-50">11 - 50</option>
+            <option value="51-200">51 - 200</option>
+            <option value="200+">200+</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">WHAT DO YOU NEED?</label>
+          <select class="form-select" name="need">
+            <option value="">Select primary use case</option>
+            <option value="operator-onboarding">New operator onboarding</option>
+            <option value="annual-competency">Annual competency testing</option>
+            <option value="safety-drills">Safety / emergency drill practice</option>
+            <option value="university-curriculum">University course integration</option>
+            <option value="custom-facility">Custom facility simulation</option>
+            <option value="assessment">Skill assessment / certification</option>
+            <option value="other">Something else</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">TELL US MORE (OPTIONAL)</label>
+          <textarea class="form-textarea" name="details" maxlength="2000" placeholder="Describe your facility, specific training needs, or questions. If you need a custom simulation built for your process, give us the details here."></textarea>
+        </div>
+        <div class="form-group full">
+          <button class="form-submit" type="submit">SEND REQUEST</button>
+        </div>
+      </form>
+      <p class="form-note">We'll respond within 24 hours. No spam, no sales automation.</p>
+
+      <!-- Success state (shown after redirect back) -->
+      <div id="form-success" class="form-success">
+        <h3>REQUEST RECEIVED</h3>
+        <p>Thanks for reaching out. We'll get back to you within 24 hours.</p>
+        <p style="margin-top:16px;"><a href="/">Try the simulator now &rarr;</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="/">PLAY FREE</a>
+      <span class="sep">|</span>
+      <a href="https://www.winterhowlers.com" target="_blank" rel="noopener">WINTER HOWLERS</a>
+      <span class="sep">|</span>
+      <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer">SUPPORT THE DEV</a>
+    </div>
+    <p class="footer-copy">&copy; 2024-2026 Winter Howlers. Cold Creek Gas Plant Simulator.</p>
+  </footer>
+
+  <!-- Firebase for lead backup storage -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    // Firebase init
+    if (typeof firebase !== 'undefined') {
+      firebase.initializeApp({
+        apiKey: "AIzaSyB1HdEcizWpnUIu0GS3v8MsW_Uap6lqjaQ",
+        authDomain: "cold-creek.firebaseapp.com",
+        databaseURL: "https://cold-creek-default-rtdb.firebaseio.com",
+        projectId: "cold-creek",
+        storageBucket: "cold-creek.firebasestorage.app",
+        messagingSenderId: "1067500023569",
+        appId: "1:1067500023569:web:5c5f56b172251de15ce6b0"
+      });
+      firebase.auth().signInAnonymously().catch(function() {});
+    }
+
+    // Sanitize input: trim whitespace, enforce max length
+    function sanitize(str, maxLen) {
+      return String(str || '').trim().substring(0, maxLen);
+    }
+
+    // Rate limit: prevent repeated submissions
+    var lastSubmitTime = 0;
+
+    // Handle form submission redirect (FormSubmit redirects back with ?submitted=true)
+    if (new URLSearchParams(window.location.search).get('submitted') === 'true') {
+      document.getElementById('lead-form').style.display = 'none';
+      document.getElementById('form-success').style.display = '';
+      document.querySelector('.form-note').style.display = 'none';
+    }
+
+    // Form submission: validate, rate-limit, store in Firebase
+    document.getElementById('lead-form').addEventListener('submit', function(e) {
+      // Rate limit: 30 seconds between submissions
+      var now = Date.now();
+      if (now - lastSubmitTime < 30000) {
+        e.preventDefault();
+        alert('Please wait before submitting again.');
+        return;
+      }
+      lastSubmitTime = now;
+
+      // Client-side email validation
+      var emailInput = this.querySelector('[name="email"]');
+      var email = sanitize(emailInput.value, 200);
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        e.preventDefault();
+        emailInput.focus();
+        return;
+      }
+
+      // Disable submit button to prevent double-click
+      var submitBtn = this.querySelector('.form-submit');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'SENDING...';
+      }
+
+      // Store in Firebase as backup (sanitized)
+      try {
+        if (typeof firebase !== 'undefined' && firebase.database && firebase.auth && firebase.auth().currentUser) {
+          var data = {
+            name: sanitize(this.querySelector('[name="name"]').value, 100),
+            email: email,
+            company: sanitize(this.querySelector('[name="company"]').value, 200),
+            role: sanitize(this.querySelector('[name="role"]').value, 50),
+            industry: sanitize(this.querySelector('[name="industry"]').value, 50),
+            teamSize: sanitize(this.querySelector('[name="team_size"]').value, 20),
+            need: sanitize(this.querySelector('[name="need"]').value, 50),
+            details: sanitize(this.querySelector('[name="details"]').value, 2000),
+            timestamp: Date.now(),
+            source: 'teams-page',
+            uid: firebase.auth().currentUser.uid
+          };
+          firebase.database().ref('enterprise-leads').push(data);
+        }
+      } catch (err) { /* Firebase backup failed — FormSubmit email still sent */ }
+    });
+  </script>
+
+</body>
+</html>
