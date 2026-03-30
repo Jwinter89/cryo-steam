@@ -443,6 +443,23 @@
       // Mobile info drawer (also handles backdrop)
       this._bindMobileInfoDrawer();
 
+      // Close gauge sheet on tap outside (mobile)
+      document.addEventListener('click', (e) => {
+        const sheet = document.getElementById('gauge-sheet');
+        if (!sheet || !sheet.classList.contains('open')) return;
+        // Don't close if clicking inside the sheet, on a building tab/pill, or on the faceplate
+        if (e.target.closest('#gauge-sheet') ||
+            e.target.closest('.building-tab') ||
+            e.target.closest('.mobile-building-pill') ||
+            e.target.closest('.faceplate') ||
+            e.target.closest('.faceplate-backdrop')) return;
+        this._closeGaugeSheet();
+        this._activeBuilding = null;
+        document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
+        const first = document.querySelector('.building-tab');
+        if (first) first.classList.add('active');
+      });
+
       // Mobile speed dial FAB
       this._bindMobileSpeedDial();
     },
@@ -498,8 +515,12 @@
       if (backdrop) {
         backdrop.addEventListener('click', () => {
           if (drawer.classList.contains('open')) closeDrawer();
-          const fp = document.getElementById('faceplate');
-          if (fp) fp.style.display = 'none';
+          if (this.faceplateManager) {
+            this.faceplateManager.close();
+          } else {
+            const fp = document.getElementById('faceplate');
+            if (fp) fp.style.display = 'none';
+          }
         });
       }
 
@@ -866,13 +887,15 @@
         sheet.appendChild(gcBody);
         this.gcDisplay.render(gcBody);
         sheet.classList.add('open');
-        document.getElementById('gauge-sheet-close').addEventListener('click', () => {
+        this._hideGaugeSheetOverlaps(true);
+        const gcCloseBtn = document.getElementById('gauge-sheet-close');
+        if (gcCloseBtn) gcCloseBtn.onclick = () => {
           this._closeGaugeSheet();
           this._activeBuilding = null;
           document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
           const first = document.querySelector('.building-tab');
           if (first) first.classList.add('active');
-        });
+        };
         return;
       }
 
@@ -912,15 +935,17 @@
       html += '</div>';
       sheet.innerHTML = html;
       sheet.classList.add('open');
+      this._hideGaugeSheetOverlaps(true);
 
-      // Bind close button
-      document.getElementById('gauge-sheet-close').addEventListener('click', () => {
+      // Bind close button (use onclick to prevent listener accumulation)
+      const closeBtn = document.getElementById('gauge-sheet-close');
+      if (closeBtn) closeBtn.onclick = () => {
         this._closeGaugeSheet();
         this._activeBuilding = null;
         document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
         const first = document.querySelector('.building-tab');
         if (first) first.classList.add('active');
-      });
+      };
 
       // Bind row taps to open faceplate
       sheet.querySelectorAll('.gauge-sheet-row').forEach(row => {
@@ -937,6 +962,23 @@
     _closeGaugeSheet() {
       const sheet = document.getElementById('gauge-sheet');
       if (sheet) sheet.classList.remove('open');
+      this._hideGaugeSheetOverlaps(false);
+      // Also sync mobile pills — deactivate all, reactivate first
+      const pillBar = document.getElementById('mobile-building-pills');
+      if (pillBar) {
+        pillBar.querySelectorAll('.mobile-building-pill').forEach(p => p.classList.remove('active'));
+        const first = pillBar.querySelector('.mobile-building-pill');
+        if (first) first.classList.add('active');
+      }
+    },
+
+    _hideGaugeSheetOverlaps(hide) {
+      const pills = document.getElementById('mobile-building-pills');
+      const pnlStrip = document.getElementById('mobile-pnl-strip');
+      const speedDial = document.querySelector('.mobile-speed-dial');
+      if (pills) pills.classList.toggle('gauge-sheet-hidden', hide);
+      if (pnlStrip) pnlStrip.classList.toggle('gauge-sheet-hidden', hide);
+      if (speedDial) speedDial.classList.toggle('gauge-sheet-hidden', hide);
     },
 
     _updateGaugeSheet() {

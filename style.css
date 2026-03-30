@@ -2210,6 +2210,11 @@ g[id^="equip-"]:hover line {
   z-index: 199;
 }
 
+/* Hide overlapping elements when gauge sheet is open */
+.gauge-sheet-hidden {
+  display: none !important;
+}
+
 /* ---- GAUGE BOTTOM SHEET (Mobile) ---- */
 .gauge-sheet {
   background: var(--bg-panel);
