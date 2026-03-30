@@ -4357,3 +4357,23 @@ body.cb-tritanopia .spec-row.off-spec {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ============================================================
+   SOCIAL SHARE BUTTONS (Footer)
+   ============================================================ */
+.footer-share { display: inline-flex; align-items: center; gap: 6px; }
+.footer-share-label { font-size: 9px; color: var(--text-unit); letter-spacing: 1px; }
+.share-btn {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-label);
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.share-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }

@@ -66,6 +66,67 @@
   }
   </script>
 
+  <!-- FAQ Schema for Google Rich Results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Cold Creek Gas Plant Simulator?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cold Creek is a free, browser-based gas plant operator training simulator. It simulates operating a natural gas processing facility from a DCS (Distributed Control System) console with real PID control loops, interactive P&ID diagrams, alarm management, and realistic upset scenarios. Built by a cryogenic plant operator with 10 years of experience."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Cold Creek free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Cold Creek is completely free to play. No download, no account required. There is an optional $2.99 one-time purchase to remove ads, but all features and facilities are fully accessible for free."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What facilities are included in the simulator?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Cold Creek includes three facilities of increasing complexity: a Condensate Stabilizer (Tier 1), a Refrigeration Plant with TEG dehydration and BTEX compliance (Tier 2), and a full Cryogenic Gas Processing Plant with turboexpander, mol sieve, amine treating, and demethanizer (Tier 3)."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use Cold Creek for power engineering exam preparation?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Cold Creek was designed with 4th class power engineering students in mind. The Learn mode provides guided P&ID walkthroughs, and the Operate mode simulates full shift operations. It covers process control fundamentals, alarm management, upset response, and equipment operations that are relevant to power engineering certification."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Cold Creek work on mobile?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Cold Creek is fully responsive and works on phones, tablets, and desktops. It can be installed as a Progressive Web App (PWA) from your browser for an app-like experience with offline support."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What game modes are available?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Four modes: Learn (guided P&ID walkthrough with no failure state), Operate (full shift simulation with real-time P&L tracking), Crisis (timed upset recovery with medal scoring), and Optimize (maximize NGL recovery with competitive leaderboard scoring)."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Additional SEO keywords -->
+  <meta name="keywords" content="gas plant simulator, DCS training, P&ID diagram, power engineering, cryogenic plant, turboexpander, NGL recovery, amine treating, operator training, 4th class power engineer, oil and gas training, plant operator simulator, process control, gas processing, TEG dehydration, demethanizer, mol sieve, BTEX, condensate stabilizer, industrial simulator, free simulator">
+
   <!-- PWA -->
   <meta name="theme-color" content="#1a1a1a">
   <link rel="manifest" href="/manifest.json">
@@ -902,7 +963,25 @@
     <a href="https://www.winterhowlers.com" target="_blank" rel="noopener">Built by Winter Howlers</a>
     <span class="footer-sep">|</span>
     <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="footer-support-link">&#9734; Support the Developer</a>
+    <span class="footer-sep">|</span>
+    <span class="footer-share">
+      <span class="footer-share-label">SHARE:</span>
+      <a id="share-x" class="share-btn" target="_blank" rel="noopener" aria-label="Share on X">X</a>
+      <a id="share-reddit" class="share-btn" target="_blank" rel="noopener" aria-label="Share on Reddit">Reddit</a>
+      <a id="share-linkedin" class="share-btn" target="_blank" rel="noopener" aria-label="Share on LinkedIn">LinkedIn</a>
+      <a id="share-fb" class="share-btn" target="_blank" rel="noopener" aria-label="Share on Facebook">FB</a>
+    </span>
   </footer>
+  <script>
+    (function() {
+      var u = encodeURIComponent('https://gasplantsim.com');
+      var t = encodeURIComponent('Cold Creek \u2014 Free gas plant operator training simulator. Run the board. Keep it in spec. Make it home safe.');
+      document.getElementById('share-x').href = 'https://x.com/intent/tweet?url=' + u + '&text=' + t;
+      document.getElementById('share-reddit').href = 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent('Cold Creek \u2014 Free Gas Plant Operator Training Simulator');
+      document.getElementById('share-linkedin').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u;
+      document.getElementById('share-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
+    })();
+  </script>
 
   <!-- Firebase (leaderboard) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
