@@ -66,17 +66,20 @@ class CascadeEngine {
       } else if (effect.type === 'setvalue') {
         const target = pvMap[effect.target];
         if (target) {
-          target.externalForce += effect.force;
+          target.value = effect.value != null ? effect.value : target.value;
+          target.externalForce += effect.force || 0;
         }
       }
     }
 
-    // Update active continuous effects
+    // Update active continuous effects (apply force before expiring)
     this.activeEffects = this.activeEffects.filter(ae => {
       const target = pvMap[ae.target];
       if (!target) return false;
       ae.elapsed += dt;
       if (ae.elapsed >= ae.duration) {
+        // Apply force one last time on the expiry tick
+        target.externalForce += ae.force;
         return false;
       }
       return true;

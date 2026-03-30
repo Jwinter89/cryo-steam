@@ -50,6 +50,7 @@ class EventSystem {
    * Main tick — check for events, update active ones
    */
   tick(dt, gameTime, pvMap) {
+    this._currentGameTime = gameTime;
     // Process scheduled events
     this.scheduledEvents = this.scheduledEvents.filter(se => {
       if (gameTime >= se.gameTime) {
@@ -150,7 +151,7 @@ class EventSystem {
     this.eventHistory.push({
       id: eventDef.id,
       name: eventDef.name,
-      startTime: Date.now(),
+      startTime: this._currentGameTime || 0,
       severity: activeEvent.severity
     });
 
@@ -248,6 +249,38 @@ class EventSystem {
       complacencyMeter: this.complacencyMeter,
       scheduledEvents: this.scheduledEvents
     };
+  }
+
+  /**
+   * Restore state from JSON, re-linking behavior functions from registered event definitions
+   */
+  loadJSON(data) {
+    if (!data) return;
+    if (data.eventHistory) this.eventHistory = data.eventHistory;
+    if (data.falseAlarmCount) this.falseAlarmCount = data.falseAlarmCount;
+    if (data.complacencyMeter != null) this.complacencyMeter = data.complacencyMeter;
+    if (data.scheduledEvents) this.scheduledEvents = data.scheduledEvents;
+
+    // Restore active events with their behavior functions from registered definitions
+    if (data.activeEvents) {
+      for (const saved of data.activeEvents) {
+        const eventDef = this.events.find(e => e.id === saved.id);
+        if (!eventDef) continue;
+        eventDef.active = true;
+        this.activeEvents.push({
+          id: saved.id,
+          name: eventDef.name,
+          description: eventDef.description,
+          severity: eventDef.severity || 'warning',
+          elapsed: saved.elapsed || 0,
+          duration: eventDef.duration || null,
+          onTick: eventDef.onTick || null,
+          checkResolved: eventDef.checkResolved || null,
+          onRadio: this.onRadioMessage ? (msg) => this.onRadioMessage(msg) : null,
+          data: { ...(eventDef.data || {}), ...(saved.data || {}) }
+        });
+      }
+    }
   }
 }
 

@@ -19,9 +19,14 @@ class DebriefScreen {
       penalties: Math.round(pnlSystem.penaltiesPerHour),
       shift: Math.round(pnlSystem.shiftEarnings)
     });
-    // Keep max 500 data points
+    // Keep max 500 data points — downsample older data, always keep latest
     if (this._pnlHistory.length > 500) {
+      const latest = this._pnlHistory[this._pnlHistory.length - 1];
       this._pnlHistory = this._pnlHistory.filter((_, i) => i % 2 === 0);
+      // Ensure the latest reading is always preserved
+      if (this._pnlHistory[this._pnlHistory.length - 1] !== latest) {
+        this._pnlHistory.push(latest);
+      }
     }
   }
 

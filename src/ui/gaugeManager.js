@@ -44,12 +44,14 @@ class GaugeManager {
       const el = this.gaugeElements[tag];
 
       // Update value
-      el.valEl.textContent = pv.formatValue();
+      if (el.valEl) el.valEl.textContent = pv.formatValue();
 
       // Update trend arrow
-      const trend = pv.getTrendArrow();
-      el.trendEl.textContent = trend.char;
-      el.trendEl.className = 'gauge-trend' + (trend.cls ? ' ' + trend.cls : '');
+      if (el.trendEl) {
+        const trend = pv.getTrendArrow();
+        el.trendEl.textContent = trend.char;
+        el.trendEl.className = 'gauge-trend' + (trend.cls ? ' ' + trend.cls : '');
+      }
 
       // Update mode badge
       if (el.modeEl && pv.controllable) {

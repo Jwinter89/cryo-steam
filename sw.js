@@ -3,7 +3,7 @@
  * Enables offline caching and PWA install prompt.
  */
 
-const CACHE_NAME = 'cold-creek-v6';
+const CACHE_NAME = 'cold-creek-v7';
 
 // Core assets to cache on install
 const PRECACHE_ASSETS = [
@@ -66,6 +66,7 @@ const PRECACHE_ASSETS = [
   '/src/ui/glossary.js',
   '/src/ui/colorBlindMode.js',
   '/src/ui/leaderboard.js',
+  '/src/ui/adManager.js',
   '/src/audio/audioManager.js',
   '/src/capacitor/storageBridge.js',
 ];
@@ -76,9 +77,11 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Precaching core assets');
       return cache.addAll(PRECACHE_ASSETS);
+    }).then(() => {
+      // Only skip waiting after precache is complete
+      return self.skipWaiting();
     })
   );
-  self.skipWaiting();
 });
 
 // Activate — clean up old caches
@@ -98,30 +101,41 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — network-first with cache fallback
+// Fetch — network-first with cache fallback (same-origin only)
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests, chrome-extension URLs, and external ad/analytics scripts
+  // Skip non-GET requests, chrome-extension URLs, and external scripts
   if (event.request.method !== 'GET') return;
   if (event.request.url.startsWith('chrome-extension://')) return;
   if (event.request.url.includes('googlesyndication.com')) return;
   if (event.request.url.includes('googleads.')) return;
   if (event.request.url.includes('doubleclick.net')) return;
 
+  // Only cache same-origin requests to prevent unbounded third-party caching
+  const requestUrl = new URL(event.request.url);
+  const isSameOrigin = requestUrl.origin === self.location.origin;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful responses for offline use
-        if (response.ok) {
+        // Cache successful same-origin responses for offline use
+        if (response.ok && isSameOrigin) {
           const responseClone = response.clone();
+          // Strip query params for cache key to match precache entries
+          const cacheUrl = requestUrl.origin + requestUrl.pathname;
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
+            cache.put(cacheUrl, responseClone);
           });
         }
         return response;
       })
       .catch(() => {
-        // Network failed — try cache
-        return caches.match(event.request).then((cached) => {
+        // Network failed — try cache (strip query params to match)
+        const cacheUrl = requestUrl.origin + requestUrl.pathname;
+        return caches.match(cacheUrl).then((cached) => {
+          if (cached) return cached;
+          // Also try the original request URL as-is
+          return caches.match(event.request);
+        }).then((cached) => {
           if (cached) return cached;
           // If it's a navigation request, return the cached index
           if (event.request.mode === 'navigate') {

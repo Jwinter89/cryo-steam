@@ -198,7 +198,7 @@
       this._stripe.redirectToCheckout({
         lineItems: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
         mode: 'payment',
-        successUrl: window.location.origin + '/?adfree=success',
+        successUrl: window.location.origin + '/?adfree=success&session_id={CHECKOUT_SESSION_ID}',
         cancelUrl: window.location.origin + '/?adfree=cancel',
       }).catch(function () {
         // Checkout failed — user stays on page
@@ -210,7 +210,11 @@
       try {
         const params = new URLSearchParams(window.location.search);
         if (params.get('adfree') === 'success') {
-          this.setAdFree(true);
+          // Only grant ad-free if a Stripe session ID is present (proves real checkout)
+          const sessionId = params.get('session_id');
+          if (sessionId && sessionId.startsWith('cs_')) {
+            this.setAdFree(true);
+          }
           // Clean URL without reload
           window.history.replaceState({}, '', window.location.pathname);
         }

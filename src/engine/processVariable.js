@@ -30,17 +30,17 @@ class ProcessVariable {
     this.unit = config.unit || '';
     this.value = config.value != null ? config.value : 0;
     this.sp = config.sp != null ? config.sp : (config.value != null ? config.value : 0);
-    this.min = config.min || 0;
-    this.max = config.max || 100;
+    this.min = config.min != null ? config.min : 0;
+    this.max = config.max != null ? config.max : 100;
     this.hh = config.hh != null ? config.hh : null;
     this.hi = config.hi != null ? config.hi : null;
     this.lo = config.lo != null ? config.lo : null;
     this.ll = config.ll != null ? config.ll : null;
     this.mode = config.mode || 'AUTO';
-    this.controllable = config.controllable || false;
+    this.controllable = config.controllable === true;
     this.output = config.output != null ? config.output : 50;
-    this.responseRate = config.responseRate || 0.05;
-    this.noise = config.noise || 0;
+    this.responseRate = config.responseRate != null ? config.responseRate : 0.05;
+    this.noise = config.noise != null ? config.noise : 0;
 
     // Rate of change tracking
     this.prevValue = this.value;
