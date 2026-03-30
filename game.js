@@ -482,8 +482,8 @@
         else openDrawer();
       };
 
-      expandBtn.addEventListener('click', toggleDrawer);
-      handle.addEventListener('click', closeDrawer);
+      if (expandBtn) expandBtn.addEventListener('click', toggleDrawer);
+      if (handle) handle.addEventListener('click', closeDrawer);
 
       // Add close button inside drawer
       const closeBtn = document.createElement('button');
