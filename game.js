@@ -2625,8 +2625,13 @@
       if (!window.Henry) return;
       this.henry = new Henry();
 
-      // Show welcome on first visit
-      if (!localStorage.getItem('coldcreek-welcomed')) {
+      // Prompt callsign if not set
+      if (!this.leaderboard || !this.leaderboard.hasUsername()) {
+        setTimeout(() => {
+          this.henry.tip("First things first — enter your callsign up top so we know who's running the board.", 6000);
+        }, 800);
+      } else if (!localStorage.getItem('coldcreek-welcomed')) {
+        // Show welcome on first visit (has callsign but hasn't played yet)
         setTimeout(() => {
           this.henry.welcome();
           localStorage.setItem('coldcreek-welcomed', '1');
