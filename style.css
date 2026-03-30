@@ -1794,13 +1794,18 @@ g[id^="equip-"]:hover line {
     background-position: center top;
   }
   .title-content {
-    padding-top: 16px;
+    /* Push content below the background image area on mobile */
+    padding-top: 56vw;
   }
   .title-logo {
     margin-bottom: 2px;
   }
   .title-sub {
     margin-bottom: 20px;
+  }
+  .username-section {
+    margin-top: 16px;
+    margin-bottom: 24px;
   }
   #left-panel {
     width: 170px;
