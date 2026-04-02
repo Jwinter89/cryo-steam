@@ -83,13 +83,66 @@ html, body {
   font-size: 13px;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
-  /* iOS safe area — prevents content from hiding behind notch/home indicator */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+  display: flex;
+  flex-direction: column;
+}
+
+#app {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- CUSTOM TITLEBAR ---- */
+#app-titlebar {
+  height: 32px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  flex-shrink: 0;
+  -webkit-app-region: drag;
+  user-select: none;
+  z-index: 9999;
+  position: relative;
+}
+#app-titlebar-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: #404040;
+  letter-spacing: 0.15em;
+  pointer-events: none;
+}
+#app-titlebar-controls {
+  display: flex;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+.titlebar-btn {
+  width: 28px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: #808080;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s, color 0.1s;
+}
+.titlebar-btn:hover {
+  background: #333;
+  color: #ccc;
+}
+.titlebar-btn-close:hover {
+  background: #c42b1c;
+  color: #fff;
 }
 
 /* ---- SCREENS ---- */
@@ -100,7 +153,7 @@ html, body {
   position: absolute;
   top: 0;
   left: 0;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .screen.active {
   display: flex;
@@ -111,45 +164,89 @@ html, body {
    ============================================================ */
 #title-screen {
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: var(--bg-deep);
-  background-image: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.5) 35%, rgba(26,26,26,0.92) 65%, #1a1a1a 100%), url('/landing-bg.jpg');
+  align-items: stretch;
+  justify-content: stretch;
+  background-color: #0a0a0a;
+  background-image: url('/landing-bg.jpg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: env(safe-area-inset-top, 20px) 16px 20px;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
 }
 .title-content {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
-  max-width: 500px;
-  padding-top: 24px;
-  margin: auto 0;
+  height: 100%;
+  margin: 0;
+  padding-top: 22%;
 }
-.title-logo {
-  font-family: var(--font-mono);
-  font-size: 48px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  color: var(--text-normal);
-  margin-bottom: 4px;
+.title-center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 40px 48px;
+  max-width: 360px;
+  width: 100%;
+  background: radial-gradient(ellipse at center, rgba(6,6,6,0.75) 0%, rgba(6,6,6,0.5) 60%, transparent 100%);
 }
+/* Hide HTML title — the background image has COLD CREEK / GAS PLANT SIMULATOR baked in */
+.title-logo,
 .title-sub {
-  font-family: var(--font-condensed);
-  font-size: 14px;
-  letter-spacing: 0.3em;
-  color: var(--text-unit);
-  margin-bottom: 40px;
-  text-transform: uppercase;
+  display: none;
 }
 .title-menu {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  align-items: center;
+  gap: 10px;
+  align-items: stretch;
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: 8px;
+}
+.title-center-col .menu-btn {
+  width: 100%;
+  text-align: center;
+  padding: 12px 20px;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  background: rgba(20, 20, 20, 0.7);
+  border: 1px solid rgba(80, 80, 80, 0.4);
+  backdrop-filter: blur(6px);
+}
+.title-center-col .menu-btn:hover {
+  background: rgba(40, 40, 40, 0.85);
+  border-color: rgba(120, 120, 120, 0.6);
+}
+.title-center-col .menu-btn-primary {
+  text-align: center;
+  padding: 14px 20px;
+  background: rgba(42, 90, 138, 0.8);
+  border: 1px solid rgba(74, 139, 212, 0.6);
+}
+.title-center-col .menu-btn-primary:hover {
+  background: rgba(58, 107, 154, 0.9);
+}
+#title-screen .title-version {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 1);
+  letter-spacing: 0.1em;
+  z-index: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+}
+.title-version .footer-sep {
+  margin: 0 6px;
+  color: rgba(140, 140, 140, 0.5);
 }
 .menu-btn {
   font-family: var(--font-mono);
@@ -246,7 +343,13 @@ html, body {
 
 /* Username Section */
 .username-section {
-  margin-bottom: 20px;
+  margin-top: 20px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+.title-center-col .quick-start,
+.title-center-col .new-user-cta {
+  margin-bottom: 12px;
 }
 .username-display {
   display: flex;
@@ -316,15 +419,39 @@ html, body {
   font-size: 12px;
 }
 
-/* Leaderboard */
+/* Leaderboard Screen */
+#leaderboard-screen {
+  flex-direction: column;
+  background: var(--bg-deep);
+}
+.leaderboard-screen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 40px;
+  overflow-y: auto;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+.leaderboard-screen-content .leaderboard-filters {
+  margin-bottom: 16px;
+}
+.leaderboard-screen-content .leaderboard-list {
+  max-height: none;
+  width: 100%;
+}
+
+/* Leaderboard (shared styles) */
 .leaderboard-box {
-  margin-top: 24px;
+  margin-top: 4px;
   padding: 14px 16px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  max-width: 360px;
-  margin-left: auto;
-  margin-right: auto;
+  background: rgba(20, 20, 20, 0.8);
+  border: 1px solid rgba(80, 80, 80, 0.4);
+  backdrop-filter: blur(6px);
+  max-width: 380px;
+  width: 100%;
 }
 .leaderboard-title {
   font-family: var(--font-mono);
@@ -554,10 +681,12 @@ html, body {
 }
 
 .title-credit {
-  margin-top: 40px;
-  font-size: 11px;
-  color: var(--text-unit);
+  margin-top: auto;
+  padding-top: 24px;
+  font-size: 10px;
+  color: #606060;
   font-style: italic;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
 }
 .title-footer-bar {
   margin-top: 12px;
@@ -808,6 +937,7 @@ html, body {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
   padding: 24px 20px;
+  margin: 0 auto;
   max-width: 900px;
 }
 .mode-grid-4 {
@@ -1154,7 +1284,7 @@ html, body {
 }
 .gauge-desc {
   font-family: var(--font-condensed);
-  font-size: 8px;
+  font-size: 9px;
   color: var(--text-unit);
   letter-spacing: 0.02em;
 }
@@ -1452,7 +1582,7 @@ g[id^="equip-"]:hover line {
 
 /* ---- RIGHT PANEL ---- */
 #right-panel {
-  width: 200px;
+  width: 240px;
   overflow-y: auto;
   border-left: 1px solid var(--border);
   background: var(--bg-panel);
@@ -1463,7 +1593,7 @@ g[id^="equip-"]:hover line {
 /* Spec Board */
 .spec-row {
   display: grid;
-  grid-template-columns: 55px 45px 1fr auto;
+  grid-template-columns: 60px 50px 1fr auto;
   align-items: center;
   gap: 4px;
   padding: 3px 4px;
@@ -1472,7 +1602,7 @@ g[id^="equip-"]:hover line {
   font-family: var(--font-mono);
 }
 .spec-label {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-unit);
 }
 .spec-val {
@@ -1595,7 +1725,7 @@ g[id^="equip-"]:hover line {
 }
 .building-tab {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-unit);
   padding: 0 14px;
   background: var(--bg-deep);
@@ -1859,439 +1989,18 @@ g[id^="equip-"]:hover line {
   white-space: nowrap;
 }
 
-/* ============================================================
-   MOBILE RESPONSIVE
-   ============================================================ */
-@media (max-width: 768px) {
-  #title-screen {
-    padding-top: env(safe-area-inset-top, 16px);
-    background-size: 100% auto;
-    background-position: center top;
-  }
-  .title-content {
-    /* Push content below the background image area on mobile */
-    padding-top: 56vw;
-  }
-  .title-logo {
-    margin-bottom: 2px;
-  }
-  .title-sub {
-    margin-bottom: 20px;
-  }
-  .username-section {
-    margin-top: 16px;
-    margin-bottom: 24px;
-  }
-  .menu-btn-primary {
-    min-width: 240px;
-    padding: 14px 24px;
-    font-size: 15px;
-  }
-  .streak-badge {
-    margin-bottom: 8px;
-  }
-  #left-panel {
-    width: 170px;
-  }
-  #right-panel {
-    display: none;
-  }
-  /* Mobile info drawer — slides up from bottom */
-  .mobile-info-drawer {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    max-height: 55vh;
-    background: var(--bg-panel);
-    border-top: 2px solid var(--border);
-    z-index: 200;
-    transform: translateY(100%);
-    transition: transform 0.25s ease;
-    overflow-y: auto;
-    padding: 0 8px 8px;
-  }
-  .mobile-info-drawer.open {
-    transform: translateY(0);
-  }
-  .mobile-info-handle {
-    text-align: center;
-    padding: 6px 0 2px;
-    cursor: pointer;
-  }
-  .mobile-info-handle span {
-    display: inline-block;
-    width: 36px;
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-  }
-  .mobile-info-tabs {
-    display: flex;
-    gap: 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 6px;
-  }
-  .mobile-info-tab {
-    flex: 1;
-    font-family: var(--font-mono);
-    font-size: 9px;
-    padding: 6px 4px;
-    background: none;
-    border: none;
-    color: var(--text-unit);
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid transparent;
-  }
-  .mobile-info-tab.active {
-    color: var(--text-normal);
-    border-bottom-color: var(--text-normal);
-  }
-  .mobile-info-content {
-    min-height: 100px;
-  }
-  .mobile-info-content .panel-section {
-    padding: 4px 0;
-  }
-  /* Mobile P&L strip above time controls */
-  .mobile-pnl-strip {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px 10px;
-    background: var(--bg-deep);
-    border-top: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: 10px;
-  }
-  .mobile-pnl-strip .mpnl-rate { color: #4CAF50; }
-  .mobile-pnl-strip .mpnl-shift { color: var(--text-label); }
-  .mobile-pnl-strip .mpnl-penalties { color: #E04040; font-size: 9px; }
-  .mobile-pnl-strip .mpnl-btn {
-    background: none;
-    border: 1px solid var(--border-lite);
-    color: var(--text-label);
-    font-family: var(--font-mono);
-    font-size: 9px;
-    padding: 2px 8px;
-    cursor: pointer;
-  }
-  .gauge-tag-block {
-    min-width: 52px;
-  }
-  .gauge-val {
-    font-size: 12px;
-    min-width: 40px;
-  }
-  .title-logo {
-    font-size: 32px;
-  }
-  .screen-bg-modes,
-  .screen-bg-facility {
-    background-size: 100% auto;
-    background-position: center top;
-  }
-  .mode-grid,
-  .mode-grid-4,
-  .mode-grid-3 {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 16px 12px;
-    /* Push cards below the background image on mobile */
-    margin-top: 40vw;
-  }
-  .mode-card-styled {
-    padding: 14px 10px;
-  }
-  .mode-card-styled h3 {
-    font-size: 11px;
-  }
-  .mode-card-styled p {
-    font-size: 10px;
-  }
-  /* Faceplate as fixed overlay on mobile */
-  .faceplate {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%);
-    width: min(300px, 90vw);
-    z-index: 200;
-  }
-  /* Dim background when faceplate open */
-  .faceplate-backdrop {
-    display: block;
-  }
+/* Mobile responsive removed — Steam desktop build only */
 
-  /* Hide desktop time controls and building tabs on mobile */
-  #time-controls {
-    display: none;
-  }
-  #building-tabs {
-    display: none;
-  }
-
-  /* Show mobile speed dial (must override base display:none below) */
-  .mobile-speed-dial {
-    display: block !important;
-  }
-
-  /* Show mobile building pill strip (must override base display:none below) */
-  .mobile-building-pills {
-    display: flex !important;
-  }
-}
-
-/* ============================================================
-   MOBILE SPEED DIAL (FAB)
-   ============================================================ */
-.mobile-speed-dial {
-  display: none;
-  position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  left: 12px;
-  z-index: 150;
-}
-.speed-dial-fab {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: 2px solid rgba(255,255,255,0.15);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.5);
-  transition: transform 0.2s, background 0.2s;
-  position: relative;
-  z-index: 2;
-}
-.speed-dial-fab:active {
-  transform: scale(0.92);
-}
-.speed-dial-fab .fab-label {
-  font-size: 11px;
-  line-height: 1;
-}
-
-.speed-dial-ring {
-  position: absolute;
-  bottom: 52px;
-  left: 0;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 8px;
-  align-items: center;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(10px) scale(0.9);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.mobile-speed-dial.open .speed-dial-ring {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-}
-.sd-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-normal);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  transition: background 0.15s, transform 0.15s;
-}
-.sd-btn:active {
-  transform: scale(0.9);
-}
-.sd-btn.active {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-/* Speed dial backdrop to close on outside tap */
-.speed-dial-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 149;
-}
-.mobile-speed-dial.open ~ .speed-dial-backdrop,
-.speed-dial-backdrop.active {
-  display: block;
-}
-
-/* ============================================================
-   MOBILE BUILDING PILLS (floating over P&ID)
-   ============================================================ */
-.mobile-building-pills {
-  display: none;
-  position: fixed;
-  bottom: 68px;
-  left: 64px;
-  right: 8px;
-  z-index: 100;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 0;
-  scrollbar-width: none;
-}
-.mobile-building-pills::-webkit-scrollbar {
-  display: none;
-}
-.mobile-building-pill {
-  flex-shrink: 0;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.05em;
-  padding: 6px 12px;
-  border-radius: 16px;
-  background: rgba(26,26,46,0.95);
-  border: 1px solid var(--border);
-  color: var(--text-unit);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
-}
-.mobile-building-pill.active {
-  background: rgba(74, 179, 244, 0.25);
-  color: var(--text-normal);
-  border-color: var(--accent);
-}
-
-@media (max-width: 600px) {
-  #left-panel {
-    position: absolute;
-    z-index: 80;
-    left: 0; top: 0; bottom: 0;
-    width: 200px;
-    transform: translateX(-100%);
-    transition: transform 0.2s ease;
-  }
-  #left-panel.open { transform: translateX(0); }
-  #left-panel.collapsed { transform: translateX(-100%); }
-  #center-panel { margin-left: 0; }
-}
-
-@media (max-width: 480px) {
-  .mode-grid-4,
-  .mode-grid-3 {
-    grid-template-columns: 1fr;
-    margin-top: 35vw;
-  }
-  #left-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 180px;
-    z-index: 50;
-    transform: translateX(0);
-    transition: transform 0.2s ease;
-  }
-  #left-panel.collapsed {
-    transform: translateX(-100%);
-  }
-  #main-content {
-    position: relative;
-  }
-  #center-panel {
-    margin-left: 0;
-  }
-  /* Panel toggle button */
-  #panel-toggle {
-    display: flex;
-  }
-  .gauge-row {
-    padding: 2px 2px;
-  }
-  .gauge-tag {
-    font-size: 9px;
-  }
-  .gauge-val {
-    font-size: 11px;
-  }
-  .gauge-desc, .gauge-mode {
-    display: none;
-  }
-  #topbar {
-    font-size: 11px;
-  }
-  .building-tab {
-    font-size: 9px;
-    padding: 0 8px;
-  }
-}
-
-/* Touch targets */
-@media (pointer: coarse) {
-  .gauge-row {
-    min-height: 44px;
-    padding: 6px 4px;
-  }
-  .building-tab {
-    min-height: 44px;
-  }
-  .time-btn {
-    min-height: 44px;
-    padding: 4px 14px;
-  }
-  .tag-bubble {
-    cursor: pointer;
-  }
-  .fp-input { font-size: 16px; }
-  .fp-close-btn { min-width: 44px; min-height: 44px; }
-  .fp-mode-btn { min-height: 44px; font-size: 12px; padding: 6px 12px; }
-  .fp-apply-btn { min-height: 44px; }
-  .alarm-ack-btn { min-height: 44px; padding: 6px 12px; font-size: 11px; }
-  .popup-close { min-width: 44px; min-height: 44px; }
-  .pid-zoom-btn { width: 44px; height: 44px; }
-}
-
-/* ---- MOBILE PANEL TOGGLE ---- */
+/* Mobile speed dial, building pills — hidden for Steam build */
+.mobile-speed-dial,
+.mobile-building-pills,
+.speed-dial-backdrop,
+.faceplate-backdrop,
 #panel-toggle {
-  display: none;
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  z-index: 60;
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-label);
-  font-family: var(--font-mono);
-  font-size: 14px;
-  cursor: pointer;
+  display: none !important;
 }
 
-/* Faceplate backdrop for mobile */
-.faceplate-backdrop {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 199;
-}
+/* Mobile breakpoints and touch targets removed — Steam desktop only */
 
 /* Hide overlapping elements when gauge sheet is open */
 .gauge-sheet-hidden {
@@ -3105,13 +2814,11 @@ g[id^="equip-"]:hover line {
 }
 
 /* Subtle pipeline animation behind title */
-.title-content {
-  position: relative;
-}
-.title-content::before {
+/* Pipeline flow animation on title divider */
+.title-center-col::before {
   content: '';
   position: absolute;
-  top: -20px;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 300px;
@@ -3256,21 +2963,7 @@ g[id^="equip-"]:hover line {
   opacity: 1;
 }
 
-/* ============================================================
-   TABLET-SPECIFIC LAYOUT (769px - 1024px)
-   ============================================================ */
-@media (min-width: 769px) and (max-width: 1024px) {
-  #left-panel {
-    width: 190px;
-  }
-  #right-panel {
-    width: 180px;
-  }
-  .building-tab {
-    padding: 0 10px;
-    font-size: 9px;
-  }
-}
+/* Tablet layout removed — Steam desktop only */
 
 /* ============================================================
    DCS BOOT SEQUENCE OVERLAY
@@ -3451,11 +3144,13 @@ g[id^="equip-"]:hover line {
    ============================================================ */
 .title-tagline {
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--text-label);
-  letter-spacing: 0.1em;
-  min-height: 18px;
-  margin: 12px 0 20px;
+  font-size: 12px;
+  color: #d0d8e0;
+  letter-spacing: 0.08em;
+  min-height: 16px;
+  margin: 0 0 10px;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);
   opacity: 0;
   transition: opacity 0.6s ease;
 }
@@ -3605,25 +3300,7 @@ g[id^="equip-"]:hover line {
 .pnl-positive { color: #4CAF50 !important; }
 .pnl-negative { color: #E04040 !important; }
 
-/* ============================================================
-   SITE FOOTER
-   ============================================================ */
-#site-footer {
-  text-align: center;
-  padding: 12px 0;
-  font-size: 0.75rem;
-  color: var(--text-unit);
-  border-top: 1px solid var(--border);
-  background: var(--bg-deep);
-}
-#site-footer a {
-  color: var(--text-label);
-  text-decoration: none;
-}
-#site-footer a:hover {
-  color: var(--text-normal);
-  text-decoration: underline;
-}
+/* Site footer removed for Steam build */
 
 /* ============================================================
    OPERATOR PROFILE SCREEN
@@ -4551,21 +4228,7 @@ body.cb-tritanopia .spec-row.off-spec {
   margin-bottom: 4px;
   text-transform: uppercase;
 }
-.donation-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 10px auto;
-  padding: 6px 12px;
-  max-width: 360px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-label);
-}
+/* Donation banner removed for Steam build */
 .ad-interstitial-overlay {
   position: fixed;
   inset: 0;

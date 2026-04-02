@@ -2,229 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="mobile-web-app-capable" content="yes">
   <title>Cold Creek — Gas Plant Simulator</title>
-  <meta name="description" content="Free gas plant operator training simulator. Practice DCS controls, P&amp;ID diagrams, turboexpander operations, and cryogenic plant upsets. Built by a real cryo operator for 4th class power engineering students and plant operators.">
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://gasplantsim.com/">
-  <meta property="og:title" content="Cold Creek — Gas Plant Simulator">
-  <meta property="og:description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator.">
-  <meta property="og:image" content="https://gasplantsim.com/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:type" content="image/png">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Cold Creek — Gas Plant Simulator">
-  <meta name="twitter:description" content="Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator.">
-  <meta name="twitter:image" content="https://gasplantsim.com/og-image.png">
-
-  <link rel="canonical" href="https://gasplantsim.com/">
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Cold Creek — Gas Plant Simulator",
-    "url": "https://gasplantsim.com",
-    "applicationCategory": "EducationalApplication",
-    "operatingSystem": "Web, iOS",
-    "description": "Free gas plant operator training simulator. Practice DCS controls, P&ID diagrams, turboexpander operations, cryogenic plant upsets, amine treating, and NGL recovery. Built by a real cryo operator for 4th class power engineering students and plant operators.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "author": { "@type": "Organization", "name": "Winter Howlers", "url": "https://www.winterhowlers.com" },
-    "screenshot": "https://gasplantsim.com/og-image.png",
-    "softwareVersion": "2.0",
-    "keywords": "gas plant simulator, DCS training, P&ID diagram, power engineering, cryogenic plant, turboexpander, NGL recovery, amine treating, operator training, 4th class power engineer, oil and gas training, plant operator simulator",
-    "inLanguage": "en",
-    "isAccessibleForFree": true,
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.8",
-      "ratingCount": "1",
-      "bestRating": "5"
-    }
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "VideoGame",
-    "name": "Cold Creek Gas Plant Simulator",
-    "url": "https://gasplantsim.com",
-    "genre": ["Simulation", "Educational"],
-    "gamePlatform": ["Web browser", "iOS"],
-    "playMode": "SinglePlayer",
-    "description": "Run the board. Keep it in spec. Make it home safe. A realistic gas plant operator training simulator with 3 facilities, career progression, and competitive leaderboards.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-    "author": { "@type": "Organization", "name": "Winter Howlers", "url": "https://www.winterhowlers.com" }
-  }
-  </script>
-
-  <!-- FAQ Schema for Google Rich Results -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is Cold Creek Gas Plant Simulator?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Cold Creek is a free, browser-based gas plant operator training simulator. It simulates operating a natural gas processing facility from a DCS (Distributed Control System) console with real PID control loops, interactive P&ID diagrams, alarm management, and realistic upset scenarios. Built by a cryogenic plant operator with 10 years of experience."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is Cold Creek free?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, Cold Creek is completely free to play. No download, no account required. There is an optional $2.99 one-time purchase to remove ads, but all features and facilities are fully accessible for free."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What facilities are included in the simulator?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Cold Creek includes three facilities of increasing complexity: a Condensate Stabilizer (Tier 1), a Refrigeration Plant with TEG dehydration and BTEX compliance (Tier 2), and a full Cryogenic Gas Processing Plant with turboexpander, mol sieve, amine treating, and demethanizer (Tier 3)."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I use Cold Creek for power engineering exam preparation?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. Cold Creek was designed with 4th class power engineering students in mind. The Learn mode provides guided P&ID walkthroughs, and the Operate mode simulates full shift operations. It covers process control fundamentals, alarm management, upset response, and equipment operations that are relevant to power engineering certification."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Does Cold Creek work on mobile?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes. Cold Creek is fully responsive and works on phones, tablets, and desktops. It can be installed as a Progressive Web App (PWA) from your browser for an app-like experience with offline support."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What game modes are available?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Four modes: Learn (guided P&ID walkthrough with no failure state), Operate (full shift simulation with real-time P&L tracking), Crisis (timed upset recovery with medal scoring), and Optimize (maximize NGL recovery with competitive leaderboard scoring)."
-        }
-      }
-    ]
-  }
-  </script>
-
-  <!-- Additional SEO keywords -->
-  <meta name="keywords" content="gas plant simulator, DCS training, P&ID diagram, power engineering, cryogenic plant, turboexpander, NGL recovery, amine treating, operator training, 4th class power engineer, oil and gas training, plant operator simulator, process control, gas processing, TEG dehydration, demethanizer, mol sieve, BTEX, condensate stabilizer, industrial simulator, free simulator">
-
-  <!-- PWA -->
-  <meta name="theme-color" content="#1a1a1a">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
   <!-- Content Security Policy -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://*.vercel-insights.com 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://apis.google.com https://cold-creek.firebaseapp.com https://*.firebaseapp.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' app:; script-src 'self' app: https://www.gstatic.com https://apis.google.com 'unsafe-inline'; style-src 'self' app: 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com; img-src 'self' app: data: blob:; font-src 'self' app:; frame-src https://apis.google.com https://cold-creek.firebaseapp.com https://*.firebaseapp.com;">
 
-  <link rel="stylesheet" href="style.css?v=10">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
+  <!-- Custom Titlebar (frameless window drag region) -->
+  <div id="app-titlebar">
+    <span id="app-titlebar-title">WINTERHOWLERS LLC</span>
+    <div id="app-titlebar-controls">
+      <button class="titlebar-btn titlebar-btn-min" id="btn-win-min" title="Minimize">&#x2013;</button>
+      <button class="titlebar-btn titlebar-btn-max" id="btn-win-max" title="Maximize">&#9633;</button>
+      <button class="titlebar-btn titlebar-btn-close" id="btn-win-close" title="Close">&#10005;</button>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var s = window.steam;
+      if (s && s.isElectron) {
+        document.getElementById('btn-win-min').addEventListener('click', function() { s.minimize(); });
+        document.getElementById('btn-win-max').addEventListener('click', function() { s.maximize(); });
+        document.getElementById('btn-win-close').addEventListener('click', function() { s.close(); });
+      } else {
+        document.getElementById('app-titlebar').style.display = 'none';
+      }
+    })();
+  </script>
+
   <div id="app">
     <!-- Title Screen -->
     <div id="title-screen" class="screen active">
       <div class="title-content">
-        <div id="title-tagline" class="title-tagline"></div>
+        <div class="title-center-col">
+          <div class="title-logo">COLD CREEK</div>
+          <div class="title-sub">GAS PLANT SIMULATOR</div>
 
-        <!-- Streak Badge (returning users) -->
-        <div id="streak-badge" class="streak-badge" style="display:none">
-          <span class="streak-flame">&#128293;</span>
-          <span id="streak-count" class="streak-count">0</span>
-          <span class="streak-label">DAY STREAK</span>
-        </div>
-
-        <!-- Quick-start for returning users (hidden by default) -->
-        <div id="quick-start" class="quick-start" style="display:none">
-          <button id="btn-quick-start" class="menu-btn menu-btn-primary" data-action="quick-start">
-            <span class="qs-icon">&#9654;</span> PLAY AGAIN
-            <span id="qs-detail" class="qs-detail">STABILIZER - OPERATE</span>
-          </button>
-        </div>
-
-        <!-- First-time user CTA (hidden by default, shown for new users) -->
-        <div id="new-user-cta" class="new-user-cta" style="display:none">
-          <button id="btn-start-training" class="menu-btn menu-btn-primary" data-action="start-training">
-            START TRAINING
-            <span class="qs-detail">LEARN MODE - GUIDED WALKTHROUGH</span>
-          </button>
-          <p class="new-user-hint">No account needed. Jump right in.</p>
-        </div>
-
-        <div class="title-menu">
-          <button class="menu-btn" data-action="new-game">NEW GAME</button>
-          <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
-          <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
-          <button class="menu-btn" data-action="settings">SETTINGS</button>
-        </div>
-
-        <!-- Username display / edit -->
-        <div id="username-section" class="username-section">
-          <div id="username-display" class="username-display" style="display:none">
-            <span class="username-label">OPERATOR:</span>
-            <span id="username-name" class="username-name"></span>
-            <button id="username-edit" class="username-edit-btn">&#9998;</button>
+          <!-- Streak Badge (returning users) -->
+          <div id="streak-badge" class="streak-badge" style="display:none">
+            <span class="streak-flame">&#128293;</span>
+            <span id="streak-count" class="streak-count">0</span>
+            <span class="streak-label">DAY STREAK</span>
           </div>
-          <div id="username-prompt" class="username-prompt">
-            <input id="username-input" class="username-input" type="text" placeholder="ENTER CALLSIGN" maxlength="20">
-            <button id="username-save" class="menu-btn username-save-btn">SET NAME</button>
-          </div>
-        </div>
 
-        <!-- Daily Challenges Preview -->
-        <div id="title-challenges-preview" class="challenges-preview-box"></div>
-
-        <!-- Leaderboard -->
-        <div class="leaderboard-box">
-          <h3 class="leaderboard-title">LEADERBOARD</h3>
-          <div class="leaderboard-filters">
-            <button class="lb-filter active" data-lb-filter="all">ALL</button>
-            <button class="lb-filter" data-lb-filter="stabilizer">STAB</button>
-            <button class="lb-filter" data-lb-filter="refrigeration">REFRIG</button>
-            <button class="lb-filter" data-lb-filter="cryogenic">CRYO</button>
+          <!-- Quick-start for returning users -->
+          <div id="quick-start" class="quick-start" style="display:none">
+            <button id="btn-quick-start" class="menu-btn menu-btn-primary" data-action="quick-start">
+              <span class="qs-icon">&#9654;</span> PLAY AGAIN
+              <span id="qs-detail" class="qs-detail">STABILIZER - OPERATE</span>
+            </button>
           </div>
-          <div id="leaderboard-list" class="leaderboard-list">
-            <div class="leaderboard-loading">LOADING...</div>
+
+          <!-- First-time user CTA -->
+          <div id="new-user-cta" class="new-user-cta" style="display:none">
+            <button id="btn-start-training" class="menu-btn menu-btn-primary" data-action="start-training">
+              START TRAINING
+              <span class="qs-detail">GUIDED WALKTHROUGH — NO FAILURE STATE</span>
+            </button>
+          </div>
+
+          <div class="title-menu">
+            <button class="menu-btn" data-action="new-game">NEW GAME</button>
+            <button class="menu-btn" data-action="continue" id="btn-continue" style="display:none">CONTINUE</button>
+            <button class="menu-btn" data-action="leaderboard">LEADERBOARD</button>
+            <button class="menu-btn" data-action="profile">OPERATOR PROFILE</button>
+            <button class="menu-btn" data-action="settings">SETTINGS</button>
+          </div>
+
+          <!-- Username display / edit -->
+          <div id="username-section" class="username-section">
+            <div id="username-display" class="username-display" style="display:none">
+              <span class="username-label">OPERATOR:</span>
+              <span id="username-name" class="username-name"></span>
+              <button id="username-edit" class="username-edit-btn">&#9998;</button>
+            </div>
+            <div id="username-prompt" class="username-prompt">
+              <input id="username-input" class="username-input" type="text" placeholder="ENTER CALLSIGN" maxlength="20">
+              <button id="username-save" class="menu-btn username-save-btn">SET NAME</button>
+            </div>
+          </div>
+
+          <div id="title-tagline" class="title-tagline"></div>
+
+          <div class="title-version">
+            <span>COLD CREEK v2.0</span>
+            <span class="footer-sep">|</span>
+            <span>WINTERHOWLERS LLC</span>
           </div>
         </div>
+      </div>
+    </div>
 
-        <!-- Donation Banner -->
-        <div id="donation-banner" class="donation-banner">
-          <span>Support Cold Creek development</span>
-          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="menu-btn" style="margin-left:8px;padding:4px 12px;font-size:10px;text-decoration:none;display:inline-block;">DONATE $2.99</a>
+    <!-- Leaderboard Screen -->
+    <div id="leaderboard-screen" class="screen">
+      <div class="mode-header">
+        <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
+        <h2>LEADERBOARD</h2>
+      </div>
+      <div class="leaderboard-screen-content">
+        <div class="leaderboard-filters">
+          <button class="lb-filter active" data-lb-filter="all">ALL</button>
+          <button class="lb-filter" data-lb-filter="stabilizer">STAB</button>
+          <button class="lb-filter" data-lb-filter="refrigeration">REFRIG</button>
+          <button class="lb-filter" data-lb-filter="cryogenic">CRYO</button>
         </div>
-
-        <div id="pwa-install-banner" class="pwa-install-banner" style="display:none">
-          <span>Add Cold Creek to your home screen for the best experience</span>
-          <button id="pwa-install-btn" class="menu-btn" style="margin-left:8px;padding:6px 16px;font-size:11px;">INSTALL</button>
-          <button id="pwa-dismiss-btn" style="background:none;border:none;color:var(--text-label);cursor:pointer;padding:8px;">&times;</button>
-        </div>
-
-        <p class="title-credit">Built by a cryogenic plant operator with 10 years of field experience</p>
-        <div class="title-footer-bar">
-          <a href="/teams" rel="noopener">For Teams</a>
-          <span class="footer-sep">|</span>
-          <a href="https://www.winterhowlers.com" target="_blank" rel="noopener">winterhowlers.com</a>
-          <span class="footer-sep">|</span>
-          <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer">Support the Dev</a>
+        <div id="leaderboard-list" class="leaderboard-list">
+          <div class="leaderboard-loading">LOADING...</div>
         </div>
       </div>
     </div>
@@ -319,14 +205,8 @@
         </div>
       </div>
 
-      <!-- Faceplate backdrop for mobile -->
-      <div id="faceplate-backdrop" class="faceplate-backdrop"></div>
-
       <!-- Main Content Area -->
       <div id="main-content">
-        <!-- Mobile panel toggle -->
-        <button id="panel-toggle">&#9776;</button>
-
         <!-- Left Panel - Process Values (dynamically generated) -->
         <div id="left-panel">
           <!-- Gauge rows populated by game.js based on facility -->
@@ -918,30 +798,6 @@
       </div>
     </div>
   </div>
-
-  <footer id="site-footer">
-    <a href="https://www.winterhowlers.com" target="_blank" rel="noopener">Built by Winter Howlers</a>
-    <span class="footer-sep">|</span>
-    <a href="https://buymeacoffee.com/GasPlantSim" target="_blank" rel="noopener noreferrer" class="footer-support-link">&#9734; Support the Developer</a>
-    <span class="footer-sep">|</span>
-    <span class="footer-share">
-      <span class="footer-share-label">SHARE:</span>
-      <a id="share-x" class="share-btn" target="_blank" rel="noopener" aria-label="Share on X">X</a>
-      <a id="share-reddit" class="share-btn" target="_blank" rel="noopener" aria-label="Share on Reddit">Reddit</a>
-      <a id="share-linkedin" class="share-btn" target="_blank" rel="noopener" aria-label="Share on LinkedIn">LinkedIn</a>
-      <a id="share-fb" class="share-btn" target="_blank" rel="noopener" aria-label="Share on Facebook">FB</a>
-    </span>
-  </footer>
-  <script>
-    (function() {
-      var u = encodeURIComponent('https://gasplantsim.com');
-      var t = encodeURIComponent('Cold Creek \u2014 Free gas plant operator training simulator. Run the board. Keep it in spec. Make it home safe.');
-      document.getElementById('share-x').href = 'https://x.com/intent/tweet?url=' + u + '&text=' + t;
-      document.getElementById('share-reddit').href = 'https://www.reddit.com/submit?url=' + u + '&title=' + encodeURIComponent('Cold Creek \u2014 Free Gas Plant Operator Training Simulator');
-      document.getElementById('share-linkedin').href = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u;
-      document.getElementById('share-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + u;
-    })();
-  </script>
 
   <!-- Firebase (leaderboard) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>

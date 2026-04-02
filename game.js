@@ -295,6 +295,10 @@
               this.currentFacility = 'stabilizer';
               this._startGame();
               break;
+            case 'leaderboard':
+              this._refreshLeaderboard();
+              this._showScreen('leaderboard-screen');
+              break;
             case 'profile':
               this._showProfileScreen();
               break;

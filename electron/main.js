@@ -1,9 +1,9 @@
-const { app, BrowserWindow, protocol, session, ipcMain } = require('electron');
+const { app, BrowserWindow, protocol, net, session, ipcMain } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const { pathToFileURL } = require('url');
 
 // ── Steamworks SDK ──────────────────────────────────────────────
-// Requires a valid App ID in electron/steam_appid.txt for dev,
-// or hardcoded below for production builds.
 const STEAM_APP_ID = 0; // Replace with real App ID after Steam Direct
 let steamClient = null;
 
@@ -20,9 +20,6 @@ function initSteam() {
 }
 
 // ── Steam IPC Handlers ──────────────────────────────────────────
-// Preload uses IPC to relay Steam calls to main process where
-// steamClient is initialized. steamworks.js native module state
-// is not shared across Electron processes.
 function registerSteamIPC() {
   ipcMain.on('steam:isAvailable', (e) => {
     e.returnValue = !!steamClient;
@@ -77,6 +74,14 @@ function registerSteamIPC() {
     try { steamClient?.overlay?.activate(dialog || 'friends'); } catch (_) {}
   });
 
+  // ── Window Controls ──
+  ipcMain.on('win:minimize', () => { mainWindow?.minimize(); });
+  ipcMain.on('win:maximize', () => {
+    if (mainWindow?.isMaximized()) mainWindow.unmaximize();
+    else mainWindow?.maximize();
+  });
+  ipcMain.on('win:close', () => { mainWindow?.close(); });
+
   ipcMain.on('steam:isSteamDeck', (e) => {
     try {
       e.returnValue = typeof steamClient?.utils?.isSteamRunningOnSteamDeck === 'function'
@@ -87,27 +92,68 @@ function registerSteamIPC() {
 }
 
 // ── Custom Protocol ─────────────────────────────────────────────
-// Registers app:// so CSP 'self' works and Firebase CDN loads fine.
+// Register app:// as privileged BEFORE app ready (required by Electron 33+)
 const appRoot = path.resolve(__dirname, '..');
 
-function registerAppProtocol() {
-  protocol.registerFileProtocol('app', (request, callback) => {
-    const rawUrl = request.url.slice('app://'.length);
-    const safePath = path.normalize(decodeURIComponent(rawUrl));
+protocol.registerSchemesAsPrivileged([{
+  scheme: 'app',
+  privileges: {
+    standard: true,
+    secure: true,
+    supportFetchAPI: true,
+    corsEnabled: false,
+  }
+}]);
 
-    // Block path traversal attempts
+// MIME type lookup for common file extensions
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.txt': 'text/plain',
+  '.xml': 'text/xml',
+};
+
+function registerAppProtocol() {
+  protocol.handle('app', (request) => {
+    let urlPath = new URL(request.url).pathname;
+
+    // Default to index.html for root
+    if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
+
+    // Decode and normalize
+    const decoded = decodeURIComponent(urlPath).replace(/^\//, '');
+    const safePath = path.normalize(decoded);
+
+    // Block path traversal
     if (safePath.startsWith('..') || path.isAbsolute(safePath)) {
-      callback({ error: -6 }); // NET::ERR_FILE_NOT_FOUND
-      return;
+      return new Response('Not Found', { status: 404 });
     }
 
     const filePath = path.join(appRoot, safePath);
     if (!filePath.startsWith(appRoot + path.sep) && filePath !== appRoot) {
-      callback({ error: -6 });
-      return;
+      return new Response('Not Found', { status: 404 });
     }
 
-    callback({ path: filePath });
+    // Check file exists
+    if (!fs.existsSync(filePath)) {
+      return new Response('Not Found', { status: 404 });
+    }
+
+    // Determine MIME type
+    const ext = path.extname(filePath).toLowerCase();
+    const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
+
+    // Return file as response
+    return net.fetch(pathToFileURL(filePath).toString());
   });
 }
 
@@ -115,34 +161,59 @@ function registerAppProtocol() {
 let mainWindow = null;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  const winOpts = {
     width: 1280,
     height: 800,
     minWidth: 1280,
     minHeight: 720,
     backgroundColor: '#1a1a1a',
+    frame: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true, // Safe now — preload uses IPC, no native modules needed
+      sandbox: true,
     },
     title: 'Cold Creek — Gas Plant Simulator',
     icon: path.join(__dirname, '..', 'icon-512.png'),
-    show: false, // Show after ready-to-show to avoid white flash
-  });
+    show: false,
+  };
 
-  // Load via custom protocol so CSP and relative paths work
-  mainWindow.loadURL('app://index.html');
+  // Windows: use native titlebar overlay for min/max/close
+  if (process.platform === 'win32') {
+    winOpts.titleBarOverlay = { color: '#1a1a1a', symbolColor: '#808080', height: 32 };
+  }
 
-  // Show when ready (no white flash)
+  mainWindow = new BrowserWindow(winOpts);
+
+  // Load via custom protocol so relative paths and Firebase CDN work
+  mainWindow.loadURL('app://coldcreek/index.html');
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
-  // Remove menu bar in production
-  if (app.isPackaged) {
-    mainWindow.setMenu(null);
+  mainWindow.setMenu(null);
+
+  // Open DevTools in dev mode with workspace auto-save
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools({ mode: 'bottom' });
+
+    // Inject debug overlay (F2 crosshair + element inspector)
+    mainWindow.webContents.on('did-finish-load', () => {
+      const overlayCode = fs.readFileSync(path.join(__dirname, 'debug-overlay.js'), 'utf-8');
+      mainWindow.webContents.executeJavaScript(overlayCode).catch(() => {});
+    });
+
+    // Watch style.css for changes from DevTools or external edits and hot-reload
+    const cssPath = path.join(appRoot, 'style.css');
+    fs.watch(cssPath, { persistent: false }, () => {
+      mainWindow.webContents.executeJavaScript(`
+        document.querySelectorAll('link[rel="stylesheet"]').forEach(l => {
+          l.href = l.href.replace(/\\?.*|$/, '?r=' + Date.now());
+        });
+      `).catch(() => {});
+    });
   }
 
   mainWindow.on('closed', () => {
@@ -175,7 +246,6 @@ app.on('window-all-closed', () => {
 });
 
 // ── Steam Callback Pump ─────────────────────────────────────────
-// Steam overlay and achievements require periodic callback pumping
 setInterval(() => {
   if (steamClient) {
     try { steamClient.runCallbacks(); } catch (_) {}

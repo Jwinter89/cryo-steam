@@ -29,4 +29,9 @@ contextBridge.exposeInMainWorld('steam', {
   // ── Platform Detection ──
   isElectron: true,
   isSteamDeck: () => ipcRenderer.sendSync('steam:isSteamDeck'),
+
+  // ── Window Controls ──
+  minimize: () => ipcRenderer.send('win:minimize'),
+  maximize: () => ipcRenderer.send('win:maximize'),
+  close: () => ipcRenderer.send('win:close'),
 });
