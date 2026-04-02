@@ -1,0 +1,28 @@
+"AppBuild"
+{
+  "AppID" "YOUR_APP_ID"
+  "Desc" "Cold Creek Gas Plant Simulator"
+  "BuildOutput" "../dist/steam_output/"
+  "ContentRoot" "../dist/"
+  "Depots"
+  {
+    "YOUR_DEPOT_ID_WIN"
+    {
+      "FileMapping"
+      {
+        "LocalPath" "win-unpacked/*"
+        "DepotPath" "."
+        "recursive" "1"
+      }
+    }
+    "YOUR_DEPOT_ID_MAC"
+    {
+      "FileMapping"
+      {
+        "LocalPath" "mac/*"
+        "DepotPath" "."
+        "recursive" "1"
+      }
+    }
+  }
+}

@@ -6,3 +6,11 @@ capacitor/android/
 .env
 www/
 ios/
+
+# Electron / Steam build output
+dist/
+out/
+electron/steam_appid.txt
+
+# Steam SDK binaries (downloaded separately)
+steam_sdk/

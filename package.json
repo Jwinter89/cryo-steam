@@ -2,17 +2,23 @@
   "name": "cold-creek",
   "version": "1.0.0",
   "description": "Cold Creek — Gas Plant Simulator",
+  "main": "electron/main.js",
   "scripts": {
     "build": "node scripts/build.js",
     "cap:sync": "npx cap sync",
     "cap:open": "npx cap open ios",
-    "ios": "npm run build && npx cap sync ios && npx cap open ios"
+    "ios": "npm run build && npx cap sync ios && npx cap open ios",
+    "electron:dev": "electron electron/main.js",
+    "electron:build": "electron-builder --config electron-builder.yml",
+    "electron:build:win": "electron-builder --config electron-builder.yml --win",
+    "electron:build:mac": "electron-builder --config electron-builder.yml --mac"
   },
   "keywords": [
     "simulator",
     "gas-plant",
     "cryogenic",
-    "training"
+    "training",
+    "steam"
   ],
   "author": "Jwinter89",
   "license": "ISC",
@@ -22,6 +28,11 @@
     "@capacitor/ios": "^8.2.0",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.1"
+    "@capacitor/status-bar": "^8.0.1",
+    "steamworks.js": "^0.3.1"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
   }
 }

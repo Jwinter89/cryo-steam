@@ -1041,16 +1041,23 @@
     }
   </script>
 
-  <!-- PWA Service Worker -->
+  <!-- PWA Service Worker (skip in Electron — no service worker on file:// or app://) -->
   <script>
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && !window.steam?.isElectron && location.protocol === 'https:') {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/sw.js').catch(function() {});
       });
     }
   </script>
 
-  <!-- Vercel Analytics -->
-  <script defer src="/_vercel/insights/script.js"></script>
+  <!-- Vercel Analytics (skip in Electron — no Vercel backend) -->
+  <script>
+    if (!window.steam || !window.steam.isElectron) {
+      var _vs = document.createElement('script');
+      _vs.defer = true;
+      _vs.src = '/_vercel/insights/script.js';
+      document.head.appendChild(_vs);
+    }
+  </script>
 </body>
 </html>

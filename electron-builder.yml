@@ -1,0 +1,42 @@
+appId: com.winterhowlers.coldcreek
+productName: "Cold Creek"
+copyright: "Copyright © 2026 Winterhowlers LLC"
+
+directories:
+  output: dist
+
+# Include game files in the Electron package
+files:
+  - index.html
+  - game.js
+  - style.css
+  - "src/**"
+  - "electron/**"
+  - "!electron/steam_appid.txt"
+  - "icon-512.png"
+  - "icon-192.png"
+  - "favicon.svg"
+  - "facility-bg.jpg"
+  - "gameplay-bg.jpg"
+  - "landing-bg.jpg"
+  - "modes-bg.jpg"
+  - "henry-character.png"
+  - "manifest.json"
+  - "teams.html"
+
+# Note: assets/steam/ contains Valve store page images and achievement icons.
+# These are uploaded to Steamworks directly, NOT bundled with the game.
+
+# Windows — dir output for SteamCMD upload (no installer needed)
+win:
+  target: dir
+  icon: icon-512.png
+
+# macOS — dir output for SteamCMD upload
+mac:
+  target: dir
+  icon: icon-512.png
+  category: public.app-category.simulation-games
+
+# Do not publish — Steam handles distribution
+publish: null

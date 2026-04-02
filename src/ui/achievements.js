@@ -59,6 +59,7 @@ class Achievements {
     if (this.state[id].progress >= def.max) {
       this.state[id].unlocked = true;
       this.state[id].unlockedAt = Date.now();
+      this._notifySteam(id);
       this._save();
       return true;
     }
@@ -75,6 +76,7 @@ class Achievements {
     this.state[id].unlocked = true;
     this.state[id].progress = def.max;
     this.state[id].unlockedAt = Date.now();
+    this._notifySteam(id);
     this._save();
     return true;
   }
@@ -176,6 +178,14 @@ class Achievements {
 
     this._save();
     return results; // Array of newly unlocked achievement IDs
+  }
+
+  // ── Steam Integration ────────────────────────────────
+
+  _notifySteam(id) {
+    if (typeof window !== 'undefined' && window.steam && window.steam.isAvailable && window.steam.isAvailable()) {
+      window.steam.activateAchievement(id);
+    }
   }
 
   // ── Persistence ──────────────────────────────────────
