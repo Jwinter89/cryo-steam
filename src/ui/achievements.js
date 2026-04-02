@@ -137,7 +137,7 @@ class Achievements {
       if (this.unlock('expander-tamer')) results.push('expander-tamer');
     }
 
-    // Cryo God — 98%+ NGL recovery (tracked via game._highRecoveryEntireShift)
+    // Cryo God — 92%+ NGL recovery (tracked via game._highRecoveryEntireShift)
     if (facility === 'cryogenic' && game._highRecoveryEntireShift) {
       if (this.unlock('cryo-god')) results.push('cryo-god');
     }

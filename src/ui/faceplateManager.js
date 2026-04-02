@@ -11,6 +11,23 @@ class FaceplateManager {
     this.trendCanvas = document.getElementById('fp-trend-canvas');
     this.trendCtx = this.trendCanvas ? this.trendCanvas.getContext('2d') : null;
 
+    // HiDPI canvas scaling
+    if (this.trendCanvas && this.trendCtx) {
+      const dpr = window.devicePixelRatio || 1;
+      if (dpr > 1) {
+        this._trendW = 240;
+        this._trendH = 60;
+        this.trendCanvas.width = 240 * dpr;
+        this.trendCanvas.height = 60 * dpr;
+        this.trendCanvas.style.width = '240px';
+        this.trendCanvas.style.height = '60px';
+        this.trendCtx.scale(dpr, dpr);
+      } else {
+        this._trendW = this.trendCanvas.width;
+        this._trendH = this.trendCanvas.height;
+      }
+    }
+
     this._bindEvents();
   }
 
@@ -211,8 +228,8 @@ class FaceplateManager {
   _drawTrend(pv) {
     if (!this.trendCtx) return;
     const ctx = this.trendCtx;
-    const w = this.trendCanvas.width;
-    const h = this.trendCanvas.height;
+    const w = this._trendW || 240;
+    const h = this._trendH || 60;
     const data = pv.trendHistory;
 
     ctx.clearRect(0, 0, w, h);

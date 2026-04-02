@@ -11,6 +11,7 @@ function registerPigEvents(eventSystem) {
     description: 'Single pig arriving on inlet line. Manage liquid surge.',
     severity: 'warning',
     probability: 0.015,
+    minRank: 1,
     increasesWithTime: true,
     radioMessage: 'Pipeline: Pig launched on Line 1. Estimate arrival 15-25 minutes.',
     duration: null, // Ends when resolved
@@ -78,21 +79,14 @@ function registerPigEvents(eventSystem) {
         d.liquidSurge = Math.max(0, d.liquidSurge - d.peakSurge * 0.05 * dt);
       }
 
-      // Apply liquid surge to feed flow — higher feed SP = better handling
-      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
-      if (feedPV) {
-        // If operator ramped up feed SP, they can absorb surge better
-        const spRatio = feedPV.sp / 120; // 1.0 = normal, >1 = ramped up
-        const dampening = Math.min(1.0, 1.0 / spRatio);
-        feedPV.externalForce += d.liquidSurge * 0.05 * dampening;
-      }
-
+      // Pig slug hits the separator — level is the primary impact
       const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (sepPV && d.liquidSurge > 0) {
         // Higher feed SP = pulling more liquid off separator = less level rise
         const feedSP = feedPV ? feedPV.sp : 120;
-        const pullFactor = Math.max(0.5, 1.0 - (feedSP - 120) / 300);
-        sepPV.externalForce += d.liquidSurge * 0.03 * pullFactor;
+        const pullFactor = Math.max(0.3, 1.0 - (feedSP - 120) / 200);
+        sepPV.externalForce += d.liquidSurge * 0.06 * pullFactor;
       }
     },
 
@@ -102,9 +96,8 @@ function registerPigEvents(eventSystem) {
     },
 
     onEnd: (event, pvMap) => {
-      // Cleanup — remove surge forces
-      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
-      if (feedPV) feedPV.externalForce = 0;
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
+      if (sepPV) sepPV.externalForce = 0;
     }
   });
 
@@ -115,6 +108,7 @@ function registerPigEvents(eventSystem) {
     description: 'Pig arriving faster than expected. Tighter margins.',
     severity: 'alarm',
     probability: 0.005,
+    minRank: 3,
     increasesWithTime: true,
     radioMessage: 'Pipeline: Pig on Line 1 moving fast! Estimate 5-10 minutes!',
     duration: null,
@@ -177,18 +171,12 @@ function registerPigEvents(eventSystem) {
         d.liquidSurge = Math.max(0, d.liquidSurge - d.peakSurge * 0.07 * dt);
       }
 
-      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
-      if (feedPV) {
-        const spRatio = feedPV.sp / 120;
-        const dampening = Math.min(1.0, 1.0 / spRatio);
-        feedPV.externalForce += d.liquidSurge * 0.06 * dampening;
-      }
-
       const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (sepPV && d.liquidSurge > 0) {
         const feedSP = feedPV ? feedPV.sp : 120;
-        const pullFactor = Math.max(0.5, 1.0 - (feedSP - 120) / 300);
-        sepPV.externalForce += d.liquidSurge * 0.04 * pullFactor;
+        const pullFactor = Math.max(0.3, 1.0 - (feedSP - 120) / 200);
+        sepPV.externalForce += d.liquidSurge * 0.08 * pullFactor;
       }
     },
 
@@ -197,8 +185,8 @@ function registerPigEvents(eventSystem) {
     },
 
     onEnd: (event, pvMap) => {
-      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
-      if (feedPV) feedPV.externalForce = 0;
+      const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
+      if (sepPV) sepPV.externalForce = 0;
     }
   });
 
@@ -209,6 +197,7 @@ function registerPigEvents(eventSystem) {
     description: 'Second pig detected before recovery from first. No rest.',
     severity: 'alarm',
     probability: 0.003,
+    minRank: 4,
     radioMessage: 'Pipeline: Second pig launched! First pig still in transit!',
     duration: null,
 
@@ -246,11 +235,13 @@ function registerPigEvents(eventSystem) {
         totalSurge += pig.surge;
       }
 
-      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
-      if (feedPV) feedPV.externalForce += totalSurge * 0.05;
-
       const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
-      if (sepPV && totalSurge > 0) sepPV.externalForce += totalSurge * 0.035;
+      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
+      if (sepPV && totalSurge > 0) {
+        const feedSP = feedPV ? feedPV.sp : 120;
+        const pullFactor = Math.max(0.3, 1.0 - (feedSP - 120) / 200);
+        sepPV.externalForce += totalSurge * 0.07 * pullFactor;
+      }
     },
 
     checkResolved: (event, pvMap) => {
@@ -258,8 +249,6 @@ function registerPigEvents(eventSystem) {
     },
 
     onEnd: (event, pvMap) => {
-      const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
-      if (feedPV) feedPV.externalForce = 0;
       const sepPV = pvMap['LIC-302'] || pvMap['LIC-201'] || pvMap['LIC-301'];
       if (sepPV) sepPV.externalForce = 0;
     }

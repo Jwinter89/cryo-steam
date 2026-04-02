@@ -182,7 +182,7 @@ html, body {
   width: 100%;
   height: 100%;
   margin: 0;
-  padding-top: 22%;
+  padding-top: min(378px, 42vh);
 }
 .title-center-col {
   display: flex;
@@ -265,6 +265,12 @@ html, body {
 }
 .menu-btn:active {
   background: var(--border);
+}
+.menu-btn:focus-visible,
+.back-btn:focus-visible,
+.lb-filter:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Primary CTA button */
@@ -963,6 +969,10 @@ html, body {
   border-color: rgba(150, 150, 170, 0.6);
   background: rgba(30, 30, 45, 0.9);
 }
+.mode-card-styled:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .mode-card-styled h3 {
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -1197,8 +1207,9 @@ html, body {
 }
 #alarm-ack-btn {
   font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 2px 8px;
+  font-size: 11px;
+  padding: 5px 12px;
+  min-height: 28px;
   background: var(--bg-card);
   color: var(--text-normal);
   border: 1px solid var(--border);
@@ -1389,7 +1400,6 @@ html, body {
   stroke: #5A9FD4 !important;
   stroke-width: 1.2;
   fill: rgba(90, 159, 212, 0.08);
-  animation: tag-pulse 3s ease-in-out infinite;
 }
 @media (hover: hover) {
   .tag-bubble:hover {
@@ -1663,6 +1673,8 @@ g[id^="equip-"]:hover line {
 /* Event Block */
 .event-block {
   padding: 4px 8px;
+  max-height: 280px;
+  overflow-y: auto;
 }
 .event-item {
   font-family: var(--font-mono);
@@ -1698,7 +1710,7 @@ g[id^="equip-"]:hover line {
 /* Radio Log */
 .radio-block {
   padding: 4px 8px;
-  max-height: 80px;
+  max-height: 160px;
   overflow-y: auto;
 }
 .radio-msg {
@@ -1921,8 +1933,9 @@ g[id^="equip-"]:hover line {
 }
 .alarm-entry .alarm-ack-btn {
   font-family: var(--font-mono);
-  font-size: 9px;
-  padding: 1px 6px;
+  font-size: 10px;
+  padding: 4px 8px;
+  min-height: 24px;
   background: var(--bg-input);
   border: 1px solid var(--border);
   color: var(--text-label);
@@ -1994,6 +2007,8 @@ g[id^="equip-"]:hover line {
 /* Mobile speed dial, building pills — hidden for Steam build */
 .mobile-speed-dial,
 .mobile-building-pills,
+.mobile-info-drawer,
+.mobile-pnl-strip,
 .speed-dial-backdrop,
 .faceplate-backdrop,
 #panel-toggle {
@@ -3452,8 +3467,8 @@ g[id^="equip-"]:hover line {
 .challenges-container {
   position: fixed;
   top: 80px;
-  right: 8px;
-  width: 240px;
+  right: 252px;
+  width: 220px;
   z-index: 50;
   pointer-events: auto;
 }

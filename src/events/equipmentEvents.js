@@ -11,6 +11,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'Hot oil heater malfunction. Heat supply degrading.',
     severity: 'alarm',
     probability: 0.008,
+    minRank: 2,
     affectedByMaintenance: true,
     radioMessage: 'Control room: Hot oil heater showing fault. Investigate.',
 
@@ -60,6 +61,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'Overhead compressor tripped. Flash gas building pressure.',
     severity: 'critical',
     probability: 0.003,
+    minRank: 3,
     radioMessage: 'ALARM: C-100 OVERHEAD COMPRESSOR TRIP',
 
     data: {
@@ -126,6 +128,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'Instrument air pressure bleeding down. Pneumatic valves at risk.',
     severity: 'critical',
     probability: 0.002,
+    minRank: 3,
     radioMessage: 'ALARM: INSTRUMENT AIR PRESSURE LOW — ALL STATIONS',
 
     data: {
@@ -187,6 +190,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'A thermocouple is reading flat. No alarm — just stops responding.',
     severity: 'hidden', // Player doesn't know!
     probability: 0.01,
+    minRank: 2,
 
     data: {
       frozenTag: null
@@ -224,6 +228,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'Product tank pressure relief valve has lifted. Product venting.',
     severity: 'alarm',
     probability: 0, // Only triggered by conditions, not random
+    minRank: 3,
 
     data: {
       productLost: 0
@@ -268,6 +273,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'NGL truck arrived for loading. Issue permit to proceed.',
     severity: 'info',
     probability: 0.012,
+    minRank: 1,
     radioMessage: 'Gate: NGL truck at loading rack. Requesting permit.',
 
     data: {
@@ -321,6 +327,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'Gas concentration alarm triggered.',
     severity: 'alarm',
     probability: 0.01,
+    minRank: 3,
 
     data: {
       building: '',
@@ -357,6 +364,7 @@ function registerEquipmentEvents(eventSystem) {
     description: 'Ambient conditions shifting.',
     severity: 'info',
     probability: 0.008,
+    minRank: 1,
 
     data: {
       newTemp: 72,

@@ -52,8 +52,9 @@ class EventActionPanel {
       }
       .event-action-btn {
         font-family: var(--font-mono);
-        font-size: 8px;
-        padding: 2px 6px;
+        font-size: 10px;
+        padding: 5px 10px;
+        min-height: 28px;
         background: var(--bg-input);
         color: var(--text-label);
         border: 1px solid var(--border);
@@ -93,6 +94,8 @@ class EventActionPanel {
           ${evt.data && evt.data.surgePhase ? `<div class="event-action-desc">Phase: ${evt.data.surgePhase}</div>` : ''}
           ${evt.data && evt.data.phase ? `<div class="event-action-desc">Phase: ${evt.data.phase}</div>` : ''}
           ${evt.data && evt.data.building ? `<div class="event-action-desc">Area: ${evt.data.building || evt.data.area}</div>` : ''}
+          ${evt.data && evt.data.loadingProgress > 0 && evt.data.phase === 'loading' ? `<div class="event-action-desc">Loading: ${Math.round(evt.data.loadingProgress)}%</div>` : ''}
+          ${evt.data && evt.data.overspeedAbort ? '<div class="event-action-desc" style="color:var(--alarm-crit)">OVERSPEED TRIP — RESTART REQUIRED</div>' : ''}
           ${evt.data && evt.data.complianceViolation ? '<div class="event-action-desc" style="color:var(--alarm-crit)">EPA COMPLIANCE VIOLATION</div>' : ''}
           ${evt.data && evt.data.evacuationNeeded ? '<div class="event-action-desc" style="color:var(--alarm-crit)">EVACUATION REQUIRED</div>' : ''}
           <div class="event-action-btns">
@@ -110,6 +113,11 @@ class EventActionPanel {
         this._executeAction(eventId, action);
       });
     });
+
+    // Scroll newest (most critical) event into view
+    const firstCard = this.container.querySelector('.event-action-card.critical') ||
+                      this.container.querySelector('.event-action-card');
+    if (firstCard) firstCard.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   _getActions(event) {
@@ -184,7 +192,31 @@ class EventActionPanel {
         break;
 
       case 'expander-trip':
-        actions.push({ action: 'restart-expander', label: 'RESTART EXP' });
+        switch (event.data.phase) {
+          case 'tripped':
+            actions.push({ action: 'start-seal-gas', label: 'START SEAL GAS' });
+            if (event.data.overspeedAbort) {
+              // show warning that last attempt overspeed tripped
+            }
+            break;
+          case 'seal-gas':
+            actions.push({ action: 'start-lube-oil', label: 'START LUBE OIL' });
+            break;
+          case 'lube-oil':
+            actions.push({ action: 'open-jt-bypass', label: 'OPEN JT 60%' });
+            break;
+          case 'jt-open':
+            actions.push({ action: 'begin-loading', label: 'BEGIN LOADING' });
+            break;
+          case 'loading':
+            actions.push({ action: 'load-slower', label: 'LOAD SLOWER' });
+            actions.push({ action: 'load-faster', label: 'LOAD FASTER' });
+            actions.push({ action: 'emergency-close-igv', label: 'CLOSE IGV' });
+            break;
+          case 'online':
+            actions.push({ action: 'confirm-online', label: 'CONFIRM ONLINE' });
+            break;
+        }
         break;
 
       case 'molsieve-breakthrough':
@@ -244,7 +276,7 @@ class EventActionPanel {
         if (!event.data.evacuationStarted) {
           actions.push({ action: 'evacuate', label: 'EVACUATE' });
         }
-        actions.push({ action: 'isolate-source', label: 'ISOLATE' });
+        actions.push({ action: 'isolate-source', label: 'REMOTE ISOLATE' });
         if (event.data.windDirection) {
           actions.push({ action: 'check-wind', label: `WIND: ${event.data.windDirection}` });
         }
@@ -302,6 +334,41 @@ class EventActionPanel {
     if (action === 'check-wind') {
       // Just informational
       return;
+    }
+
+    // H2S response radio messages
+    if (eventId === 'h2s-area-alarm') {
+      if (action === 'evacuate') {
+        if (this.game.audioManager) this.game.audioManager.playEffect('alarm');
+        this.game._addRadioMessage('EVACUATION INITIATED — All personnel move upwind to muster point.');
+      }
+      if (action === 'isolate-source') {
+        if (this.game.audioManager) this.game.audioManager.playEffect('radio');
+        this.game._addRadioMessage('Control Room: Closing remote block valves on amine system.');
+      }
+    }
+
+    // Expander restart radio messages
+    const expanderActions = {
+      'start-seal-gas': 'Field: Seal gas established. Differential pressure confirmed.',
+      'start-lube-oil': 'Field: Lube oil pump started. Watching bearing temps.',
+      'open-jt-bypass': 'Field: JT valve opened to 60%. Bypass flow established.',
+      'begin-loading': 'Field: Loading expander. Closing JT slowly — watch RPMs.',
+      'load-faster': 'Control: Increasing load rate. Watch for overspeed.',
+      'load-slower': 'Control: Reducing load rate.',
+      'emergency-close-igv': 'EMERGENCY: IGVs closed. Loading aborted.',
+      'confirm-online': 'EX-400 online and stable. Booster recompressor loaded.'
+    };
+    if (expanderActions[action] && eventId === 'expander-trip') {
+      // Check for wrong-order lube oil (before seal gas)
+      const expEvt = this.game.eventSystem.activeEvents.find(e => e.id === 'expander-trip');
+      if (action === 'start-lube-oil' && expEvt && !expEvt.data.sealGasOn) {
+        this.game._addRadioMessage('ALARM: Lube oil started WITHOUT seal gas! Process gas in bearing housing — bearings freezing!');
+        if (this.game.audioManager) this.game.audioManager.playEffect('alarm');
+      } else {
+        if (this.game.audioManager) this.game.audioManager.playEffect('radio');
+        this.game._addRadioMessage(expanderActions[action]);
+      }
     }
 
     if (action === 'check-instrument') {

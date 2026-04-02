@@ -74,10 +74,20 @@ class TrendManager {
       </div>
       <div class="trend-tags" id="trend-tags-bar"></div>
       <canvas id="trend-canvas" class="trend-canvas" width="450" height="200"></canvas>
-      <div class="trend-footer">Click a gauge tag to add it to the trend</div>
+      <div class="trend-footer">Double-click a gauge tag to add it to the trend</div>
     `;
     document.getElementById('game-screen').appendChild(this._panel);
     this._canvas = document.getElementById('trend-canvas');
+
+    // HiDPI canvas scaling
+    const dpr = window.devicePixelRatio || 1;
+    if (dpr > 1) {
+      this._canvas.width = 450 * dpr;
+      this._canvas.height = 200 * dpr;
+      this._canvas.style.width = '450px';
+      this._canvas.style.height = '200px';
+      this._canvas.getContext('2d').scale(dpr, dpr);
+    }
 
     let isDragging = false, offsetX = 0, offsetY = 0;
     const header = this._panel.querySelector('.trend-header');

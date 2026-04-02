@@ -12,6 +12,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Hydrocarbon contamination causing TEG foaming. Dehydration efficiency dropping.',
     severity: 'warning',
     probability: 0.006,
+    minRank: 2,
     affectedByMaintenance: true,
     radioMessage: 'Ops: Contactor tower showing signs of foaming. Check glycol conditions.',
 
@@ -48,6 +49,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Reboiler running too hot. TEG thermal decomposition occurring.',
     severity: 'warning',
     probability: 0,  // Triggered by conditions only
+    minRank: 3,
 
     data: { degradation: 0 },
 
@@ -72,6 +74,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Over-circulation causing TEG carryover. Downstream contamination.',
     severity: 'warning',
     probability: 0,
+    minRank: 3,
 
     data: { inventoryLoss: 0 },
 
@@ -96,6 +99,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'BTEX unit pilot has gone out. EPA compliance at risk.',
     severity: 'alarm',
     probability: 0.008,
+    minRank: 2,
     radioMessage: 'ALARM: BTEX pilot flame out. Relight procedure required.',
 
     data: {
@@ -158,6 +162,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Differential pressure change affecting glycol pump stroke rate.',
     severity: 'hidden', // No alarm! Player must notice.
     probability: 0.01,
+    minRank: 2,
 
     data: { dpChange: 0 },
 
@@ -183,6 +188,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Inlet composition change affecting fuel gas BTU.',
     severity: 'info',
     probability: 0.008,
+    minRank: 2,
 
     data: { btuShift: 0 },
 
@@ -207,6 +213,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Refrigeration condenser losing efficiency. Discharge temps rising.',
     severity: 'warning',
     probability: 0.004,
+    minRank: 3,
     affectedByMaintenance: true,
 
     onTick: (event, dt, pvMap) => {
@@ -229,6 +236,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Inlet compressor surging on low flow. Anti-surge needed.',
     severity: 'alarm',
     probability: 0.003,
+    minRank: 3,
     radioMessage: 'ALARM: C-101 COMPRESSOR SURGE DETECTED',
 
     onStart: (event, pvMap) => {
@@ -259,6 +267,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Product pump losing prime. Flow dropping — no immediate alarm.',
     severity: 'hidden',
     probability: 0.005,
+    minRank: 3,
 
     data: { cavitationSeverity: 0 },
 
@@ -288,6 +297,7 @@ function registerRefrigerationEvents(eventSystem) {
     description: 'Leak detection crew arriving. Needs escort and work permit.',
     severity: 'info',
     probability: 0.005,
+    minRank: 1,
     radioMessage: 'Gate: LDAR crew at front gate. Requesting escort and permit.',
 
     data: {

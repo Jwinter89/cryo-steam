@@ -38,8 +38,8 @@
     <div id="title-screen" class="screen active">
       <div class="title-content">
         <div class="title-center-col">
-          <div class="title-logo">COLD CREEK</div>
-          <div class="title-sub">GAS PLANT SIMULATOR</div>
+          <div class="title-logo" aria-hidden="true">COLD CREEK</div>
+          <div class="title-sub" aria-hidden="true">GAS PLANT SIMULATOR</div>
 
           <!-- Streak Badge (returning users) -->
           <div id="streak-badge" class="streak-badge" style="display:none">
@@ -85,7 +85,7 @@
             </div>
           </div>
 
-          <div id="title-tagline" class="title-tagline"></div>
+          <div id="title-tagline" class="title-tagline">"The plant tells you something is wrong before it goes wrong."</div>
 
           <div class="title-version">
             <span>COLD CREEK v2.0</span>
@@ -121,22 +121,22 @@
         <button class="back-btn" data-screen="title-screen">&#9664; BACK</button>
       </div>
       <div class="mode-grid mode-grid-4">
-        <div class="mode-card mode-card-styled" data-mode="learn">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-mode="learn">
           <div class="mode-card-dot mode-dot-green"></div>
           <h3>LEARN MODE</h3>
           <p>Guided walkthrough with P&amp;ID overlays. No failure state. Build your mental model.</p>
         </div>
-        <div class="mode-card mode-card-styled" data-mode="operate">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-mode="operate">
           <div class="mode-card-dot mode-dot-yellow"></div>
           <h3>OPERATE MODE</h3>
           <p>Real-time plant operation. Manage throughput, respond to upsets, hit P&amp;L targets.</p>
         </div>
-        <div class="mode-card mode-card-styled" data-mode="crisis">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-mode="crisis">
           <div class="mode-card-dot mode-dot-red"></div>
           <h3>CRISIS MODE</h3>
           <p>Timed upset scenarios. Leaderboard ranked by recovery time and P&amp;L saved.</p>
         </div>
-        <div class="mode-card mode-card-styled" data-mode="optimize">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-mode="optimize">
           <div class="mode-card-dot mode-dot-gold"></div>
           <h3>OPTIMIZE MODE</h3>
           <p>Maximize NGL recovery and shift earnings. Pure tuning. Competitive leaderboard.</p>
@@ -151,17 +151,17 @@
         <h2>SELECT FACILITY</h2>
       </div>
       <div class="mode-grid mode-grid-3">
-        <div class="mode-card mode-card-styled" data-facility="stabilizer">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-facility="stabilizer">
           <h3>STABILIZER SCHOOL</h3>
           <p>Tutorial facility. Learn the fundamentals: reboiler control, RVP management, pig arrivals.</p>
           <span class="tier-label">TIER 1</span>
         </div>
-        <div class="mode-card mode-card-styled" data-facility="refrigeration">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-facility="refrigeration">
           <h3>REFRIGERATION PLANT</h3>
           <p>TEG dehydration, Kimray glycol pump, BTEX compliance. Intermediate operations.</p>
           <span class="tier-label">TIER 2</span>
         </div>
-        <div class="mode-card mode-card-styled" data-facility="cryogenic">
+        <div class="mode-card mode-card-styled" tabindex="0" role="button" data-facility="cryogenic">
           <h3>CRYO PLANT</h3>
           <p>110 MMcfd. Turboexpander, mol sieve, demethanizer. Mode switching. Three-plant endgame.</p>
           <span class="tier-label">TIER 3</span>
@@ -181,6 +181,7 @@
         <div class="topbar-center">
           <span id="game-time">06:00</span>
           <span id="shift-label">DAY SHIFT</span>
+          <span id="shift-remaining" style="font-size:9px;color:var(--text-unit);margin-left:6px">8.0h LEFT</span>
         </div>
         <div class="topbar-right">
           <span id="pnl-rate" class="pnl-value">$0/hr</span>
@@ -869,10 +870,7 @@
   <script src="src/ui/debriefScreen.js"></script>
   <script src="src/ui/glossary.js"></script>
   <script src="src/ui/colorBlindMode.js"></script>
-  <script src="src/ui/adManager.js"></script>
   <script src="src/ui/pidZoom.js"></script>
-  <!-- Storage bridge for native iOS (must load before game.js) -->
-  <script src="src/capacitor/storageBridge.js"></script>
 
   <!-- Main game -->
   <script src="game.js?v=8"></script>
@@ -890,12 +888,6 @@
     });
   </script>
 
-  <!-- StorageBridge Migration (runs once on first native launch) -->
-  <script>
-    if (window.StorageBridge && window.StorageBridge.migrateFromLocalStorage) {
-      window.StorageBridge.migrateFromLocalStorage().catch(function() {});
-    }
-  </script>
 
   <!-- PWA Service Worker (skip in Electron — no service worker on file:// or app://) -->
   <script>

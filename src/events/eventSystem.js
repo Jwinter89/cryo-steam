@@ -17,14 +17,49 @@ class EventSystem {
     this.onEventEnd = null;
     this.onRadioMessage = null;
 
-    // Scheduling
-    this.nextEventCheck = 0;    // Game-minutes until next probability roll
-    this.eventCheckInterval = 5; // Check every 5 game-minutes
-    this.minTimeBetweenEvents = 10; // Minimum gap between random events
+    // FNAF-style progressive difficulty (set via setDifficulty)
+    this.rankLevel = 1;
+    this.difficultyProfile = EventSystem.DIFFICULTY[1];
+
+    // Scheduling — defaults overridden by setDifficulty()
+    this.nextEventCheck = 120;
+    this.eventCheckInterval = 5;
+    this.minTimeBetweenEvents = 10;
     this.lastEventTime = 0;
 
     // Scheduled events queue
     this.scheduledEvents = [];
+  }
+
+  /**
+   * FNAF-style difficulty profiles keyed by career rank level.
+   * gracePeriod: game-minutes before any random event can fire
+   * probMultiplier: scales all base probabilities
+   * maxSimultaneous: cap on concurrent active events
+   * minTimeBetween: minimum gap between random events (game-minutes)
+   * eventCheckInterval: how often to roll (game-minutes)
+   */
+  static get DIFFICULTY() {
+    return {
+      1: { gracePeriod: 120, probMultiplier: 0.25, maxSimultaneous: 1, minTimeBetween: 30, eventCheckInterval: 8 },
+      2: { gracePeriod: 60,  probMultiplier: 0.5,  maxSimultaneous: 2, minTimeBetween: 20, eventCheckInterval: 6 },
+      3: { gracePeriod: 30,  probMultiplier: 0.8,  maxSimultaneous: 2, minTimeBetween: 15, eventCheckInterval: 5 },
+      4: { gracePeriod: 15,  probMultiplier: 1.0,  maxSimultaneous: 3, minTimeBetween: 10, eventCheckInterval: 5 },
+      5: { gracePeriod: 10,  probMultiplier: 1.2,  maxSimultaneous: 3, minTimeBetween: 8,  eventCheckInterval: 4 },
+      6: { gracePeriod: 5,   probMultiplier: 1.4,  maxSimultaneous: 3, minTimeBetween: 5,  eventCheckInterval: 3 },
+      7: { gracePeriod: 2,   probMultiplier: 1.6,  maxSimultaneous: 4, minTimeBetween: 3,  eventCheckInterval: 2 }
+    };
+  }
+
+  /**
+   * Set difficulty based on career rank. Call before first tick.
+   */
+  setDifficulty(rankLevel) {
+    this.rankLevel = rankLevel || 1;
+    this.difficultyProfile = EventSystem.DIFFICULTY[this.rankLevel] || EventSystem.DIFFICULTY[1];
+    this.nextEventCheck = this.difficultyProfile.gracePeriod;
+    this.eventCheckInterval = this.difficultyProfile.eventCheckInterval;
+    this.minTimeBetweenEvents = this.difficultyProfile.minTimeBetween;
   }
 
   /**
@@ -35,6 +70,7 @@ class EventSystem {
       ...eventDef,
       id: eventDef.id || `evt-${this.events.length}`,
       baseProbability: eventDef.probability || 0.01,
+      minRank: eventDef.minRank || 1,
       active: false
     });
   }
@@ -49,8 +85,10 @@ class EventSystem {
   /**
    * Main tick — check for events, update active ones
    */
-  tick(dt, gameTime, pvMap) {
+  tick(dt, gameTime, pvMap, speed) {
     this._currentGameTime = gameTime;
+    const spd = speed || 1;
+
     // Process scheduled events
     this.scheduledEvents = this.scheduledEvents.filter(se => {
       if (gameTime >= se.gameTime) {
@@ -61,10 +99,13 @@ class EventSystem {
     });
 
     // Periodic probability check for random events
-    this.nextEventCheck -= dt;
+    // Countdown uses base dt (1 game-min/real-sec) so real-world pacing
+    // stays consistent regardless of speed setting
+    const baseDt = spd > 0 ? dt / spd : dt;
+    this.nextEventCheck -= baseDt;
     if (this.nextEventCheck <= 0) {
       this.nextEventCheck = this.eventCheckInterval;
-      if (gameTime - this.lastEventTime >= this.minTimeBetweenEvents) {
+      if (gameTime - this.lastEventTime >= this.minTimeBetweenEvents * spd) {
         this._rollForEvents(gameTime, pvMap);
       }
     }
@@ -95,12 +136,17 @@ class EventSystem {
   }
 
   _rollForEvents(gameTime, pvMap) {
+    const dp = this.difficultyProfile;
+
     for (const evt of this.events) {
       if (evt.active) continue;
-      if (this.activeEvents.length >= 3) break; // Max simultaneous events
+      if (this.activeEvents.length >= dp.maxSimultaneous) break;
+
+      // Skip events above player's rank
+      if (evt.minRank > this.rankLevel) continue;
 
       // Adjust probability based on conditions
-      let prob = evt.baseProbability;
+      let prob = evt.baseProbability * dp.probMultiplier;
 
       // Deferred maintenance increases probability
       if (evt.affectedByMaintenance) {
@@ -232,7 +278,9 @@ class EventSystem {
     this.complacencyMeter = 0;
     this.deferredMaintenance = [];
     this.scheduledEvents = [];
-    this.nextEventCheck = 5;
+    this.nextEventCheck = this.difficultyProfile.gracePeriod;
+    this.eventCheckInterval = this.difficultyProfile.eventCheckInterval;
+    this.minTimeBetweenEvents = this.difficultyProfile.minTimeBetween;
     this.lastEventTime = 0;
     for (const evt of this.events) {
       evt.active = false;

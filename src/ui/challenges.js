@@ -92,8 +92,11 @@ class Challenges {
           completed = alarmMgr && alarmMgr.alarmHistory && alarmMgr.alarmHistory.length === 0;
           break;
         case 'speed-run':
-          // Check that the majority of shift was at 4x speed via time compression setting
-          completed = earnings > 0 && game.sim && game.sim.timeCompression >= 4;
+          // Must spend majority of real shift time at 4x speed with positive earnings
+          if (earnings > 0 && game.sim && game.sim.realSecondsAt4x) {
+            const totalReal = game.sim.shiftElapsed / (game.sim.timeCompression * game.sim.speed || 1);
+            completed = game.sim.realSecondsAt4x > totalReal * 0.5;
+          }
           break;
         case 'pig-rush':
           if (game.eventSystem && facility === 'stabilizer') {

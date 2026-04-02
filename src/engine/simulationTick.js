@@ -102,6 +102,9 @@ class SimulationTick {
     this.shiftElapsed += dt;
     this.totalTicks++;
 
+    // Track real time spent at 4x speed
+    if (this.speed >= 4) this.realSecondsAt4x = (this.realSecondsAt4x || 0) + realSeconds;
+
     // Reset external forces on all PVs before cascade
     for (const tag in this.pvMap) {
       this.pvMap[tag].externalForce = 0;
@@ -129,7 +132,7 @@ class SimulationTick {
 
     // Update event system
     if (this.eventSystem) {
-      this.eventSystem.tick(dt, this.gameTimeMinutes, this.pvMap);
+      this.eventSystem.tick(dt, this.gameTimeMinutes, this.pvMap, this.speed);
     }
 
     // Update P&L

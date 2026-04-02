@@ -181,7 +181,6 @@
       this._bindScreenNav();
       this._bindTimeControls();
       this._bindSettings();
-      this._bindMobileControls();
       this._bindUsername();
       this._updateUnlockStates();
       this._updateContinueButton();
@@ -189,7 +188,6 @@
       this._showScreen('title-screen');
       this._refreshLeaderboard();
       this._bindLeaderboardFilters();
-      this._bindAdFree();
       this._updateChallengesPreview();
       this._initHenry();
       this._checkBuildingTabOverflow();
@@ -202,7 +200,6 @@
       if (window.Challenges) this.challenges = new Challenges();
       if (window.DebriefScreen) this.debriefScreen = new DebriefScreen();
       if (window.Glossary) this.glossary = new Glossary();
-      if (window.AdManager) this.adManager = new AdManager();
       if (window.ColorBlindMode) {
         this.colorBlindMode = new ColorBlindMode();
         // Restore saved setting
@@ -215,61 +212,6 @@
       // Daily login streak
       this._checkStreak();
 
-      // PWA install prompt
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        window._deferredInstallPrompt = e;
-        // Show install banner on title screen
-        const banner = document.getElementById('pwa-install-banner');
-        if (banner) banner.style.display = '';
-      });
-
-      // iOS Safari: show manual add-to-home-screen hint
-      // (beforeinstallprompt never fires on iOS)
-      const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.maxTouchPoints > 0 && /Mac/.test(navigator.platform)));
-      const isStandalone = window.navigator.standalone === true;
-      if (isIOS && !isStandalone && !localStorage.getItem('coldcreek-pwa-dismissed')) {
-        const banner = document.getElementById('pwa-install-banner');
-        const installBtn = document.getElementById('pwa-install-btn');
-        if (banner) {
-          banner.querySelector('span').textContent = 'Tap the share button (\u2B06) then "Add to Home Screen" for the best experience';
-          if (installBtn) installBtn.style.display = 'none';
-          banner.style.display = '';
-        }
-      }
-
-      const installBtn = document.getElementById('pwa-install-btn');
-      if (installBtn) {
-        installBtn.addEventListener('click', async () => {
-          if (window._deferredInstallPrompt) {
-            window._deferredInstallPrompt.prompt();
-            const result = await window._deferredInstallPrompt.userChoice;
-            window._deferredInstallPrompt = null;
-            document.getElementById('pwa-install-banner').style.display = 'none';
-          }
-        });
-      }
-      const dismissBtn = document.getElementById('pwa-dismiss-btn');
-      if (dismissBtn) {
-        dismissBtn.addEventListener('click', () => {
-          document.getElementById('pwa-install-banner').style.display = 'none';
-          localStorage.setItem('coldcreek-pwa-dismissed', '1');
-        });
-      }
-    },
-
-    // ============================================================
-    // AD-FREE PURCHASE
-    // ============================================================
-
-    _bindAdFree() {
-      const donateBtn = document.getElementById('donate-btn');
-      if (donateBtn) {
-        donateBtn.addEventListener('click', () => {
-          // Open Buy Me a Coffee for donations
-          window.open('https://buymeacoffee.com/GasPlantSim', '_blank');
-        });
-      }
     },
 
     // ============================================================
@@ -345,25 +287,6 @@
         });
       }
 
-      // CTA email capture
-      const ctaBtn = document.getElementById('cta-notify');
-      if (ctaBtn) {
-        ctaBtn.addEventListener('click', () => {
-          const email = document.getElementById('cta-email').value.trim();
-          if (!email || !email.includes('@')) return;
-          // Store in Firebase if available and authenticated, localStorage as fallback
-          try {
-            if (this.leaderboard && this.leaderboard.db && typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
-              this.leaderboard.db.ref('waitlist').push({ email, timestamp: Date.now(), uid: firebase.auth().currentUser.uid });
-            }
-          } catch(e) {}
-          localStorage.setItem('coldcreek-waitlist-email', email);
-          ctaBtn.textContent = 'SAVED!';
-          ctaBtn.disabled = true;
-          document.getElementById('cta-email').disabled = true;
-        });
-      }
-
       // Back buttons
       document.querySelectorAll('.back-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -371,9 +294,38 @@
         });
       });
 
+      // Escape key — go back from menu screens
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        // Dismiss confirm dialog if open
+        const confirmOverlay = document.getElementById('confirm-overlay');
+        if (confirmOverlay && confirmOverlay.style.display !== 'none') {
+          confirmOverlay.style.display = 'none';
+          return;
+        }
+
+        const backScreens = ['leaderboard-screen', 'settings-screen', 'profile-screen', 'mode-screen', 'facility-screen', 'crisis-screen'];
+        if (backScreens.includes(this.currentScreen)) {
+          const backBtn = document.querySelector(`#${this.currentScreen} .back-btn`);
+          if (backBtn) this._showScreen(backBtn.dataset.screen);
+        }
+
+        // In-game: Escape toggles pause
+        if (this.currentScreen === 'game-screen' && this.sim) {
+          if (this.sim.speed > 0) {
+            this._lastSpeedBeforePause = this.sim.speed;
+            this.sim.speed = 0;
+            this._updateTimeButtons(0);
+          } else {
+            this.sim.speed = this._lastSpeedBeforePause || 1;
+            this._updateTimeButtons(this.sim.speed);
+          }
+        }
+      });
+
       // Mode selection
       document.querySelectorAll('.mode-card[data-mode]').forEach(card => {
-        card.addEventListener('click', () => {
+        const activate = () => {
           this.currentMode = card.dataset.mode;
           if (this.currentMode === 'crisis') {
             this._populateCrisisScreen();
@@ -381,14 +333,22 @@
           } else {
             this._showScreen('facility-screen');
           }
+        };
+        card.addEventListener('click', activate);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
         });
       });
 
       // Facility selection
       document.querySelectorAll('.mode-card[data-facility]').forEach(card => {
-        card.addEventListener('click', () => {
+        const activate = () => {
           this.currentFacility = card.dataset.facility;
           this._startGame();
+        };
+        card.addEventListener('click', activate);
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
         });
       });
 
@@ -421,7 +381,7 @@
       const resetBtn = document.getElementById('btn-reset-progress');
       if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-          if (confirm('Reset all progress? This cannot be undone.')) {
+          this._showConfirm('Reset all progress? This cannot be undone.', () => {
             localStorage.removeItem('coldcreek-progress');
             localStorage.removeItem('coldcreek-gamestate');
             localStorage.removeItem('coldcreek-fieldnotes');
@@ -436,252 +396,8 @@
             if (this.challenges) this.challenges.reset();
             this._updateUnlockStates();
             this._updateContinueButton();
-          }
-        });
-      }
-    },
-
-    _bindMobileControls() {
-      const toggle = document.getElementById('panel-toggle');
-      const leftPanel = document.getElementById('left-panel');
-      const backdrop = document.getElementById('faceplate-backdrop');
-
-      if (toggle && leftPanel) {
-        toggle.addEventListener('click', () => {
-          leftPanel.classList.toggle('collapsed');
-          toggle.textContent = leftPanel.classList.contains('collapsed') ? '\u2630' : '\u2715';
-        });
-      }
-
-      // Mobile info drawer (also handles backdrop)
-      this._bindMobileInfoDrawer();
-
-      // Close gauge sheet on tap outside (mobile)
-      document.addEventListener('click', (e) => {
-        const sheet = document.getElementById('gauge-sheet');
-        if (!sheet || !sheet.classList.contains('open')) return;
-        // Don't close if clicking inside the sheet, on a building tab/pill, or on the faceplate
-        if (e.target.closest('#gauge-sheet') ||
-            e.target.closest('.building-tab') ||
-            e.target.closest('.mobile-building-pill') ||
-            e.target.closest('.faceplate') ||
-            e.target.closest('.faceplate-backdrop')) return;
-        this._closeGaugeSheet();
-        this._activeBuilding = null;
-        document.querySelectorAll('.building-tab').forEach(t => t.classList.remove('active'));
-        const first = document.querySelector('.building-tab');
-        if (first) first.classList.add('active');
-      });
-
-      // Mobile speed dial FAB
-      this._bindMobileSpeedDial();
-    },
-
-    _bindMobileInfoDrawer() {
-      const strip = document.getElementById('mobile-pnl-strip');
-      const drawer = document.getElementById('mobile-info-drawer');
-      const expandBtn = document.getElementById('mpnl-expand');
-      const handle = document.getElementById('mobile-info-handle');
-      const content = document.getElementById('mobile-info-content');
-
-      if (!strip || !drawer) return;
-
-      // Show strip on mobile
-      const checkMobile = () => {
-        strip.style.display = window.innerWidth <= 768 ? '' : 'none';
-      };
-      checkMobile();
-      window.addEventListener('resize', checkMobile);
-
-      // Use the faceplate backdrop to dim and close on tap-outside
-      const backdrop = document.getElementById('faceplate-backdrop');
-
-      const closeDrawer = () => {
-        drawer.classList.remove('open');
-        if (expandBtn) expandBtn.innerHTML = 'INFO &#9650;';
-        if (backdrop) backdrop.style.display = 'none';
-      };
-      const openDrawer = () => {
-        drawer.classList.add('open');
-        if (expandBtn) expandBtn.innerHTML = 'INFO &#9660;';
-        if (backdrop) backdrop.style.display = 'block';
-        this._updateMobileInfoContent('pnl');
-      };
-      const toggleDrawer = () => {
-        if (drawer.classList.contains('open')) closeDrawer();
-        else openDrawer();
-      };
-
-      if (expandBtn) expandBtn.addEventListener('click', toggleDrawer);
-      if (handle) handle.addEventListener('click', closeDrawer);
-
-      // Add close button inside drawer
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = '\u2715 CLOSE';
-      closeBtn.className = 'mobile-info-tab';
-      closeBtn.style.cssText = 'flex:0; padding:6px 10px; color:var(--text-label);';
-      const tabBar = drawer.querySelector('.mobile-info-tabs');
-      if (tabBar) tabBar.appendChild(closeBtn);
-      closeBtn.addEventListener('click', closeDrawer);
-
-      // Tap backdrop to close drawer and/or faceplate
-      if (backdrop) {
-        backdrop.addEventListener('click', () => {
-          if (drawer.classList.contains('open')) closeDrawer();
-          if (this.faceplateManager) {
-            this.faceplateManager.close();
-          } else {
-            const fp = document.getElementById('faceplate');
-            if (fp) fp.style.display = 'none';
-          }
-        });
-      }
-
-      // Tab switching
-      drawer.querySelectorAll('.mobile-info-tab').forEach(tab => {
-        if (tab === closeBtn) return;
-        tab.addEventListener('click', () => {
-          drawer.querySelectorAll('.mobile-info-tab').forEach(t => {
-            if (t !== closeBtn) t.classList.remove('active');
-          });
-          tab.classList.add('active');
-          this._updateMobileInfoContent(tab.dataset.infoTab);
-        });
-      });
-    },
-
-    _bindMobileSpeedDial() {
-      const dial = document.getElementById('mobile-speed-dial');
-      const fab = document.getElementById('speed-dial-fab');
-      const ring = document.getElementById('speed-dial-ring');
-      const backdrop = document.getElementById('speed-dial-backdrop');
-      const fabLabel = document.getElementById('fab-label');
-      if (!dial || !fab) return;
-
-      const speedLabels = { 0: '\u23F8', 1: '1x', 2: '2x', 4: '4x' };
-
-      const closeDial = () => dial.classList.remove('open');
-      const openDial = () => dial.classList.add('open');
-
-      fab.addEventListener('click', () => {
-        if (dial.classList.contains('open')) {
-          closeDial();
-        } else {
-          openDial();
-        }
-      });
-
-      if (backdrop) {
-        backdrop.addEventListener('click', closeDial);
-      }
-
-      // Speed buttons in the ring
-      ring.querySelectorAll('.sd-btn[data-speed]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const speed = parseInt(btn.dataset.speed, 10);
-
-          // Trigger the desktop button click to keep them in sync
-          if (speed === 0) {
-            if (this.sim) this.sim.pause();
-            this._updateTimeButtons(0);
-          } else {
-            if (this.sim) this.sim.setSpeed(speed);
-            this._updateTimeButtons(speed);
-          }
-
-          // Update FAB label
-          fabLabel.textContent = speedLabels[speed] || speed + 'x';
-
-          // Update ring active states
-          ring.querySelectorAll('.sd-btn[data-speed]').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          closeDial();
-        });
-      });
-
-      // Trend button
-      const sdTrend = document.getElementById('sd-trend');
-      if (sdTrend) {
-        sdTrend.addEventListener('click', () => {
-          const deskTrend = document.getElementById('btn-trend');
-          if (deskTrend) deskTrend.click();
-          closeDial();
-        });
-      }
-
-      // Snapshot button
-      const sdSnap = document.getElementById('sd-snapshot');
-      if (sdSnap) {
-        sdSnap.addEventListener('click', () => {
-          const deskSnap = document.getElementById('btn-snapshot');
-          if (deskSnap) deskSnap.click();
-          closeDial();
-        });
-      }
-
-      // Keep FAB label in sync with desktop time button changes
-      this._mobileFabLabel = fabLabel;
-      this._mobileSpeedRing = ring;
-    },
-
-    _updateMobileInfoContent(tab) {
-      const content = document.getElementById('mobile-info-content');
-      if (!content) return;
-
-      if (tab === 'pnl') {
-        const rev = this.pnlSystem ? Math.round(this.pnlSystem.revenuePerHour) : 0;
-        const pen = this.pnlSystem ? Math.round(this.pnlSystem.penaltiesPerHour) : 0;
-        const net = this.pnlSystem ? Math.round(this.pnlSystem.netPerHour) : 0;
-        const shift = this.pnlSystem ? Math.round(this.pnlSystem.shiftEarnings) : 0;
-        const reasons = this.pnlSystem ? this.pnlSystem.penaltyReasons : [];
-        const target = this._getShiftTarget();
-        const pct = target > 0 ? Math.min(100, Math.round((shift / target) * 100)) : 0;
-
-        content.innerHTML = `
-          <div class="panel-section">
-            <div class="pnl-block" style="padding:4px 8px">
-              <div class="pnl-row"><span class="pnl-label">REVENUE</span><span class="pnl-val" style="color:#4CAF50">$${rev.toLocaleString()}/hr</span></div>
-              <div class="pnl-row"><span class="pnl-label">PENALTIES</span><span class="pnl-val" style="color:${pen > 0 ? '#E04040' : 'var(--text-unit)'}">-$${pen.toLocaleString()}/hr</span></div>
-              <div class="pnl-row pnl-total-row"><span class="pnl-label">NET</span><span class="pnl-val" style="color:${net >= 0 ? '#4CAF50' : '#E04040'}">$${net.toLocaleString()}/hr</span></div>
-              <div class="pnl-row"><span class="pnl-label">SHIFT</span><span class="pnl-val" style="color:${shift >= 0 ? '#4CAF50' : '#E04040'}">$${shift.toLocaleString()}</span></div>
-              <div class="pnl-row"><span class="pnl-label">TARGET</span><span class="pnl-val" style="color:var(--text-label)">$${target.toLocaleString()} (${pct}%)</span></div>
-              ${reasons.length > 0 ? `<div style="margin-top:4px;font-size:9px;color:#E04040;font-family:var(--font-mono)">${reasons.map(r => this._escapeHtml(r)).join(' | ')}</div>` : ''}
-            </div>
-          </div>`;
-      } else if (tab === 'events') {
-        const eventBlock = document.getElementById('event-status');
-        content.innerHTML = `<div class="panel-section"><h4 class="section-header">EVENTS</h4>${eventBlock ? eventBlock.innerHTML : 'NO EVENTS'}</div>`;
-        // Re-bind action buttons in mobile drawer
-        content.querySelectorAll('.event-action-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            if (this.eventActionPanel) {
-              this.eventActionPanel._executeAction(btn.dataset.event, btn.dataset.action);
-            }
           });
         });
-      } else if (tab === 'radio') {
-        const radioLog = document.getElementById('radio-log');
-        content.innerHTML = `<div class="panel-section"><h4 class="section-header">NPC RADIO</h4><div class="radio-block">${radioLog ? radioLog.innerHTML : ''}</div></div>`;
-      }
-    },
-
-    _updateMobilePnlStrip() {
-      if (window.innerWidth > 768 || !this.pnlSystem) return;
-      const rateEl = document.getElementById('mpnl-rate');
-      const shiftEl = document.getElementById('mpnl-shift');
-      const penEl = document.getElementById('mpnl-penalties');
-      if (rateEl) {
-        const net = Math.round(this.pnlSystem.netPerHour);
-        rateEl.textContent = `$${net.toLocaleString()}/hr`;
-        rateEl.style.color = net >= 0 ? '#4CAF50' : '#E04040';
-      }
-      if (shiftEl) {
-        shiftEl.textContent = `SHIFT: $${Math.round(this.pnlSystem.shiftEarnings).toLocaleString()}`;
-      }
-      if (penEl) {
-        const reasons = this.pnlSystem.penaltyReasons;
-        penEl.textContent = reasons.length > 0 ? reasons[0] : '';
       }
     },
 
@@ -711,6 +427,30 @@
         this._updateLandingPage();
         this._updateChallengesPreview();
       }
+    },
+
+    _showConfirm(message, onConfirm) {
+      let overlay = document.getElementById('confirm-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'confirm-overlay';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999';
+        const box = document.createElement('div');
+        box.style.cssText = 'background:var(--bg-card,#1a1a2e);border:1px solid var(--border,#333);padding:20px 24px;max-width:360px;font-family:var(--font-mono,monospace);color:var(--text-normal,#ccc);text-align:center';
+        box.innerHTML = `
+          <div id="confirm-msg" style="font-size:12px;margin-bottom:16px"></div>
+          <div style="display:flex;gap:12px;justify-content:center">
+            <button id="confirm-yes" style="font-family:var(--font-mono,monospace);font-size:11px;padding:6px 16px;min-height:28px;background:var(--alarm-crit,#c0392b);color:#fff;border:none;cursor:pointer">CONFIRM</button>
+            <button id="confirm-no" style="font-family:var(--font-mono,monospace);font-size:11px;padding:6px 16px;min-height:28px;background:var(--bg-input,#222);color:var(--text-label,#aaa);border:1px solid var(--border,#333);cursor:pointer">CANCEL</button>
+          </div>`;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+      }
+      overlay.style.display = 'flex';
+      document.getElementById('confirm-msg').textContent = message;
+      const cleanup = () => { overlay.style.display = 'none'; };
+      document.getElementById('confirm-yes').onclick = () => { cleanup(); onConfirm(); };
+      document.getElementById('confirm-no').onclick = cleanup;
     },
 
     _updateContinueButton() {
@@ -832,12 +572,12 @@
             <span class="gauge-trend">&#8594;</span>
           `;
 
-          // Click gauge tag to add to trend graph
+          // Double-click gauge tag to add to trend graph
           const tagEl = row.querySelector('.gauge-tag');
           if (tagEl) {
             tagEl.style.cursor = 'pointer';
-            tagEl.title = 'Click to track in trend graph';
-            tagEl.addEventListener('click', (e) => {
+            tagEl.title = 'Double-click to track in trend graph';
+            tagEl.addEventListener('dblclick', (e) => {
               e.stopPropagation();
               if (this.trendManager) {
                 this.trendManager.trackTag(tag);
@@ -915,8 +655,7 @@
         tabBar.appendChild(btn);
       });
 
-      // Also populate mobile building pills
-      this._buildMobileBuildingPills(facility, tabs);
+      // Mobile building pills removed — Steam desktop only
     },
 
     _buildMobileBuildingPills(facility, tabs) {
@@ -1588,8 +1327,10 @@
       // Weather
       this.weather = { ...(config.weather || { ambientTemp: 72, windDirection: 'SW', windSpeed: 8, precipitation: 'CLEAR' }) };
 
-      // Set up event system
+      // Set up event system with FNAF-style progressive difficulty
       this.eventSystem = new EventSystem();
+      const rankLevel = this.career ? this.career.getCurrentRank().level : 1;
+      this.eventSystem.setDifficulty(rankLevel);
 
       // Register events based on facility
       if (window.registerPigEvents) registerPigEvents(this.eventSystem);
@@ -1654,6 +1395,12 @@
       // Update time display
       document.getElementById('game-time').textContent = this.sim.getTimeString();
       document.getElementById('shift-label').textContent = this.sim.getShiftLabel();
+      const remainEl = document.getElementById('shift-remaining');
+      if (remainEl && this.sim) {
+        const left = Math.max(0, this.sim.shiftDurationMinutes - this.sim.shiftElapsed);
+        const hrs = (left / 60).toFixed(1);
+        remainEl.textContent = hrs + 'h LEFT';
+      }
 
       // Update UI every tick
       if (this.gaugeManager) this.gaugeManager.update();
@@ -1704,8 +1451,6 @@
       this._updateShiftTimerWarning(gameTime);
       this._updatePnlColors();
 
-      // Mobile P&L strip
-      this._updateMobilePnlStrip();
 
       // Record debrief data every 10 ticks
       if (this.debriefScreen && this.sim.totalTicks % 10 === 0) {
@@ -1964,7 +1709,6 @@
       // P&L spec board update from pnlSystem
       if (this.pnlSystem) {
         this.pnlSystem._updateUI();
-        this._updateMobilePnlStrip();
       }
     },
 

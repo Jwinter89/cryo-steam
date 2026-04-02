@@ -12,6 +12,7 @@ function registerAmineEvents(eventSystem) {
     description: 'H2S levels rising in treated gas. Amine system not removing enough.',
     severity: 'alarm',
     probability: 0.005,
+    minRank: 3,
     radioMessage: 'ALARM: AI-A01 H2S OUTLET HIGH — Check amine circulation.',
 
     data: { severity: 0, evacuationNeeded: false, originalSP: null },
@@ -64,6 +65,7 @@ function registerAmineEvents(eventSystem) {
     description: 'H2S detected in plant area. Evacuation protocol required.',
     severity: 'critical',
     probability: 0.003,
+    minRank: 4,
     radioMessage: 'CRITICAL: H2S ALARM — EVACUATE AFFECTED AREA. CHECK WIND DIRECTION.',
 
     data: {
@@ -85,9 +87,10 @@ function registerAmineEvents(eventSystem) {
       const wind = windDirs[Math.floor(Math.random() * windDirs.length)];
       event.data.windDirection = wind;
 
-      // Safe routes are UPWIND of the leak
+      // Safe routes are UPWIND and CROSSWIND — never downwind
       const opposites = { 'N': 'S', 'NE': 'SW', 'E': 'W', 'SE': 'NW', 'S': 'N', 'SW': 'NE', 'W': 'E', 'NW': 'SE' };
-      event.data.safeRoutes = [opposites[wind], wind]; // Go upwind
+      const crosswind = { 'N': ['E','W'], 'NE': ['SE','NW'], 'E': ['N','S'], 'SE': ['NE','SW'], 'S': ['E','W'], 'SW': ['SE','NW'], 'W': ['N','S'], 'NW': ['NE','SW'] };
+      event.data.safeRoutes = [opposites[wind], ...crosswind[wind]];
 
       const areaH2s = pvMap['AI-A02'] || pvMap['AI-A03'];
       if (areaH2s) areaH2s.value = event.data.concentration;
@@ -133,6 +136,7 @@ function registerAmineEvents(eventSystem) {
     description: 'Contamination causing amine foaming in absorber. H2S removal degrading.',
     severity: 'warning',
     probability: 0.005,
+    minRank: 3,
     affectedByMaintenance: true,
     radioMessage: 'Ops: Absorber showing differential pressure increase. Possible foaming.',
 
@@ -165,6 +169,7 @@ function registerAmineEvents(eventSystem) {
     description: 'Regen reboiler temperature drifting. Lean amine quality at risk.',
     severity: 'warning',
     probability: 0.006,
+    minRank: 2,
 
     data: { direction: 'high' },
 
@@ -202,6 +207,7 @@ function registerAmineEvents(eventSystem) {
     description: 'Primary amine pump has failed. Switch to spare or lose circulation.',
     severity: 'alarm',
     probability: 0.004,
+    minRank: 3,
     radioMessage: 'ALARM: P-A01 AMINE PUMP TRIP — Switch to spare pump.',
 
     onStart: (event, pvMap) => {
@@ -236,6 +242,7 @@ function registerAmineEvents(eventSystem) {
     description: 'Inspection found accelerated corrosion. Poor amine chemistry consequence.',
     severity: 'warning',
     probability: 0.003,
+    minRank: 3,
     affectedByMaintenance: true,
     radioMessage: 'Inspection: Corrosion found in regen overhead piping. Schedule repair.',
 
@@ -265,6 +272,7 @@ function registerAmineEvents(eventSystem) {
     description: 'Work permit required for sour gas area maintenance.',
     severity: 'info',
     probability: 0.004,
+    minRank: 1,
     radioMessage: 'Maintenance: Requesting sour gas work permit for amine area.',
 
     data: { permitIssued: false, gasTestDone: false },

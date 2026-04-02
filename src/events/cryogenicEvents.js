@@ -6,26 +6,39 @@
 
 function registerCryogenicEvents(eventSystem) {
 
-  // Expander Trip
+  // Expander Trip — multi-step restart procedure
   eventSystem.registerEvent({
     id: 'expander-trip',
     name: 'EXPANDER TRIP',
     description: 'Turboexpander tripped. Plant going to bypass. Full P&L impact.',
     severity: 'critical',
     probability: 0.004,
+    minRank: 4,
     radioMessage: 'ALARM: EX-400 TURBOEXPANDER TRIP — BYPASS MODE',
 
     data: {
       cause: '',
+      phase: 'tripped',       // tripped → seal-gas → lube-oil → jt-open → loading → online
+      sealGasOn: false,
+      lubeOilOn: false,
+      jtOpen: false,
+      loadingProgress: 0,     // 0–100, expander loading percentage
+      loadingRate: 0,         // how fast we're loading (affected by JT close rate)
       restartAttempts: 0,
-      bypassActive: true
+      overspeedAbort: false
     },
 
     onStart: (event, pvMap) => {
       const causes = ['HIGH BEARING TEMP', 'LOW LUBE OIL PRESSURE', 'OVERSPEED', 'HIGH VIBRATION', 'SUCTION PRESSURE LOW'];
       event.data.cause = causes[Math.floor(Math.random() * causes.length)];
-      event.data.bypassActive = true;
+      event.data.phase = 'tripped';
+      event.data.sealGasOn = false;
+      event.data.lubeOilOn = false;
+      event.data.jtOpen = false;
+      event.data.loadingProgress = 0;
+      event.data.loadingRate = 0;
       event.data.restartAttempts = 0;
+      event.data.overspeedAbort = false;
 
       // Expander speed drops to zero
       const speed = pvMap['SI-401'];
@@ -35,52 +48,189 @@ function registerCryogenicEvents(eventSystem) {
       const expOut = pvMap['TIC-402'];
       if (expOut) expOut.externalForce += 15;
 
-      // Booster comp loses drive
+      // Booster comp loses drive — suction drops on residue compressors
       const booster = pvMap['PIC-602'];
       if (booster) booster.externalForce -= 10;
+
+      // IGVs slam closed
+      const igv = pvMap['FIC-401'];
+      if (igv) igv.externalForce -= 65;
+
+      // Demethanizer pressure climbs (gas not being pulled out as efficiently)
+      const demetPress = pvMap['PIC-501'];
+      if (demetPress) demetPress.externalForce += 8;
     },
 
     onTick: (event, dt, pvMap) => {
-      // In bypass — residue gas goes straight through, no NGL recovery
+      // Continuous effects while expander is down
       const ethRecovery = pvMap['AI-701'];
       if (ethRecovery) ethRecovery.externalForce -= 5;
 
       const propRecovery = pvMap['AI-702'];
       if (propRecovery) propRecovery.externalForce -= 3;
 
-      // Residue BTU shoots up (unprocessed gas)
       const btu = pvMap['AI-703'];
       if (btu) btu.externalForce += 2;
 
-      // Demethanizer conditions destabilize
       const demetOH = pvMap['TIC-501'];
       if (demetOH) demetOH.externalForce += 1;
+
+      // Cascade: booster offline → residue comp suction drops → surge risk
+      if (event.data.phase === 'tripped' || event.data.phase === 'seal-gas' ||
+          event.data.phase === 'lube-oil' || event.data.phase === 'jt-open') {
+        const resDisch = pvMap['PIC-601'];
+        if (resDisch) resDisch.externalForce -= 3;
+
+        // Residue comp discharge temps climb on low suction
+        const resTemp1 = pvMap['TIC-601'];
+        if (resTemp1) resTemp1.externalForce += 0.5;
+        const resTemp2 = pvMap['TIC-602'];
+        if (resTemp2) resTemp2.externalForce += 0.5;
+      }
+
+      // During loading phase — expander RPM climbs gradually
+      if (event.data.phase === 'loading') {
+        event.data.loadingProgress += event.data.loadingRate * dt;
+
+        // RPM proportional to loading progress
+        const speed = pvMap['SI-401'];
+        if (speed) {
+          const targetRPM = (event.data.loadingProgress / 100) * 18500;
+          speed.externalForce = -(speed.value - targetRPM) * 0.1;
+        }
+
+        // Outlet temp drops as expander loads (expansion cooling returns)
+        const expOut = pvMap['TIC-402'];
+        if (expOut) {
+          const coolingReturn = (event.data.loadingProgress / 100) * 15;
+          expOut.externalForce = 15 - coolingReturn;
+        }
+
+        // Booster pressure recovers as expander loads
+        const booster = pvMap['PIC-602'];
+        if (booster) {
+          const boostReturn = (event.data.loadingProgress / 100) * 10;
+          booster.externalForce = -10 + boostReturn;
+        }
+
+        // Check for overspeed — loading too fast causes RPM spike
+        if (speed && speed.value > 22000) {
+          // Hi alarm territory — warn the operator
+          event.data.loadingRate = Math.max(0, event.data.loadingRate - 1);
+        }
+        if (speed && speed.value > 23500) {
+          // HiHi — auto trip, restart fails
+          event.data.phase = 'tripped';
+          event.data.overspeedAbort = true;
+          event.data.loadingProgress = 0;
+          event.data.loadingRate = 0;
+          event.data.sealGasOn = false;
+          event.data.lubeOilOn = false;
+          event.data.jtOpen = false;
+          event.data.restartAttempts++;
+          if (speed) speed.externalForce -= 200;
+          if (expOut) expOut.externalForce = 15;
+          if (booster) booster.externalForce -= 10;
+        }
+
+        // Successfully loaded to 100%
+        if (event.data.loadingProgress >= 100) {
+          event.data.phase = 'online';
+        }
+      }
     },
 
     onResolve: (event, action, pvMap) => {
-      if (action === 'restart-expander') {
-        event.data.restartAttempts++;
-        // Need bearing temp OK and lube oil OK
-        const bearing = pvMap['TIC-403'];
-        const lubeOil = pvMap['PIC-402'];
-        const bearingOK = bearing && bearing.value < 180;
-        const lubeOK = lubeOil && lubeOil.value > 25;
+      const bearing = pvMap['TIC-403'];
+      const lubeOil = pvMap['PIC-402'];
+      const speed = pvMap['SI-401'];
 
-        if (bearingOK && lubeOK && Math.random() < 0.6) {
-          return true;
-        }
-        return false;
+      switch (action) {
+        case 'start-seal-gas':
+          // Seal gas must be established first — always succeeds
+          if (event.data.phase !== 'tripped') return false;
+          event.data.sealGasOn = true;
+          event.data.phase = 'seal-gas';
+          event.data.overspeedAbort = false;
+          return false; // event continues, just advanced phase
+
+        case 'start-lube-oil':
+          // Lube oil after seal gas — wrong order freezes bearings
+          if (!event.data.sealGasOn) {
+            // Wrong order! Lube oil without seal gas = frozen bearings
+            if (bearing) bearing.externalForce += 30;
+            event.data.cause = 'FROZEN BEARINGS — LUBE OIL BEFORE SEAL GAS';
+            return false;
+          }
+          if (event.data.phase !== 'seal-gas') return false;
+          event.data.lubeOilOn = true;
+          event.data.phase = 'lube-oil';
+          // Lube oil restores pressure
+          if (lubeOil) lubeOil.externalForce += 5;
+          return false;
+
+        case 'open-jt-bypass':
+          // Open JT valve to ~60% for initial bypass flow
+          if (event.data.phase !== 'lube-oil') return false;
+          // Check bearing temp — must be below 180 before proceeding
+          if (bearing && bearing.value >= 180) return false;
+          // Check lube oil — must be above 25 PSI
+          if (lubeOil && lubeOil.value < 25) return false;
+          event.data.jtOpen = true;
+          event.data.phase = 'jt-open';
+          return false;
+
+        case 'begin-loading':
+          // Start slowly closing JT to load the expander
+          if (event.data.phase !== 'jt-open') return false;
+          event.data.phase = 'loading';
+          event.data.loadingRate = 3; // moderate rate — safe default
+          // IGVs begin opening
+          const igv = pvMap['FIC-401'];
+          if (igv) igv.externalForce = 0; // release the slam-closed force
+          return false;
+
+        case 'load-faster':
+          // Increase loading rate — risky, can cause overspeed
+          if (event.data.phase !== 'loading') return false;
+          event.data.loadingRate = Math.min(8, event.data.loadingRate + 2);
+          return false;
+
+        case 'load-slower':
+          // Decrease loading rate — safer but takes longer
+          if (event.data.phase !== 'loading') return false;
+          event.data.loadingRate = Math.max(1, event.data.loadingRate - 2);
+          return false;
+
+        case 'emergency-close-igv':
+          // Emergency abort — slam IGVs closed to prevent overspeed
+          if (event.data.phase !== 'loading') return false;
+          event.data.phase = 'jt-open'; // back to JT bypass, must restart loading
+          event.data.loadingProgress = 0;
+          event.data.loadingRate = 0;
+          if (speed) speed.externalForce -= 200;
+          return false;
+
+        case 'confirm-online':
+          // Final confirmation — expander is loaded and stable
+          if (event.data.phase !== 'online') return false;
+          if (speed && speed.value > 12000 && speed.value < 22000) {
+            return true; // fully resolved
+          }
+          return false;
+
+        default:
+          return false;
       }
-      return false;
     },
 
     onEnd: (event, pvMap) => {
-      const speed = pvMap['SI-401'];
-      if (speed) speed.externalForce = 0;
-      const expOut = pvMap['TIC-402'];
-      if (expOut) expOut.externalForce = 0;
-      const booster = pvMap['PIC-602'];
-      if (booster) booster.externalForce = 0;
+      // Clear all forces — expander back to normal operation
+      ['SI-401', 'TIC-402', 'PIC-602', 'FIC-401', 'PIC-501', 'PIC-402',
+       'PIC-601', 'TIC-601', 'TIC-602'].forEach(tag => {
+        const pv = pvMap[tag];
+        if (pv) pv.externalForce = 0;
+      });
     }
   });
 
@@ -91,6 +241,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Water breakthrough in mol sieve beds. Hydrate risk in cold box.',
     severity: 'alarm',
     probability: 0.005,
+    minRank: 4,
     affectedByMaintenance: true,
     radioMessage: 'ALARM: AI-201 OUTLET MOISTURE HIGH — MOL SIEVE BREAKTHROUGH',
 
@@ -158,6 +309,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Ice formation in cold box exchangers. Major recovery event.',
     severity: 'critical',
     probability: 0.002,
+    minRank: 4,
     radioMessage: 'CRITICAL: Cold box temperatures erratic — possible freeze-up. Check all upstream systems.',
 
     data: {
@@ -241,6 +393,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Hidden brazed aluminum fin damage from rate-of-change violation.',
     severity: 'hidden',
     probability: 0, // Only triggered by rate-of-change violations
+    minRank: 4,
 
     data: {
       damagePercent: 0,
@@ -275,6 +428,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Residue compressor fault. Coolant line or valve failure.',
     severity: 'alarm',
     probability: 0.004,
+    minRank: 3,
     radioMessage: 'ALARM: Residue compressor fault — investigate immediately.',
 
     data: {
@@ -327,6 +481,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Liquid overwhelming demethanizer. Separation collapsing.',
     severity: 'alarm',
     probability: 0.003,
+    minRank: 3,
     radioMessage: 'ALARM: Demethanizer differential pressure spiking — possible flood.',
 
     data: { floodSeverity: 0 },
@@ -369,6 +524,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'NGL pump bearing temperature trending up. Early warning — fire risk if ignored.',
     severity: 'warning',
     probability: 0.005,
+    minRank: 3,
     increasesWithTime: true,
 
     data: { tempRise: 0, failureOccurred: false },
@@ -403,6 +559,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'NGL pump bearing has failed. Fire risk. ESD possible.',
     severity: 'critical',
     probability: 0,
+    minRank: 4,
     radioMessage: 'CRITICAL: P-701 BEARING FAILURE — FIRE RISK IN PUMP AREA',
 
     onStart: (event, pvMap) => {
@@ -426,6 +583,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Mode switch in progress. Critical rate management required.',
     severity: 'info',
     probability: 0, // Player-initiated only
+    minRank: 4,
 
     data: {
       fromMode: 'ethane',
@@ -527,6 +685,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'HiHi level triggered. ESD fired. Liquid-full separator. 10-hour recovery.',
     severity: 'critical',
     probability: 0,
+    minRank: 4,
     radioMessage: 'ESD ACTIVATED: Separator liquid-full. Begin recovery procedure.',
 
     data: {
@@ -562,6 +721,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Fire detection alarm in plant area.',
     severity: 'alarm',
     probability: 0.006,
+    minRank: 2,
     radioMessage: 'FIRE EYE ALARM — Verify real or false.',
 
     data: {
@@ -599,6 +759,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Upstream production change. BTU, H2S, CO2 all shifting.',
     severity: 'info',
     probability: 0.007,
+    minRank: 2,
     radioMessage: 'Pipeline: Feed gas composition changing. Upstream well brought online/shut in.',
 
     data: { btuShift: 0, h2sShift: 0 },
@@ -626,6 +787,7 @@ function registerCryogenicEvents(eventSystem) {
     description: 'Liquids going to flare. Visible fire at flare tip.',
     severity: 'alarm',
     probability: 0.002,
+    minRank: 3,
     radioMessage: 'VISUAL: Excessive flame at flare stack. Check liquid routing to flare.',
 
     onTick: (event, dt, pvMap) => {

@@ -41,6 +41,7 @@ function registerSteamIPC() {
   });
 
   ipcMain.on('steam:clearAchievement', (e, name) => {
+    if (app.isPackaged) { e.returnValue = false; return; }
     try { steamClient?.achievement?.clear(name); e.returnValue = true; }
     catch (_) { e.returnValue = false; }
   });
@@ -236,6 +237,10 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+  if (steamCallbackInterval) {
+    clearInterval(steamCallbackInterval);
+    steamCallbackInterval = null;
+  }
   if (steamClient) {
     try { steamClient.shutdown(); } catch (_) {}
     steamClient = null;
@@ -246,7 +251,7 @@ app.on('window-all-closed', () => {
 });
 
 // ── Steam Callback Pump ─────────────────────────────────────────
-setInterval(() => {
+let steamCallbackInterval = setInterval(() => {
   if (steamClient) {
     try { steamClient.runCallbacks(); } catch (_) {}
   }
