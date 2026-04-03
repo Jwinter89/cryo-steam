@@ -139,7 +139,7 @@ class AlarmManager {
     this.listEl.innerHTML = this.alarms.map(a => `
       <div class="alarm-entry ${a.acked ? '' : 'unacked'}">
         <span class="alarm-tag">${a.tag}</span>
-        <span class="alarm-type ${a.priority <= 1 ? '' : a.state === 'HI' || a.state === 'LO' ? 'hi' : 'lo'}">${a.state}</span>
+        <span class="alarm-type ${a.state === 'HIHI' || a.state === 'LOLO' ? 'hihi' : a.state === 'HI' || a.state === 'LO' ? 'hi' : ''}">${a.state}</span>
         <span class="alarm-desc">${this._getDesc(a.tag)}</span>
         <span class="alarm-time">${a.time}</span>
         ${!a.acked ? `<button class="alarm-ack-btn" data-tag="${a.tag}">ACK</button>` : ''}

@@ -1922,6 +1922,7 @@ g[id^="equip-"]:hover line {
   color: var(--alarm-crit);
   min-width: 30px;
 }
+.alarm-entry .alarm-type.hihi { color: var(--alarm-crit); }
 .alarm-entry .alarm-type.hi { color: var(--alarm-hi); }
 .alarm-entry .alarm-type.lo { color: var(--alarm-lo); }
 .alarm-entry .alarm-desc {

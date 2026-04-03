@@ -74,27 +74,27 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
 
 ## TIER 3 — Medium Bugs (fix before v1.0)
 
-- [ ] **BUG-012**: Tank pop-off P&L penalty fires unbounded
+- [x] **BUG-012**: Tank pop-off P&L penalty fires unbounded
   - File: `game.js:1612-1617`
   - Issue: $500 penalty every 100 ticks with no cap. Can drive earnings to -infinity.
   - Fix: Cap total penalty at realistic maximum (~$5,000).
 
-- [ ] **BUG-014**: Henry shift-end tips hardcoded to day shift times
+- [x] **BUG-014**: Henry shift-end tips hardcoded to day shift times
   - File: `game.js:2633-2642`
   - Issue: Checks absolute game-minute values (690, 360). Breaks for night shifts or non-06:00 starts.
   - Fix: Use `shiftElapsed` and `shiftDurationMinutes` instead of absolute times.
 
-- [ ] **BUG-016**: HIHI/LOLO alarms have no color class in alarm list popup
+- [x] **BUG-016**: HIHI/LOLO alarms have no color class in alarm list popup
   - File: `alarmManager.js:140`
   - Issue: HIHI/LOLO fall to else branch and get class `'lo'`. No critical/HIHI class path.
   - Fix: Add `a.state === 'HIHI' || a.state === 'LOLO' ? 'hihi' : ...` mapping and CSS class.
 
-- [ ] **BUG-013**: Achievement flag tracking — penaltyReasons null guard
+- [x] **BUG-013**: Achievement flag tracking — penaltyReasons null guard
   - File: `game.js:2878`
   - Issue: `penaltyReasons.includes()` can throw if array is undefined on early ticks.
   - Fix: Guard with `if (this.pnlSystem.penaltyReasons && ...)`.
 
-- [ ] **BUG-018**: Tagline rotation interval can double up
+- [x] **BUG-018**: Tagline rotation interval can double up
   - File: `game.js:2793-2816`
   - Issue: `_startTaglineRotation()` doesn't clear existing interval before setting new one.
   - Fix: Add `if (this._taglineInterval) clearInterval(this._taglineInterval);` at top.

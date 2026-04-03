@@ -1186,6 +1186,8 @@
       this._crisisRecoveryTime = null;
       this._compRecoveredUnder8Min = false;
       this._truckLoadsClean = 0;
+      this._tankPopoffCost = 0;
+      this._towerFloodCost = 0;
       this._molsieveCycleComplete = false;
       this._compTripStartTime = null;
       this._shiftAchievements = [];
@@ -1610,21 +1612,25 @@
         }
       }
 
-      // Tank HIHI pressure → pop-off relief
+      // Tank HIHI pressure → pop-off relief (capped at $5,000 per shift)
       const tankP = pvMap['PIC-203'];
       if (tankP && tankP.alarmState === 'HIHI') {
-        if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
+        this._tankPopoffCost = this._tankPopoffCost || 0;
+        if (this.pnlSystem && this.sim.totalTicks % 100 === 0 && this._tankPopoffCost < 5000) {
           this.pnlSystem.applyEventCost(500, 'TANK POP-OFF');
+          this._tankPopoffCost += 500;
           this._addRadioMessage('WARNING: Tank TK-100 pop-off valve lifting — venting product!');
         }
       }
 
-      // Tower sump HIHI → flooding damages packing (stabilizer only — LIC-301 is cold sep in cryo)
+      // Tower sump HIHI → flooding damages packing (capped at $2,000 per shift)
       if (this.currentFacility === 'stabilizer') {
         const sump = pvMap['LIC-301'];
         if (sump && sump.alarmState === 'HIHI') {
-          if (this.pnlSystem && this.sim.totalTicks % 100 === 0) {
+          this._towerFloodCost = this._towerFloodCost || 0;
+          if (this.pnlSystem && this.sim.totalTicks % 100 === 0 && this._towerFloodCost < 2000) {
             this.pnlSystem.applyEventCost(200, 'TOWER FLOODING');
+            this._towerFloodCost += 200;
           }
         }
       }
@@ -2631,15 +2637,16 @@
         this._setHenryTipCooldown('good-earnings', 9999);
       }
 
-      // Shift end approaching (15 min left = ~690 game minutes on a 720 min shift)
-      const gameMin = this.sim.gameTimeMinutes;
-      if (gameMin >= 690 && gameMin <= 695 && !this._henryTipCooldown('shift-end')) {
+      // Shift end approaching (15 game-minutes remaining)
+      const minsLeft = this.sim.shiftDurationMinutes - this.sim.shiftElapsed;
+      if (minsLeft <= 15 && minsLeft > 10 && !this._henryTipCooldown('shift-end')) {
         this.henry.operatorTip('shift-end-approaching');
         this._setHenryTipCooldown('shift-end', 9999);
       }
 
       // Shift halfway ambient comment
-      if (gameMin >= 360 && gameMin <= 365 && !this._henryTipCooldown('halfway')) {
+      const halfShift = this.sim.shiftDurationMinutes / 2;
+      if (this.sim.shiftElapsed >= halfShift && this.sim.shiftElapsed <= halfShift + 5 && !this._henryTipCooldown('halfway')) {
         this.henry.operatorTip('shift-halfway');
         this._setHenryTipCooldown('halfway', 9999);
       }
@@ -2794,6 +2801,7 @@
     ],
 
     _startTaglineRotation() {
+      if (this._taglineInterval) clearInterval(this._taglineInterval);
       const el = document.getElementById('title-tagline');
       if (!el) return;
       this._taglineIdx = this._taglineIdx || 0;
@@ -2878,7 +2886,7 @@
       }
 
       // BTEX tracking
-      if (this.pnlSystem.penaltyReasons.includes('BTEX VIOLATION')) {
+      if (this.pnlSystem.penaltyReasons && this.pnlSystem.penaltyReasons.includes('BTEX VIOLATION')) {
         this._noBtexPenalties = false;
       }
 
