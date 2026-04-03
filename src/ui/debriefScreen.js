@@ -213,7 +213,7 @@ class DebriefScreen {
 
       const val = maxShift - (i / 4) * range;
       ctx.fillStyle = '#888';
-      ctx.font = '9px Courier New';
+      ctx.font = '10px Courier New';
       ctx.textAlign = 'right';
       ctx.fillText('$' + Math.round(val).toLocaleString(), pad.left - 4, y + 3);
     }
@@ -255,7 +255,7 @@ class DebriefScreen {
 
     // Time labels
     ctx.fillStyle = '#888';
-    ctx.font = '9px Courier New';
+    ctx.font = '10px Courier New';
     ctx.textAlign = 'center';
     const first = data[0];
     const last = data[data.length - 1];

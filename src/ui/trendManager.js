@@ -134,7 +134,7 @@ class TrendManager {
       }
     }
 
-    ctx.font = '8px Courier New';
+    ctx.font = '10px Courier New';
     ctx.fillStyle = '#666';
     ctx.textAlign = 'right';
     for (let i = 0; i <= 4; i++) {
@@ -202,7 +202,7 @@ class TrendManager {
 
       const ly = pad.top + idx * 15;
       ctx.fillStyle = color;
-      ctx.font = '9px Courier New';
+      ctx.font = '10px Courier New';
       ctx.textAlign = 'left';
       ctx.fillText(`${tag}: ${vals[vals.length - 1].toFixed(1)}`, w - pad.right + 6, ly + 4);
     });

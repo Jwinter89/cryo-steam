@@ -157,47 +157,47 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
 
 ## TIER 5 — UI/UX Improvements
 
-- [ ] **UX-001**: Gauge rows need bar graph / range indicator
+- [x] **UX-001**: Gauge rows need bar graph / range indicator
   - File: `gaugeManager.js`
   - Issue: Numbers only — no visual position-in-range. ISA-101 HP HMI core feature.
   - Fix: Add compact bar graph to each gauge row. `TrendManager.drawSparkline()` infrastructure exists.
 
-- [ ] **UX-002**: Building tabs carry no alarm state
+- [x] **UX-002**: Building tabs carry no alarm state
   - File: `game.js` / `style.css`
   - Issue: Tab with HIHI alarm looks identical to tab with no alarms.
   - Fix: Colored dot on tabs containing active alarms, wired to AlarmManager.
 
-- [ ] **UX-003**: Right panel — EVENTS should be at top
+- [x] **UX-003**: Right panel — EVENTS should be at top
   - File: `index.html`
   - Issue: EVENTS is 3rd behind SPEC BOARD and P&L. Highest urgency during crisis.
   - Fix: Reorder HTML sections.
 
-- [ ] **UX-004**: Faceplate SP lost on click-away
+- [x] **UX-004**: Faceplate SP lost on click-away
   - File: `faceplateManager.js`
   - Issue: Clicking outside faceplate with unsaved SP change silently discards it.
   - Fix: Check for unsaved changes before close, auto-apply or warn.
 
-- [ ] **UX-005**: Trend window discovery is hidden
+- [x] **UX-005**: Trend window discovery is hidden
   - File: `gaugeManager.js` / `trendManager.js`
   - Issue: Double-click to add trend only documented inside the trend window itself.
   - Fix: Hover tooltip or visual affordance on gauge rows.
 
-- [ ] **UX-006**: Alarm list modal blocks P&ID
+- [x] **UX-006**: Alarm list modal blocks P&ID
   - File: `alarmManager.js` / `style.css`
   - Issue: Centered fixed-position modal covers the diagram during acknowledgment.
   - Fix: Anchor alarm list to alarm bar (slide down) instead of center modal.
 
-- [ ] **UX-007**: No in-game settings access
+- [x] **UX-007**: No in-game settings access
   - File: `game.js`
   - Issue: Must exit to main menu to change volume/alarm sounds/tips.
   - Fix: Pause menu with volume, alarm sounds, tips accessible via Esc or hamburger.
 
-- [ ] **UX-008**: Section headers use Arial instead of mono/condensed
+- [x] **UX-008**: Section headers use Arial instead of mono/condensed
   - File: `style.css`
   - Issue: `.section-header` uses `--font-sans`. Everything else uses `--font-mono`.
   - Fix: Change to `--font-condensed`.
 
-- [ ] **UX-009**: 9px text below usability floor
+- [x] **UX-009**: 9px text below usability floor
   - File: `style.css`
   - Issue: Multiple elements at 8-9px. At 1440p+, physically too small.
   - Fix: Raise minimum to 10px across the board.

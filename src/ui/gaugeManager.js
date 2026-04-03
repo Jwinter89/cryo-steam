@@ -24,7 +24,9 @@ class GaugeManager {
         modeEl: row.querySelector('.gauge-mode'),
         tagEl: row.querySelector('.gauge-tag'),
         descEl: row.querySelector('.gauge-desc'),
-        unitEl: row.querySelector('.gauge-unit')
+        unitEl: row.querySelector('.gauge-unit'),
+        barFill: row.querySelector('.gauge-bar-fill'),
+        barSP: row.querySelector('.gauge-bar-sp')
       };
     });
   }
@@ -56,6 +58,21 @@ class GaugeManager {
       // Update mode badge
       if (el.modeEl && pv.controllable) {
         el.modeEl.textContent = pv.mode;
+      }
+
+      // Update bar graph
+      if (el.barFill) {
+        const range = pv.max - pv.min;
+        const pct = range > 0 ? Math.max(0, Math.min(100, ((pv.displayValue() - pv.min) / range) * 100)) : 0;
+        el.barFill.style.width = pct + '%';
+      }
+      if (el.barSP && pv.controllable) {
+        const range = pv.max - pv.min;
+        const spPct = range > 0 ? Math.max(0, Math.min(100, ((pv.sp - pv.min) / range) * 100)) : 0;
+        el.barSP.style.left = spPct + '%';
+        el.barSP.style.display = '';
+      } else if (el.barSP) {
+        el.barSP.style.display = 'none';
       }
 
       // Update alarm state on row

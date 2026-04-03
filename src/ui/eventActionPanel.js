@@ -31,19 +31,19 @@ class EventActionPanel {
       }
       .event-action-name {
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 10px;
         color: var(--text-tag);
         margin-bottom: 2px;
       }
       .event-action-desc {
-        font-size: 8px;
+        font-size: 10px;
         color: var(--text-unit);
         margin-bottom: 3px;
         line-height: 1.3;
       }
       .event-action-elapsed {
         font-family: var(--font-mono);
-        font-size: 8px;
+        font-size: 10px;
         color: var(--text-unit);
         margin-bottom: 3px;
       }

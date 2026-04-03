@@ -88,7 +88,7 @@ class KimrayWidget {
         border-bottom: 1px solid var(--border);
       }
       .kimray-tag {
-        font-size: 9px;
+        font-size: 10px;
         color: var(--text-tag);
         letter-spacing: 0.05em;
       }
@@ -133,7 +133,7 @@ class KimrayWidget {
         text-align: right;
       }
       .kimray-unit {
-        font-size: 9px;
+        font-size: 10px;
         color: var(--text-unit);
       }
       .kimray-dial-area {
@@ -141,7 +141,7 @@ class KimrayWidget {
         padding-top: 6px;
       }
       .kimray-dial-label {
-        font-size: 9px;
+        font-size: 10px;
         color: var(--text-unit);
         display: block;
         margin-bottom: 4px;
@@ -176,7 +176,7 @@ class KimrayWidget {
       .kimray-dial-marks {
         display: flex;
         justify-content: space-between;
-        font-size: 8px;
+        font-size: 10px;
         color: var(--text-unit);
         padding: 2px 0;
       }
@@ -332,7 +332,7 @@ class KimrayWidget {
 
     // Flow direction arrows
     ctx.fillStyle = '#A0A0A0';
-    ctx.font = '8px Arial';
+    ctx.font = '10px Arial';
     ctx.fillText('RICH IN', 5, cy - 20);
     ctx.fillText('LEAN OUT', w - 50, cy - 20);
 

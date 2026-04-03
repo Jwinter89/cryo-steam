@@ -181,7 +181,7 @@
         <div class="topbar-center">
           <span id="game-time">06:00</span>
           <span id="shift-label">DAY SHIFT</span>
-          <span id="shift-remaining" style="font-size:9px;color:var(--text-unit);margin-left:6px">8.0h LEFT</span>
+          <span id="shift-remaining" style="font-size:10px;color:var(--text-unit);margin-left:6px">8.0h LEFT</span>
         </div>
         <div class="topbar-right">
           <span id="pnl-rate" class="pnl-value">$0/hr</span>
@@ -190,10 +190,21 @@
       </div>
 
       <!-- Alarm Summary Bar -->
-      <div id="alarm-bar">
-        <div id="alarm-count">0 ALARMS</div>
-        <div id="alarm-message">NO ACTIVE ALARMS</div>
-        <button id="alarm-ack-btn" style="display:none">ACK</button>
+      <div id="alarm-bar-wrap">
+        <div id="alarm-bar">
+          <div id="alarm-count">0 ALARMS</div>
+          <div id="alarm-message">NO ACTIVE ALARMS</div>
+          <button id="alarm-ack-btn" style="display:none">ACK</button>
+        </div>
+        <div id="alarm-list-popup" class="popup" style="display:none">
+          <div class="popup-header">
+            <h3>ALARM SUMMARY</h3>
+            <button class="popup-close" data-popup="alarm-list-popup">X</button>
+          </div>
+          <div id="alarm-list" class="alarm-list">
+            <div class="alarm-empty">NO ALARMS</div>
+          </div>
+        </div>
       </div>
 
       <!-- Learn Mode Overlay -->
@@ -544,6 +555,13 @@
         <!-- Right Panel - Quick Controls & Events -->
         <div id="right-panel">
           <div class="panel-section">
+            <h4 class="section-header">EVENTS</h4>
+            <div id="event-status" class="event-block">
+              <span class="event-item">NO ACTIVE EVENTS</span>
+            </div>
+          </div>
+
+          <div class="panel-section">
             <h4 class="section-header">SPEC BOARD</h4>
             <div id="spec-board">
               <!-- Populated dynamically based on facility -->
@@ -573,13 +591,6 @@
           </div>
 
           <div class="panel-section">
-            <h4 class="section-header">EVENTS</h4>
-            <div id="event-status" class="event-block">
-              <span class="event-item">NO ACTIVE EVENTS</span>
-            </div>
-          </div>
-
-          <div class="panel-section">
             <h4 class="section-header">WEATHER</h4>
             <div class="weather-block">
               <div class="weather-row">
@@ -602,6 +613,33 @@
             <div id="radio-log" class="radio-block">
               <span class="radio-msg">Ready for shift.</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Menu Overlay -->
+      <div id="pause-menu" class="pause-menu" style="display:none">
+        <div class="pause-menu-box">
+          <h3 class="pause-menu-title">PAUSED</h3>
+          <div class="pause-setting-row">
+            <span>Master Volume</span>
+            <input type="range" id="pause-volume" min="0" max="100" value="30">
+          </div>
+          <div class="pause-setting-row">
+            <span>Sound Effects</span>
+            <input type="checkbox" id="pause-sound" checked>
+          </div>
+          <div class="pause-setting-row">
+            <span>Alarm Sounds</span>
+            <input type="checkbox" id="pause-alarm-sound" checked>
+          </div>
+          <div class="pause-setting-row">
+            <span>Alarm Tips</span>
+            <input type="checkbox" id="pause-tips" checked>
+          </div>
+          <div class="pause-menu-buttons">
+            <button class="menu-btn" id="pause-resume">RESUME</button>
+            <button class="menu-btn pause-quit-btn" id="pause-quit">QUIT TO MENU</button>
           </div>
         </div>
       </div>
@@ -700,7 +738,7 @@
         <div class="setting-row">
           <span>Lead Operator Mode</span>
           <input type="checkbox" id="setting-lead-operator" checked>
-          <small style="color:var(--text-unit);font-size:9px;margin-left:4px">Henry's hints &amp; coaching</small>
+          <small style="color:var(--text-unit);font-size:10px;margin-left:4px">Henry's hints &amp; coaching</small>
         </div>
         <div class="setting-row">
           <span>Color Blind Mode</span>
@@ -723,16 +761,7 @@
       </div>
     </div>
 
-    <!-- Alarm List Popup -->
-    <div id="alarm-list-popup" class="popup" style="display:none">
-      <div class="popup-header">
-        <h3>ALARM SUMMARY</h3>
-        <button class="popup-close" data-popup="alarm-list-popup">X</button>
-      </div>
-      <div id="alarm-list" class="alarm-list">
-        <div class="alarm-empty">NO ALARMS</div>
-      </div>
-    </div>
+    <!-- Alarm List Popup moved inside #alarm-bar-wrap -->
 
     <!-- Crisis Scenario Select Screen -->
     <div id="crisis-screen" class="screen">

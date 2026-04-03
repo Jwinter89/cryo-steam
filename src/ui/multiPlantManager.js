@@ -40,7 +40,7 @@ class MultiPlantManager {
       }
       .mp-header {
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 10px;
         color: var(--text-unit);
         letter-spacing: 0.1em;
         margin-bottom: 4px;
@@ -73,7 +73,7 @@ class MultiPlantManager {
         display: flex;
         gap: 8px;
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 10px;
       }
       .mp-stat {
         color: var(--text-unit);
@@ -89,7 +89,7 @@ class MultiPlantManager {
       }
       .mp-card-event {
         font-family: var(--font-mono);
-        font-size: 8px;
+        font-size: 10px;
         color: var(--alarm-lo);
         margin-top: 1px;
       }

@@ -310,13 +310,16 @@
           if (backBtn) this._showScreen(backBtn.dataset.screen);
         }
 
-        // In-game: Escape toggles pause
+        // In-game: Escape toggles pause menu
         if (this.currentScreen === 'game-screen' && this.sim) {
+          const pauseMenu = document.getElementById('pause-menu');
           if (this.sim.speed > 0) {
             this._lastSpeedBeforePause = this.sim.speed;
             this.sim.pause();
             this._updateTimeButtons(0);
+            if (pauseMenu) this._showPauseMenu();
           } else {
+            if (pauseMenu) this._hidePauseMenu();
             const resumeSpeed = this._lastSpeedBeforePause || 1;
             this.sim.setSpeed(resumeSpeed);
             this._updateTimeButtons(resumeSpeed);
@@ -564,6 +567,10 @@
             <div class="gauge-tag-block">
               <span class="gauge-tag">${tag}</span>
               <span class="gauge-desc">${pvDef.desc}</span>
+            </div>
+            <div class="gauge-bar-wrap">
+              <div class="gauge-bar-fill"></div>
+              <div class="gauge-bar-sp"></div>
             </div>
             <div class="gauge-val-block">
               <span class="gauge-val">----</span>
@@ -861,6 +868,32 @@
         const rows = section.querySelectorAll('.gauge-row');
         const anyVisible = Array.from(rows).some(r => r.style.display !== 'none');
         section.style.display = anyVisible ? '' : 'none';
+      });
+    },
+
+    _updateBuildingTabAlarms() {
+      if (!this.alarmManager || !this._currentFacility) return;
+      const buildingTags = BUILDING_TAGS[this._currentFacility] || {};
+      const tabs = document.querySelectorAll('.building-tab');
+      tabs.forEach(tab => {
+        const bid = tab.dataset.building;
+        const allowed = buildingTags[bid];
+        let hasAlarm = false;
+        let hasCritical = false;
+        if (allowed) {
+          for (const a of this.alarmManager.alarms) {
+            if (allowed.includes(a.tag)) {
+              hasAlarm = true;
+              if (a.state === 'HIHI' || a.state === 'LOLO') hasCritical = true;
+            }
+          }
+        } else if (allowed === null) {
+          // Overview tab — show if any alarm exists
+          hasAlarm = this.alarmManager.alarms.length > 0;
+          hasCritical = this.alarmManager.alarms.some(a => a.state === 'HIHI' || a.state === 'LOLO');
+        }
+        tab.classList.toggle('tab-alarm', hasAlarm && !hasCritical);
+        tab.classList.toggle('tab-alarm-crit', hasCritical);
       });
     },
 
@@ -1413,6 +1446,7 @@
       if (this.pidDiagram) this.pidDiagram.update();
       if (this.gcDisplay) this.gcDisplay.update();
       this._updateGaugeSheet();
+      this._updateBuildingTabAlarms();
 
       // Screen-edge red glow when critical alarms active
       const gs = document.getElementById('game-screen');
@@ -2763,6 +2797,59 @@
     // ============================================================
     // ACHIEVEMENT TOAST SYSTEM
     // ============================================================
+
+    _showPauseMenu() {
+      const pm = document.getElementById('pause-menu');
+      if (!pm) return;
+      pm.style.display = 'flex';
+
+      // Sync controls with current state
+      const vol = document.getElementById('pause-volume');
+      if (vol && this.audioManager && this.audioManager.masterGain) {
+        vol.value = Math.round(this.audioManager.masterGain.gain.value * 100);
+      }
+      const sfx = document.getElementById('pause-sound');
+      if (sfx) sfx.checked = localStorage.getItem('coldcreek-sound') !== 'off';
+      const alm = document.getElementById('pause-alarm-sound');
+      if (alm) alm.checked = localStorage.getItem('coldcreek-alarm-sound') !== 'off';
+      const tips = document.getElementById('pause-tips');
+      if (tips) tips.checked = localStorage.getItem('coldcreek-tips') !== 'off';
+
+      // Bind controls (only once)
+      if (!this._pauseMenuBound) {
+        this._pauseMenuBound = true;
+        if (vol) vol.addEventListener('input', () => {
+          if (this.audioManager) this.audioManager.setVolume(vol.value / 100);
+          localStorage.setItem('coldcreek-volume', vol.value);
+        });
+        if (sfx) sfx.addEventListener('change', () => {
+          localStorage.setItem('coldcreek-sound', sfx.checked ? 'on' : 'off');
+          if (this.audioManager) this.audioManager.setEnabled(sfx.checked);
+        });
+        if (alm) alm.addEventListener('change', () => {
+          localStorage.setItem('coldcreek-alarm-sound', alm.checked ? 'on' : 'off');
+        });
+        if (tips) tips.addEventListener('change', () => {
+          localStorage.setItem('coldcreek-tips', tips.checked ? 'on' : 'off');
+          if (this.alarmManager) this.alarmManager.setTipsEnabled(tips.checked);
+        });
+        document.getElementById('pause-resume').addEventListener('click', () => {
+          this._hidePauseMenu();
+          const resumeSpeed = this._lastSpeedBeforePause || 1;
+          this.sim.setSpeed(resumeSpeed);
+          this._updateTimeButtons(resumeSpeed);
+        });
+        document.getElementById('pause-quit').addEventListener('click', () => {
+          this._hidePauseMenu();
+          this._endShift('quit');
+        });
+      }
+    },
+
+    _hidePauseMenu() {
+      const pm = document.getElementById('pause-menu');
+      if (pm) pm.style.display = 'none';
+    },
 
     showToast(title, description, headerText) {
       const toast = document.createElement('div');

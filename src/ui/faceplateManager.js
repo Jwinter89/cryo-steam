@@ -199,6 +199,32 @@ class FaceplateManager {
   }
 
   close() {
+    // Auto-apply unsaved changes before closing
+    if (this.currentTag) {
+      const pv = this.sim.getPV(this.currentTag);
+      if (pv && pv.controllable && pv.mode !== 'CAS') {
+        if (pv.mode === 'AUTO') {
+          const spInput = document.getElementById('fp-sp');
+          const newSP = parseFloat(spInput.value);
+          if (!isNaN(newSP) && newSP >= pv.min && newSP <= pv.max && Math.abs(newSP - pv.sp) > 0.01) {
+            pv.sp = newSP;
+            document.dispatchEvent(new CustomEvent('faceplate:apply', {
+              detail: { tag: this.currentTag, sp: newSP }
+            }));
+          }
+        } else if (pv.mode === 'MAN') {
+          const outInput = document.getElementById('fp-out');
+          const newOut = parseFloat(outInput.value);
+          if (!isNaN(newOut) && newOut >= 0 && newOut <= 100 && Math.abs(newOut - pv.output) > 0.01) {
+            pv.output = newOut;
+            document.dispatchEvent(new CustomEvent('faceplate:apply', {
+              detail: { tag: this.currentTag, output: newOut }
+            }));
+          }
+        }
+      }
+    }
+
     this.el.style.display = 'none';
     document.querySelectorAll('.tag-bubble.fp-active').forEach(b => b.classList.remove('fp-active'));
     this.currentTag = null;
@@ -226,6 +252,7 @@ class FaceplateManager {
 
   _updateBar(pv) {
     const range = pv.max - pv.min;
+    if (range <= 0) return;
     const pvPct = ((pv.displayValue() - pv.min) / range) * 100;
     const spPct = ((pv.sp - pv.min) / range) * 100;
 
