@@ -60,6 +60,8 @@ class AlarmManager {
         existing.state = newAlarm;
         existing.time = this._formatTime();
         existing.acked = false;
+        existing.priority = this._getPriority(newAlarm);
+        this.alarmHistory.push({ tag, state: newAlarm, time: this._formatTime(), acked: false, priority: this._getPriority(newAlarm) });
       } else {
         const alarm = {
           tag,
@@ -275,6 +277,18 @@ class AlarmManager {
       this._navigateToTag(tag, alarm.state);
       this._updateBar();
       this._updateList();
+
+      // Stop alarm tone if all alarms of that priority are acked
+      const game = window.coldCreekGame;
+      if (game && game.audioManager) {
+        game.audioManager.playEffect('alarm-ack');
+        const priority = this._getPriority(alarm.state);
+        const pKey = priority === 1 ? 'critical' : priority === 2 ? 'high' : 'low';
+        const unacked = this.alarms.filter(a => !a.acked && this._getPriority(a.state) === priority);
+        if (unacked.length === 0) {
+          game.audioManager.stopAlarm(pKey);
+        }
+      }
     }
   }
 

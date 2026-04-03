@@ -12,7 +12,9 @@ class EventActionPanel {
   }
 
   _createStyles() {
+    if (document.getElementById('event-action-panel-styles')) return;
     const style = document.createElement('style');
+    style.id = 'event-action-panel-styles';
     style.textContent = `
       .event-action-card {
         background: var(--bg-card);

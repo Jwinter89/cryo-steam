@@ -227,6 +227,14 @@ app.whenReady().then(() => {
   registerAppProtocol();
   initSteam();
   registerSteamIPC();
+
+  // Start Steam callback pump only after Steam is initialized
+  steamCallbackInterval = setInterval(() => {
+    if (steamClient) {
+      try { steamClient.runCallbacks(); } catch (_) {}
+    }
+  }, 100);
+
   createWindow();
 
   app.on('activate', () => {
@@ -251,8 +259,4 @@ app.on('window-all-closed', () => {
 });
 
 // ── Steam Callback Pump ─────────────────────────────────────────
-let steamCallbackInterval = setInterval(() => {
-  if (steamClient) {
-    try { steamClient.runCallbacks(); } catch (_) {}
-  }
-}, 100);
+let steamCallbackInterval = null;

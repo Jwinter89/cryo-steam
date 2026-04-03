@@ -314,11 +314,12 @@
         if (this.currentScreen === 'game-screen' && this.sim) {
           if (this.sim.speed > 0) {
             this._lastSpeedBeforePause = this.sim.speed;
-            this.sim.speed = 0;
+            this.sim.pause();
             this._updateTimeButtons(0);
           } else {
-            this.sim.speed = this._lastSpeedBeforePause || 1;
-            this._updateTimeButtons(this.sim.speed);
+            const resumeSpeed = this._lastSpeedBeforePause || 1;
+            this.sim.setSpeed(resumeSpeed);
+            this._updateTimeButtons(resumeSpeed);
           }
         }
       });
@@ -1065,6 +1066,7 @@
 
       // Initialize UI managers
       this.gaugeManager = new GaugeManager(this.sim);
+      if (this.faceplateManager) this.faceplateManager.destroy();
       this.faceplateManager = new FaceplateManager(this.sim);
       this.alarmManager = new AlarmManager();
       this.pidDiagram = new PidDiagram(this.sim);
@@ -1196,6 +1198,21 @@
         chPanel.style.display = '';
       }
 
+      // Restore saved state if continuing a game (must happen after sim is created, before mode init)
+      if (this._pendingRestoreState) {
+        const state = this._pendingRestoreState;
+        this._pendingRestoreState = null;
+        if (state.sim && this.sim) this.sim.loadJSON(state.sim);
+        if (state.events && this.eventSystem) this.eventSystem.loadJSON(state.events);
+        if (state.valves) this.valves = state.valves;
+        if (state.weather) this.weather = state.weather;
+        if (state.equipment) this.equipment = state.equipment;
+        if (state.crisisScenario) this.crisisScenario = state.crisisScenario;
+        if (state.pnl && this.pnlSystem) {
+          this.pnlSystem.shiftEarnings = state.pnl.shiftEarnings || 0;
+        }
+      }
+
       // Start in appropriate mode
       if (this.currentMode === 'learn') {
         this.learnMode.start(1, this.currentFacility);
@@ -1248,20 +1265,6 @@
               type: 'tip'
             });
           }, 2000);
-        }
-      }
-
-      // Restore saved state if continuing a game (must happen after sim is created)
-      if (this._pendingRestoreState) {
-        const state = this._pendingRestoreState;
-        this._pendingRestoreState = null;
-        if (state.sim && this.sim) this.sim.loadJSON(state.sim);
-        if (state.valves) this.valves = state.valves;
-        if (state.weather) this.weather = state.weather;
-        if (state.equipment) this.equipment = state.equipment;
-        if (state.crisisScenario) this.crisisScenario = state.crisisScenario;
-        if (state.pnl && this.pnlSystem) {
-          this.pnlSystem.shiftEarnings = state.pnl.shiftEarnings || 0;
         }
       }
 
@@ -2293,11 +2296,11 @@
 
       overlay.style.display = 'flex';
 
-      document.getElementById('obj-done-btn').addEventListener('click', () => {
+      document.getElementById('obj-done-btn').onclick = () => {
         overlay.style.display = 'none';
         this._showScreen('title-screen');
         this._updateContinueButton();
-      });
+      };
     },
 
     // ============================================================

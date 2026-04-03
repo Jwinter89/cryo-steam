@@ -107,12 +107,20 @@ class FaceplateManager {
       });
     });
 
-    // Close on click outside
-    document.getElementById('center-panel').addEventListener('click', (e) => {
+    // Close on click outside (store ref for cleanup in destroy())
+    this._centerClickHandler = (e) => {
       if (!e.target.closest('.faceplate') && !e.target.closest('.tag-bubble')) {
         this.close();
       }
-    });
+    };
+    document.getElementById('center-panel').addEventListener('click', this._centerClickHandler);
+  }
+
+  destroy() {
+    const cp = document.getElementById('center-panel');
+    if (cp && this._centerClickHandler) {
+      cp.removeEventListener('click', this._centerClickHandler);
+    }
   }
 
   open(tag, event) {

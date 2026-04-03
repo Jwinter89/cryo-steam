@@ -536,7 +536,7 @@ function registerCryogenicEvents(eventSystem) {
       if (event.data.tempRise > 40 && !event.data.failureOccurred) {
         event.data.failureOccurred = true;
         // Fire risk inside plant
-        eventSystem.scheduleEvent('pump-bearing-failure', 0, {});
+        eventSystem.scheduleEvent('pump-bearing-failure', eventSystem._currentGameTime + 2, {});
       }
     },
 

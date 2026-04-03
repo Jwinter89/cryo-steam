@@ -7,66 +7,65 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
 
 ## TIER 1 — Critical Bugs (fix before anything else)
 
-- [ ] **BUG-001**: Steam callback interval starts before app ready
+- [x] **BUG-001**: Steam callback interval starts before app ready
   - File: `electron/main.js:254`
   - Issue: `setInterval` runs at module scope before `app.whenReady()` and `initSteam()`
   - Fix: Move interval creation inside `app.whenReady().then()` after `initSteam()`
 
-- [ ] **BUG-002**: Save/load drops all active events
+- [x] **BUG-002**: Save/load drops all active events
   - File: `game.js:1255-1266`, `eventSystem.js:305-332`
   - Issue: `saveGameState()` saves events via `eventSystem.toJSON()` but restore block never calls `eventSystem.loadJSON(state.events)`. Also `onStart` forces not re-applied.
   - Fix: Add `if (state.events && this.eventSystem) this.eventSystem.loadJSON(state.events);` in restore block. Events' `onTick` will reapply forces on next tick.
 
-- [ ] **BUG-003**: Crisis mode state restored after sim starts running
+- [x] **BUG-003**: Crisis mode state restored after sim starts running
   - File: `game.js:1199-1207` vs `1254-1266`
   - Issue: `_startCrisisScenario()` sets speed and schedules events BEFORE `_pendingRestoreState` is applied. Crisis events fire at wrong times on Continue.
   - Fix: Move restore block to execute before mode-specific startup code.
 
-- [ ] **BUG-006**: Event storm at 4x speed
+- [-] **BUG-006**: Event storm at 4x speed — NOT A BUG
   - File: `eventSystem.js:101-109`
-  - Issue: Event checks happen 4x more often in real-time at 4x speed, but probability isn't scaled down. Effective event rate is 4x higher.
-  - Fix: Scale probability roll by `(1 / speed)`: `let prob = evt.baseProbability * dp.probMultiplier * (1 / spd);`
+  - Analysis: `baseDt = dt / spd` already normalizes countdown rate. At 4x, baseDt = 0.8/4 = 0.2, same as 1x. Check fires at same real-world rate. QA agent misread the code.
 
 ---
 
 ## TIER 2 — High Bugs (fix before Steam submission)
 
-- [ ] **BUG-005**: Alarm chattering — no hysteresis on thresholds
+- [x] **BUG-005**: Alarm chattering — no hysteresis on thresholds
   - File: `processVariable.js:166-172`
   - Issue: Simple >= / <= comparisons with no deadband. PVs with noise chatter alarm state every tick near threshold.
   - Fix: Add hysteresis band (~0.5-1% of span). On entering alarm, require exceed. On clearing, require value < (threshold - deadband).
 
-- [ ] **BUG-009**: Pump bearing failure fires immediately at gameTime=0
+- [x] **BUG-009**: Pump bearing failure fires immediately at gameTime=0
   - File: `cryogenicEvents.js:539`, `eventSystem.js:81`
   - Issue: `scheduleEvent('pump-bearing-failure', 0, {})` — gameTime param is 0 instead of current time.
   - Fix: Pass `eventSystem._currentGameTime + 2` for slight delay.
 
-- [ ] **BUG-008**: EventActionPanel style tag accumulates on every game start
+- [x] **BUG-008**: EventActionPanel style tag accumulates on every game start
   - File: `eventActionPanel.js:13-68`, `game.js:1111`
   - Issue: `_createStyles()` appends new `<style>` unconditionally. New instance created each game start.
   - Fix: Guard with `if (!document.getElementById('event-action-panel-styles'))` and set `style.id`.
 
-- [ ] **BUG-010**: FaceplateManager center-panel click listener accumulates
+- [x] **BUG-010**: FaceplateManager center-panel click listener accumulates
   - File: `faceplateManager.js:111-116`
   - Issue: `center-panel` addEventListener called every game start; element persists. After 5 starts, 5 close handlers fire.
   - Fix: Store handler ref, add `destroy()` method, call before creating new instance.
 
-- [ ] **BUG-015**: obj-done-btn listener accumulates on shift completion
+- [x] **BUG-015**: obj-done-btn listener accumulates on shift completion
   - File: `game.js:2296`
   - Issue: `addEventListener` on persistent DOM element each shift end.
   - Fix: Use `onclick =` assignment (like `_showObjectivesBriefing` already does).
 
-- [ ] **BUG-011**: Escape key pause doesn't call sim.pause() or update UI
+- [x] **BUG-011**: Escape key pause doesn't call sim.pause() or update UI
   - File: `game.js:315-316`
   - Issue: Sets `this.sim.speed = 0` directly. Tick interval keeps running. Speed buttons don't update.
   - Fix: Use `this.sim.pause(); this._updateTimeButtons(0);`
 
-- [ ] **BUG-007**: Alarm history loses HIHI→HI transition entries
+- [x] **BUG-007**: Alarm history loses HIHI→HI transition entries
   - File: `alarmManager.js:56-73`
   - Issue: State changes on existing alarms update in place without appending to history. Debrief/profile alarm counts are incomplete.
   - Fix: Always push new entry to `alarmHistory` on any alarm state change.
 
-- [ ] **AUDIO-001**: Broken audio effect keys
+- [x] **AUDIO-001**: Broken audio effect keys
   - File: `audioManager.js`
   - Issue: 4 effect keys referenced in code don't map to actual sound definitions. `stopAll()` method missing. Alarm ACK doesn't stop alarm tone.
   - Fix: Map missing keys, add stopAll(), wire ACK to stop tone.

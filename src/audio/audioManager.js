@@ -181,6 +181,18 @@ class AudioManager {
       case 'valve-move':
         this._playTone(300, 0.03, 0.2, 'sawtooth');
         break;
+      case 'alarm':
+        // Short urgent alarm burst
+        this._playTone(880, 0.12, 0.15, 'square');
+        break;
+      case 'alarm-critical':
+        // Critical event — two-tone urgent
+        this._playTone(880, 0.15, 0.12, 'square');
+        setTimeout(() => this._playTone(1100, 0.15, 0.12, 'square'), 120);
+        break;
+      case 'radio-static':
+        this._playRadioStatic();
+        break;
       case 'alarm-ack':
         this._playTone(600, 0.05, 0.08, 'sine');
         setTimeout(() => this._playTone(800, 0.05, 0.08, 'sine'), 80);
@@ -264,9 +276,13 @@ class AudioManager {
     }
   }
 
-  destroy() {
+  stopAll() {
     this.stopAmbient();
     this.stopAllAlarms();
+  }
+
+  destroy() {
+    this.stopAll();
     if (this.ctx) {
       this.ctx.close();
     }

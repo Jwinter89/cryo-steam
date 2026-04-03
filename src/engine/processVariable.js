@@ -164,10 +164,23 @@ class ProcessVariable {
   }
 
   _checkAlarms() {
+    // ISA-18.2 hysteresis: 1% of span deadband prevents alarm chattering
+    const deadband = (this.max - this.min) * 0.01;
+    const current = this.alarmState;
+
+    // Entering alarm: use exact threshold
+    // Clearing alarm: require value to cross back past deadband
     if (this.hh !== null && this.value >= this.hh) return 'HIHI';
     if (this.hi !== null && this.value >= this.hi) return 'HI';
     if (this.ll !== null && this.value <= this.ll) return 'LOLO';
     if (this.lo !== null && this.value <= this.lo) return 'LO';
+
+    // Hold current alarm state within deadband (hysteresis)
+    if (current === 'HIHI' && this.hh !== null && this.value >= this.hh - deadband) return 'HIHI';
+    if (current === 'HI' && this.hi !== null && this.value >= this.hi - deadband) return 'HI';
+    if (current === 'LOLO' && this.ll !== null && this.value <= this.ll + deadband) return 'LOLO';
+    if (current === 'LO' && this.lo !== null && this.value <= this.lo + deadband) return 'LO';
+
     return 'NORMAL';
   }
 
