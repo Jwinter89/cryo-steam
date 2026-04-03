@@ -38,8 +38,9 @@ class PnlManager {
     const productFlow = pvMap['FI-402'] || pvMap['FI-501'] || pvMap['FI-100'] || pvMap['FI-A01'];
     const baseRate = econ.baseRevenuePerHour || 1800;
     if (productFlow) {
-      // Normalize: 100 bbl/hr is nominal. Revenue scales linearly.
-      const flowRatio = Math.max(0, productFlow.value / 100);
+      // Normalize against SP (nominal flow). Revenue scales linearly.
+      const flowNorm = productFlow.sp || 100;
+      const flowRatio = Math.max(0, productFlow.value / flowNorm);
       revenue = baseRate * Math.min(flowRatio, 2.0); // Cap at 2x
     } else {
       revenue = baseRate;
@@ -250,6 +251,20 @@ class PnlManager {
     this.eventCosts = 0;
     this.penaltyReasons = [];
     this._updateUI();
+  }
+
+  toJSON() {
+    return {
+      shiftEarnings: this.shiftEarnings,
+      eventCosts: this.eventCosts,
+      penaltyReasons: [...this.penaltyReasons]
+    };
+  }
+
+  loadJSON(data) {
+    if (data.shiftEarnings != null) this.shiftEarnings = data.shiftEarnings;
+    if (data.eventCosts != null) this.eventCosts = data.eventCosts;
+    if (data.penaltyReasons) this.penaltyReasons = data.penaltyReasons;
   }
 }
 

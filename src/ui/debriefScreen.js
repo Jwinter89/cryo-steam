@@ -185,9 +185,18 @@ class DebriefScreen {
     const canvas = document.getElementById('debrief-pnl-chart');
     if (!canvas || this._pnlHistory.length < 2) return;
 
+    // HiDPI canvas scaling
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = 600;
+    const cssH = 200;
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
     const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
+    ctx.scale(dpr, dpr);
+    const w = cssW;
+    const h = cssH;
     const pad = { top: 20, right: 20, bottom: 30, left: 50 };
 
     ctx.clearRect(0, 0, w, h);

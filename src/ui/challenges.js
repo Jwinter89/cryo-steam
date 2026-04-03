@@ -93,9 +93,9 @@ class Challenges {
           break;
         case 'speed-run':
           // Must spend majority of real shift time at 4x speed with positive earnings
-          if (earnings > 0 && game.sim && game.sim.realSecondsAt4x) {
-            const totalReal = game.sim.shiftElapsed / (game.sim.timeCompression * game.sim.speed || 1);
-            completed = game.sim.realSecondsAt4x > totalReal * 0.5;
+          if (earnings > 0 && game.sim && game.sim.realSecondsAt4x && game._shiftStartRealTime) {
+            const totalReal = (Date.now() - game._shiftStartRealTime) / 1000;
+            completed = totalReal > 60 && game.sim.realSecondsAt4x > totalReal * 0.5;
           }
           break;
         case 'pig-rush':

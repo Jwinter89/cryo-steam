@@ -45,8 +45,8 @@ const RefrigerationConfig = {
     {
       tag: 'TIC-201', desc: 'TEG REBOILER', unit: 'degF',
       value: 390, sp: 400, min: 300, max: 450,
-      hi: 405, hh: 410, lo: 370, ll: 350,
-      controllable: true, mode: 'AUTO', noise: 0.8, responseRate: 0.03,
+      hi: 410, hh: 420, lo: 370, ll: 350,
+      controllable: true, mode: 'AUTO', noise: 0.2, responseRate: 0.03,
       maxRateOfChange: 3
     },
     {
@@ -172,7 +172,7 @@ const RefrigerationConfig = {
     {
       tag: 'AI-501', desc: 'PRODUCT RVP', unit: 'psi',
       value: 10.0, sp: 10.0, min: 5, max: 18,
-      hi: 11.5, hh: 13.0, lo: 9.0, ll: 7.0,
+      hi: 11.0, hh: 11.5, lo: 9.5, ll: 9.0,
       controllable: false, noise: 0.06, responseRate: 0.02
     },
     {

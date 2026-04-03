@@ -11,6 +11,8 @@ files:
   - game.js
   - style.css
   - "src/**"
+  - "!src/ui/adManager.js"
+  - "!src/capacitor/**"
   - "electron/**"
   - "!electron/steam_appid.txt"
   - "icon-512.png"
@@ -22,7 +24,6 @@ files:
   - "modes-bg.jpg"
   - "henry-character.png"
   - "manifest.json"
-  - "teams.html"
 
 # Note: assets/steam/ contains Valve store page images and achievement icons.
 # These are uploaded to Steamworks directly, NOT bundled with the game.

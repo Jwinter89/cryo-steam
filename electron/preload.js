@@ -13,13 +13,13 @@ contextBridge.exposeInMainWorld('steam', {
   getSteamId: () => ipcRenderer.sendSync('steam:getSteamId'),
   getPersonaName: () => ipcRenderer.sendSync('steam:getPersonaName'),
 
-  // ── Achievements ──
-  activateAchievement: (name) => ipcRenderer.sendSync('steam:activateAchievement', name),
-  clearAchievement: (name) => ipcRenderer.sendSync('steam:clearAchievement', name),
+  // ── Achievements (fire-and-forget — no renderer blocking) ──
+  activateAchievement: (name) => ipcRenderer.send('steam:activateAchievement', name),
+  clearAchievement: (name) => ipcRenderer.send('steam:clearAchievement', name),
   isAchievementActivated: (name) => ipcRenderer.sendSync('steam:isAchievementActivated', name),
 
-  // ── Cloud Saves ──
-  writeCloudFile: (filename, data) => ipcRenderer.sendSync('steam:writeCloudFile', filename, data),
+  // ── Cloud Saves (writes are fire-and-forget, reads need return value) ──
+  writeCloudFile: (filename, data) => ipcRenderer.send('steam:writeCloudFile', filename, data),
   readCloudFile: (filename) => ipcRenderer.sendSync('steam:readCloudFile', filename),
   isCloudEnabled: () => ipcRenderer.sendSync('steam:isCloudEnabled'),
 

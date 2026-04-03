@@ -196,15 +196,15 @@ class EventActionPanel {
       case 'expander-trip':
         switch (event.data.phase) {
           case 'tripped':
-            actions.push({ action: 'start-seal-gas', label: 'START SEAL GAS' });
+            actions.push({ action: 'start-lube-oil', label: 'START LUBE OIL' });
             if (event.data.overspeedAbort) {
               // show warning that last attempt overspeed tripped
             }
             break;
-          case 'seal-gas':
-            actions.push({ action: 'start-lube-oil', label: 'START LUBE OIL' });
-            break;
           case 'lube-oil':
+            actions.push({ action: 'start-seal-gas', label: 'START SEAL GAS' });
+            break;
+          case 'seal-gas':
             actions.push({ action: 'open-jt-bypass', label: 'OPEN JT 60%' });
             break;
           case 'jt-open':
@@ -345,6 +345,11 @@ class EventActionPanel {
         this.game._addRadioMessage('EVACUATION INITIATED — All personnel move upwind to muster point.');
       }
       if (action === 'isolate-source') {
+        const evt = this.game.eventSystem.activeEvents.find(e => e.id === eventId);
+        if (evt && !evt.data.evacuationStarted) {
+          this.game._addRadioMessage('Henry: EVACUATE FIRST. Nobody touches valves until personnel are clear.');
+          return;
+        }
         if (this.game.audioManager) this.game.audioManager.playEffect('radio');
         this.game._addRadioMessage('Control Room: Closing remote block valves on amine system.');
       }
@@ -362,10 +367,10 @@ class EventActionPanel {
       'confirm-online': 'EX-400 online and stable. Booster recompressor loaded.'
     };
     if (expanderActions[action] && eventId === 'expander-trip') {
-      // Check for wrong-order lube oil (before seal gas)
+      // Check for wrong-order seal gas (before lube oil)
       const expEvt = this.game.eventSystem.activeEvents.find(e => e.id === 'expander-trip');
-      if (action === 'start-lube-oil' && expEvt && !expEvt.data.sealGasOn) {
-        this.game._addRadioMessage('ALARM: Lube oil started WITHOUT seal gas! Process gas in bearing housing — bearings freezing!');
+      if (action === 'start-seal-gas' && expEvt && !expEvt.data.lubeOilOn) {
+        this.game._addRadioMessage('ALARM: Seal gas started WITHOUT lube oil! Dry bearings — start lube oil first!');
         if (this.game.audioManager) this.game.audioManager.playEffect('alarm');
       } else {
         if (this.game.audioManager) this.game.audioManager.playEffect('radio');

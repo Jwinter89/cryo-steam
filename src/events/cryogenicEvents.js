@@ -18,7 +18,7 @@ function registerCryogenicEvents(eventSystem) {
 
     data: {
       cause: '',
-      phase: 'tripped',       // tripped → seal-gas → lube-oil → jt-open → loading → online
+      phase: 'tripped',       // tripped → lube-oil → seal-gas → jt-open → loading → online
       sealGasOn: false,
       lubeOilOn: false,
       jtOpen: false,
@@ -146,32 +146,32 @@ function registerCryogenicEvents(eventSystem) {
       const speed = pvMap['SI-401'];
 
       switch (action) {
-        case 'start-seal-gas':
-          // Seal gas must be established first — always succeeds
-          if (event.data.phase !== 'tripped') return false;
-          event.data.sealGasOn = true;
-          event.data.phase = 'seal-gas';
-          event.data.overspeedAbort = false;
-          return false; // event continues, just advanced phase
-
         case 'start-lube-oil':
-          // Lube oil after seal gas — wrong order freezes bearings
-          if (!event.data.sealGasOn) {
-            // Wrong order! Lube oil without seal gas = frozen bearings
-            if (bearing) bearing.externalForce += 30;
-            event.data.cause = 'FROZEN BEARINGS — LUBE OIL BEFORE SEAL GAS';
-            return false;
-          }
-          if (event.data.phase !== 'seal-gas') return false;
+          // Lube oil must be established first — pre-lube protects bearings
+          if (event.data.phase !== 'tripped') return false;
           event.data.lubeOilOn = true;
           event.data.phase = 'lube-oil';
+          event.data.overspeedAbort = false;
           // Lube oil restores pressure
           if (lubeOil) lubeOil.externalForce += 5;
+          return false; // event continues, just advanced phase
+
+        case 'start-seal-gas':
+          // Seal gas after lube oil — wrong order damages bearings
+          if (!event.data.lubeOilOn) {
+            // Wrong order! Seal gas without lube oil = dry bearing damage
+            if (bearing) bearing.externalForce += 30;
+            event.data.cause = 'DRY BEARING DAMAGE — START LUBE OIL FIRST';
+            return false;
+          }
+          if (event.data.phase !== 'lube-oil') return false;
+          event.data.sealGasOn = true;
+          event.data.phase = 'seal-gas';
           return false;
 
         case 'open-jt-bypass':
           // Open JT valve to ~60% for initial bypass flow
-          if (event.data.phase !== 'lube-oil') return false;
+          if (event.data.phase !== 'seal-gas') return false;
           // Check bearing temp — must be below 180 before proceeding
           if (bearing && bearing.value >= 180) return false;
           // Check lube oil — must be above 25 PSI

@@ -97,13 +97,13 @@ class CascadeEngine {
 
       switch (rule.type) {
         case 'proportional':
-          // Source change proportionally affects target
-          force = source.rateOfChange * (rule.gain || 1);
+          // Source offset from SP proportionally affects target (steady-state coupling)
+          force = (source.value - source.sp) * (rule.gain || 1);
           break;
 
         case 'inverse':
-          // Source change inversely affects target
-          force = -source.rateOfChange * (rule.gain || 1);
+          // Source offset from SP inversely affects target
+          force = -(source.value - source.sp) * (rule.gain || 1);
           break;
 
         case 'threshold': {

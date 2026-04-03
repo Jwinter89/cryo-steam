@@ -102,7 +102,7 @@ const StabilizerConfig = {
     {
       tag: 'AI-501', desc: 'RVP (REID VAPOR PRESSURE)', unit: 'psi',
       value: 10.2, sp: 10.0, min: 5, max: 18,
-      hi: 11.5, hh: 13.0, lo: 9.0, ll: 7.0,
+      hi: 11.0, hh: 11.5, lo: 9.5, ll: 9.0,
       controllable: false, noise: 0.08, responseRate: 0.02
     },
 

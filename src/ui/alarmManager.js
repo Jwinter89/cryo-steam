@@ -26,25 +26,31 @@ class AlarmManager {
   }
 
   _bindEvents() {
-    // Click alarm bar to open alarm list
-    this.barEl.addEventListener('click', (e) => {
+    // Store refs for cleanup in destroy()
+    this._onBarClick = (e) => {
       if (e.target === this.ackBtnEl) return;
       this._toggleAlarmList();
-    });
-
-    // Acknowledge button
-    this.ackBtnEl.addEventListener('click', (e) => {
+    };
+    this._onAckClick = (e) => {
       e.stopPropagation();
       this._ackHighest();
-    });
+    };
+    this._closeBtn = this.listPopup.querySelector('.popup-close');
+    this._onCloseClick = () => {
+      this.listPopup.style.display = 'none';
+    };
 
-    // Close alarm list popup
-    const closeBtn = this.listPopup.querySelector('.popup-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        this.listPopup.style.display = 'none';
-      });
+    this.barEl.addEventListener('click', this._onBarClick);
+    this.ackBtnEl.addEventListener('click', this._onAckClick);
+    if (this._closeBtn) {
+      this._closeBtn.addEventListener('click', this._onCloseClick);
     }
+  }
+
+  destroy() {
+    if (this.barEl && this._onBarClick) this.barEl.removeEventListener('click', this._onBarClick);
+    if (this.ackBtnEl && this._onAckClick) this.ackBtnEl.removeEventListener('click', this._onAckClick);
+    if (this._closeBtn && this._onCloseClick) this._closeBtn.removeEventListener('click', this._onCloseClick);
   }
 
   /**
@@ -197,7 +203,7 @@ class AlarmManager {
       'AI-502': 'ETHANE RECOVERY',
       'AI-503': 'PROPANE RECOVERY',
       'FI-501': 'PRODUCT FLOW',
-      'AI-601': 'PRODUCT C3 PURITY',
+      'AI-601': 'PRODUCT C3+ PURITY',
       'AI-602': 'H2S OUTLET',
 
       // Cryogenic facility
@@ -229,8 +235,8 @@ class AlarmManager {
       'PIC-602': 'RESIDUE SUCTION',
       'AI-701': 'ETHANE RECOVERY',
       'AI-702': 'PROPANE RECOVERY',
-      'AI-703': 'PRODUCT C2 CONTENT',
-      'AI-704': 'PRODUCT C3 PURITY',
+      'AI-703': 'RESIDUE C2 CONTENT',
+      'AI-704': 'PRODUCT RVP',
       'LIC-701': 'PRODUCT TANK LEVEL',
       'AI-705': 'H2S OUTLET',
       'TIC-801': 'HOT OIL SUPPLY',

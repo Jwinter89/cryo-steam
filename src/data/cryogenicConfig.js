@@ -232,7 +232,7 @@ const CryogenicConfig = {
     {
       tag: 'AI-704', desc: 'PRODUCT RVP', unit: 'psi',
       value: 10.1, sp: 10.0, min: 5, max: 18,
-      hi: 11.5, hh: 13.0, lo: 9.0, ll: 7.0,
+      hi: 11.0, hh: 11.5, lo: 9.5, ll: 9.0,
       controllable: false, noise: 0.05, responseRate: 0.015
     },
     {

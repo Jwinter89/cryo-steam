@@ -85,7 +85,7 @@ function registerPigEvents(eventSystem) {
       if (sepPV && d.liquidSurge > 0) {
         // Higher feed SP = pulling more liquid off separator = less level rise
         const feedSP = feedPV ? feedPV.sp : 120;
-        const pullFactor = Math.max(0.3, 1.0 - (feedSP - 120) / 200);
+        const pullFactor = Math.max(0.3, Math.min(1.0, 1.0 - (feedSP - 120) / 200));
         sepPV.externalForce += d.liquidSurge * 0.06 * pullFactor;
       }
     },
@@ -175,7 +175,7 @@ function registerPigEvents(eventSystem) {
       const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (sepPV && d.liquidSurge > 0) {
         const feedSP = feedPV ? feedPV.sp : 120;
-        const pullFactor = Math.max(0.3, 1.0 - (feedSP - 120) / 200);
+        const pullFactor = Math.max(0.3, Math.min(1.0, 1.0 - (feedSP - 120) / 200));
         sepPV.externalForce += d.liquidSurge * 0.08 * pullFactor;
       }
     },
@@ -239,7 +239,7 @@ function registerPigEvents(eventSystem) {
       const feedPV = pvMap['FIC-401'] || pvMap['FI-501'] || pvMap['FI-100'];
       if (sepPV && totalSurge > 0) {
         const feedSP = feedPV ? feedPV.sp : 120;
-        const pullFactor = Math.max(0.3, 1.0 - (feedSP - 120) / 200);
+        const pullFactor = Math.max(0.3, Math.min(1.0, 1.0 - (feedSP - 120) / 200));
         sepPV.externalForce += totalSurge * 0.07 * pullFactor;
       }
     },

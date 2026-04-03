@@ -87,10 +87,9 @@ function registerAmineEvents(eventSystem) {
       const wind = windDirs[Math.floor(Math.random() * windDirs.length)];
       event.data.windDirection = wind;
 
-      // Safe routes are UPWIND and CROSSWIND — never downwind
-      const opposites = { 'N': 'S', 'NE': 'SW', 'E': 'W', 'SE': 'NW', 'S': 'N', 'SW': 'NE', 'W': 'E', 'NW': 'SE' };
+      // Safe routes are UPWIND (wind direction) and CROSSWIND — never downwind
       const crosswind = { 'N': ['E','W'], 'NE': ['SE','NW'], 'E': ['N','S'], 'SE': ['NE','SW'], 'S': ['E','W'], 'SW': ['SE','NW'], 'W': ['N','S'], 'NW': ['NE','SW'] };
-      event.data.safeRoutes = [opposites[wind], ...crosswind[wind]];
+      event.data.safeRoutes = [wind, ...crosswind[wind]];
 
       const areaH2s = pvMap['AI-A02'] || pvMap['AI-A03'];
       if (areaH2s) areaH2s.value = event.data.concentration;

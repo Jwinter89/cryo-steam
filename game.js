@@ -872,8 +872,8 @@
     },
 
     _updateBuildingTabAlarms() {
-      if (!this.alarmManager || !this._currentFacility) return;
-      const buildingTags = BUILDING_TAGS[this._currentFacility] || {};
+      if (!this.alarmManager || !this.currentFacility) return;
+      const buildingTags = BUILDING_TAGS[this.currentFacility] || {};
       const tabs = document.querySelectorAll('.building-tab');
       tabs.forEach(tab => {
         const bid = tab.dataset.building;
@@ -1101,6 +1101,7 @@
       this.gaugeManager = new GaugeManager(this.sim);
       if (this.faceplateManager) this.faceplateManager.destroy();
       this.faceplateManager = new FaceplateManager(this.sim);
+      if (this.alarmManager) this.alarmManager.destroy();
       this.alarmManager = new AlarmManager();
       this.pidDiagram = new PidDiagram(this.sim);
 
@@ -1244,7 +1245,7 @@
         if (state.equipment) this.equipment = state.equipment;
         if (state.crisisScenario) this.crisisScenario = state.crisisScenario;
         if (state.pnl && this.pnlSystem) {
-          this.pnlSystem.shiftEarnings = state.pnl.shiftEarnings || 0;
+          this.pnlSystem.loadJSON(state.pnl);
         }
       }
 
@@ -2511,9 +2512,7 @@
           weather: this.weather,
           equipment: this.equipment,
           crisisScenario: this.crisisScenario,
-          pnl: {
-            shiftEarnings: this.pnlSystem ? this.pnlSystem.shiftEarnings : 0
-          }
+          pnl: this.pnlSystem ? this.pnlSystem.toJSON() : { shiftEarnings: 0 }
         };
         localStorage.setItem('coldcreek-gamestate', JSON.stringify(state));
         this.saveProgress({ hasGameState: true });
@@ -2841,7 +2840,11 @@
         });
         document.getElementById('pause-quit').addEventListener('click', () => {
           this._hidePauseMenu();
-          this._endShift('quit');
+          if (this.sim) this.sim.pause();
+          if (this.audioManager) this.audioManager.stopAll();
+          this.saveGameState();
+          this._showScreen('title-screen');
+          this._updateContinueButton();
         });
       }
     },
