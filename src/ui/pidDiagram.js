@@ -73,9 +73,19 @@ class PidDiagram {
 
     const fill = document.getElementById(fillId);
     if (fill) {
-      const maxH = parseFloat(fill.getAttribute('data-max-height') || fill.getAttribute('height') || 40);
-      fill.setAttribute('height', maxH * pct / 100);
-      fill.setAttribute('y', parseFloat(fill.getAttribute('data-base-y') || fill.getAttribute('y')) + maxH * (1 - pct / 100));
+      // Cache geometry on first access to avoid reading attributes every tick
+      if (!fill._cachedMaxH) {
+        fill._cachedMaxH = parseFloat(fill.getAttribute('data-max-height') || fill.getAttribute('height') || 40);
+        fill._cachedBaseY = parseFloat(fill.getAttribute('data-base-y') || fill.getAttribute('y'));
+        // Set height/y once — subsequent ticks use transform only
+        fill.setAttribute('height', fill._cachedMaxH);
+        fill.setAttribute('y', fill._cachedBaseY);
+      }
+      const maxH = fill._cachedMaxH;
+      const scale = pct / 100;
+      // Use transform instead of height/y to avoid SVG relayout
+      const transY = maxH * (1 - scale);
+      fill.setAttribute('transform', `translate(0, ${transY}) scale(1, ${scale || 0.001})`);
       // Color based on alarm state
       if (pv.value > (pv.hh || 999) || pv.value < (pv.ll || -999)) {
         fill.setAttribute('fill', '#E04040');
@@ -89,10 +99,12 @@ class PidDiagram {
     if (lineId) {
       const line = document.getElementById(lineId);
       if (line) {
-        const parent = fill || line.parentElement;
-        const baseY = parseFloat(line.getAttribute('data-base-y') || line.getAttribute('y1') || 0);
-        const maxH = parseFloat(line.getAttribute('data-max-height') || 40);
-        const y = baseY + maxH * (1 - pct / 100);
+        // Cache line geometry
+        if (!line._cachedBaseY) {
+          line._cachedBaseY = parseFloat(line.getAttribute('data-base-y') || line.getAttribute('y1') || 0);
+          line._cachedMaxH = parseFloat(line.getAttribute('data-max-height') || 40);
+        }
+        const y = line._cachedBaseY + line._cachedMaxH * (1 - pct / 100);
         line.setAttribute('y1', y);
         line.setAttribute('y2', y);
       }
@@ -105,11 +117,15 @@ class PidDiagram {
     const fill = document.getElementById(elementId);
     if (!fill) return;
 
+    if (!fill._initialized) {
+      fill.setAttribute('y', 2);
+      fill.setAttribute('height', vesselHeight);
+      fill._initialized = true;
+    }
     const pct = pv.displayValue() / 100;
-    const fillHeight = pct * vesselHeight;
-    const y = 2 + (vesselHeight - fillHeight);
-    fill.setAttribute('y', y);
-    fill.setAttribute('height', Math.max(0, fillHeight));
+    const scale = Math.max(0.001, pct);
+    const transY = 2 + vesselHeight * (1 - scale);
+    fill.setAttribute('transform', `translate(0, ${transY}) scale(1, ${scale})`);
 
     // Color based on alarm state and pig activity
     const game = window.coldCreekGame;
@@ -140,6 +156,8 @@ class PidDiagram {
 
     const pct = pv.displayValue() / 100;
     const y = vesselHeight - (pct * (vesselHeight - 10)) - 5;
+    // Level lines must update y1/y2 (no transform alternative for <line>),
+    // but these are cheap attribute sets on non-layout elements
     el.setAttribute('y1', y);
     el.setAttribute('y2', y);
 
@@ -161,11 +179,16 @@ class PidDiagram {
     const fill = document.getElementById(elementId);
     if (!fill) return;
 
+    if (!fill._tankInit) {
+      fill.setAttribute('y', 2);
+      fill.setAttribute('height', totalHeight);
+      fill._tankInit = true;
+    }
     const pct = pv.displayValue() / 100;
-    const fillHeight = pct * totalHeight;
-    const y = 2 + (totalHeight - fillHeight);
-    fill.setAttribute('y', y);
-    fill.setAttribute('height', fillHeight);
+    const scale = Math.max(0.001, pct);
+    const transY = 2 + totalHeight * (1 - scale);
+    fill.setAttribute('transform', `translate(0, ${transY}) scale(1, ${scale})`);
+
 
     if (pv.alarmState === 'HIHI') {
       fill.setAttribute('fill', '#3a1010');

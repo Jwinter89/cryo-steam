@@ -2174,18 +2174,11 @@ g[id^="equip-"]:hover line {
 
 /* Mobile responsive removed — Steam desktop build only */
 
-/* Mobile speed dial, building pills — hidden for Steam build */
-.mobile-speed-dial,
-.mobile-building-pills,
-.mobile-info-drawer,
-.mobile-pnl-strip,
-.speed-dial-backdrop,
+/* Unused mobile elements — hidden for Steam build */
 .faceplate-backdrop,
 #panel-toggle {
   display: none !important;
 }
-
-/* Mobile breakpoints and touch targets removed — Steam desktop only */
 
 /* Hide overlapping elements when gauge sheet is open */
 .gauge-sheet-hidden {
@@ -4348,24 +4341,6 @@ body.cb-tritanopia .spec-row.off-spec {
 }
 
 /* ============================================================
-   LANDSCAPE ORIENTATION HANDLING
-   ============================================================ */
-@media (max-width: 768px) and (orientation: landscape) {
-  #topbar { height: 30px; font-size: 10px; }
-  #alarm-bar { height: 24px; font-size: 10px; }
-  .mobile-pnl-strip { height: 28px; }
-  .mobile-building-pills { bottom: 60px; }
-}
-
-/* ============================================================
-   MOBILE PERFORMANCE: will-change
-   ============================================================ */
-@media (max-width: 768px) {
-  .mobile-info-drawer { will-change: transform; }
-  .speed-dial-ring { will-change: transform, opacity; }
-}
-
-/* ============================================================
    REDUCED MOTION
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
@@ -4373,6 +4348,23 @@ body.cb-tritanopia .spec-row.off-spec {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* A11Y-001/003: Static alarm fallbacks when animation is suppressed */
+  #alarm-bar.has-unacked {
+    background: #660000 !important;
+  }
+  .gauge-row.alarm-hihi,
+  .gauge-row.alarm-lolo {
+    background: rgba(192, 57, 43, 0.25) !important;
+    border-left: 3px solid var(--alarm-crit) !important;
+  }
+  .gauge-row.alarm-hi {
+    background: rgba(212, 168, 67, 0.15) !important;
+    border-left: 3px solid var(--alarm-hi) !important;
+  }
+  .gauge-row.alarm-lo {
+    background: rgba(212, 168, 67, 0.1) !important;
+    border-left: 3px solid var(--alarm-lo) !important;
   }
 }
 

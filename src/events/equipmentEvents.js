@@ -357,6 +357,85 @@ function registerEquipmentEvents(eventSystem) {
     duration: 15 // Auto-clears after 15 game-minutes if not resolved
   });
 
+  // Sight Glass Fouling — level reading goes unreliable
+  eventSystem.registerEvent({
+    id: 'sight-glass-fouling',
+    name: 'SIGHT GLASS FOULING',
+    description: 'Separator sight glass is fouled. Level reading may be unreliable. Verify with transmitter.',
+    severity: 'warning',
+    probability: 0.006,
+    minRank: 2,
+    radioMessage: 'Field check: Sight glass on separator is fouled up. Can barely see the level.',
+
+    data: { verified: false },
+
+    onStart: (event, pvMap) => {
+      event.data.verified = false;
+      // Add noise to the level transmitter to simulate uncertainty
+      const sep = pvMap['LIC-302'] || pvMap['LIC-301'];
+      if (sep) sep.noise += 2.0;
+    },
+
+    onResolve: (event, action, pvMap) => {
+      if (action === 'verify-level') {
+        event.data.verified = true;
+        return true;
+      }
+      return false;
+    },
+
+    onEnd: (event, pvMap) => {
+      const sep = pvMap['LIC-302'] || pvMap['LIC-301'];
+      if (sep) sep.noise = Math.max(0.5, sep.noise - 2.0);
+    },
+
+    duration: 45
+  });
+
+  // Drain Valve Left Open — slow inventory loss
+  eventSystem.registerEvent({
+    id: 'drain-valve-open',
+    name: 'DRAIN VALVE OPEN',
+    description: 'Drain valve left open from previous shift. Slow level drop.',
+    severity: 'warning',
+    probability: 0.005,
+    minRank: 2,
+    radioMessage: 'Field report: Found a drain valve cracked open on the separator.',
+
+    data: { closed: false },
+
+    onStart: (event, pvMap) => {
+      event.data.closed = false;
+    },
+
+    onTick: (event, dt, pvMap) => {
+      if (event.data.closed) return;
+      // Slow drain: level drops
+      const sep = pvMap['LIC-302'] || pvMap['LIC-301'] || pvMap['LIC-501'];
+      if (sep) sep.externalForce -= 0.3;
+    },
+
+    onResolve: (event, action, pvMap) => {
+      if (action === 'close-drain') {
+        event.data.closed = true;
+        const sep = pvMap['LIC-302'] || pvMap['LIC-301'] || pvMap['LIC-501'];
+        if (sep) sep.externalForce = 0;
+        return true;
+      }
+      return false;
+    },
+
+    onEnd: (event, pvMap) => {
+      // Defensive cleanup if event is force-removed without player resolving
+      if (!event.data.closed) {
+        const sep = pvMap['LIC-302'] || pvMap['LIC-301'] || pvMap['LIC-501'];
+        if (sep) sep.externalForce = 0;
+      }
+    },
+
+    duration: null // Persists until player closes the valve
+  });
+
   // Weather Change
   eventSystem.registerEvent({
     id: 'weather-change',
@@ -385,6 +464,13 @@ function registerEquipmentEvents(eventSystem) {
     duration: 1, // Instant event
 
     onEnd: (event, pvMap) => {
+      // Update game weather state for UI and achievement checks
+      const game = window.coldCreekGame;
+      if (game && game.weather) {
+        game.weather.ambientTemp = event.data.newTemp;
+        game.weather.windDirection = event.data.newWind;
+        game.weather.precipitation = event.data.newPrecip;
+      }
       // Weather changes affect inlet temp slowly
       const inletTemp = pvMap['TIC-101'];
       if (inletTemp) {

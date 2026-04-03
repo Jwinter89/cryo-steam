@@ -275,8 +275,8 @@ const FacilityViews = {
         <polygon points="0,0 6,2 0,4" fill="#E8A030"/>
       </marker>
     </defs>
-    <rect width="1000" height="1050" fill="#3C3C3C"/>
-    <rect width="1000" height="1050" fill="url(#grid)"/>
+    <rect width="1000" height="750" fill="#3C3C3C"/>
+    <rect width="1000" height="750" fill="url(#grid)"/>
 
     <!-- INLET SECTION -->
     <g transform="translate(20,80)">

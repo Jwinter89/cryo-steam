@@ -108,7 +108,7 @@ function registerPigEvents(eventSystem) {
     description: 'Pig arriving faster than expected. Tighter margins.',
     severity: 'alarm',
     probability: 0.005,
-    minRank: 3,
+    minRank: 2,
     increasesWithTime: true,
     radioMessage: 'Pipeline: Pig on Line 1 moving fast! Estimate 5-10 minutes!',
     duration: null,

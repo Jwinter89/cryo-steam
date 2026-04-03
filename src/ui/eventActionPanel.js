@@ -309,6 +309,14 @@ class EventActionPanel {
         }
         break;
 
+      case 'sight-glass-fouling':
+        actions.push({ action: 'verify-level', label: 'VERIFY LEVEL' });
+        break;
+
+      case 'drain-valve-open':
+        actions.push({ action: 'close-drain', label: 'CLOSE DRAIN' });
+        break;
+
       case 'weather-change':
         // Info only
         break;

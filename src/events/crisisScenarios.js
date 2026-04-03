@@ -219,6 +219,30 @@ const CrisisScenarios = {
         bronzeTime: 28,
         pnlThreshold: -15000
       }
+    },
+
+    // ---- WEATHER CRISES ----
+    {
+      id: 'crisis-polar-vortex',
+      name: 'POLAR VORTEX',
+      description: 'Arctic blast drops ambient to -20°F. Instrument lines freezing. Expander icing up. Keep cryo running.',
+      facility: 'cryogenic',
+      tier: 3,
+      difficulty: 'EXTREME',
+      timeLimit: 180,
+      events: [
+        { id: 'weather-change', delay: 0, data: { newTemp: -20, newPrecip: 'CLEAR', newWind: 'N' } },
+        { id: 'instrument-freeze', delay: 15 },
+        { id: 'instrument-freeze', delay: 45 },
+        { id: 'hot-oil-fault', delay: 60 },
+        { id: 'pump-bearing-hot', delay: 90 }
+      ],
+      scoring: {
+        goldTime: 120,
+        silverTime: 150,
+        bronzeTime: 175,
+        pnlThreshold: -35000
+      }
     }
   ],
 

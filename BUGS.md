@@ -128,7 +128,7 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
   - Issue: Trend shows curve with no numeric scale — can't tell if value moved 2 or 20.
   - Fix: Add 4 Y-axis tick marks with numeric labels.
 
-- [ ] **VIS-006**: SVG level fills cause layout thrash every tick
+- [x] **VIS-006**: SVG level fills cause layout thrash every tick
   - File: `pidDiagram.js`
   - Issue: `setAttribute('height')` and `setAttribute('y')` on every tick forces SVG relayout.
   - Fix: Use `transform: scaleY()` on fixed-height element for GPU compositing.
@@ -148,10 +148,10 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
   - Issue: `.tag-bubble { stroke: #5A9FD4 }` always. Color should be reserved for abnormal.
   - Fix: Normal state → `#707070`. Blue only for currently-open faceplate tag.
 
-- [ ] **VIS-010**: Cryo P&ID viewBox too tall for widescreen
-  - File: `index.html` (inline SVG)
+- [x] **VIS-010**: Cryo P&ID viewBox too tall for widescreen
+  - File: `facilityViews.js`, `game.js`
   - Issue: `viewBox="0 0 1000 1050"` — bottom third below fold at 1080p.
-  - Fix: Restructure cryo P&ID layout for widescreen aspect ratio.
+  - Fix: Reduced to `0 0 1000 750` for widescreen aspect ratio.
 
 ---
 
@@ -206,56 +206,56 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
 
 ## TIER 6 — Game Design / Content
 
-- [ ] **GD-001**: Crisis scenarios file doesn't exist
-  - File: `src/scenarios/crisisScenarios.js`
-  - Issue: Crisis mode advertised with scenario selection screen but no scenarios defined.
-  - Fix: Create 6-8 scenarios across three facilities.
+- [x] **GD-001**: Crisis scenarios file doesn't exist
+  - File: `src/events/crisisScenarios.js`
+  - Issue: Was already created — 9 scenarios across all facilities. BUGS.md was stale.
+  - Fix: No action needed.
 
-- [ ] **GD-002**: Only 12 achievements — need 25-30 for Steam
+- [x] **GD-002**: Only 12 achievements — need 25-30 for Steam
   - File: `src/ui/achievements.js`
   - Issue: Thin achievement list hurts store page and playtime perception.
-  - Fix: Add journey, discovery, facility mastery, and streak achievements.
+  - Fix: Expanded to 28 achievements across Bronze/Silver/Gold/Platinum tiers. Plant God capstone.
 
-- [ ] **GD-003**: Complacency meter built but unwired
+- [x] **GD-003**: Complacency meter built but unwired
   - File: `game.js`
   - Issue: Tracked every tick (0-1 scale, driven by false alarm history) but drives nothing.
-  - Fix: Affect Henry tip delay time or false alarm visual prominence.
+  - Fix: Now shortens Henry tip cooldowns by up to 60% at max complacency.
 
-- [ ] **GD-004**: Deferred maintenance array never populated
-  - File: `game.js`
-  - Issue: `deferredMaintenance` increases event probability but nothing populates it.
-  - Fix: Pre-shift decision screen with 1-3 pending maintenance items.
+- [x] **GD-004**: Deferred maintenance array never populated
+  - File: `game.js`, `amineEvents.js`, `refrigerationEvents.js`
+  - Issue: `deferredMaintenance` increases event probability but player never sees it.
+  - Fix: Already populated by corrosion-repair and leak-repair events. Now Henry warns at shift start.
 
-- [ ] **GD-005**: Facility unlock is a stub
-  - File: `game.js`
+- [x] **GD-005**: Facility unlock is a stub
+  - File: `game.js`, `style.css`
   - Issue: `_updateUnlockStates()` does nothing. All facilities open from start.
-  - Fix: Gate Refrigeration behind 3 Stabilizer shifts, Cryo behind 3 Refrigeration shifts.
+  - Fix: Gated: 1 stabilizer shift unlocks refrig, 1 refrig shift unlocks cryo.
 
-- [ ] **GD-006**: Ranks 2-3 underserved in event content
-  - File: `src/events/*.js`
-  - Issue: Most cryo events are minRank 4. Big jump from rank 1 to rank 4 content.
-  - Fix: Add or re-tier events for ranks 2-3.
+- [x] **GD-006**: Ranks 2-3 underserved in event content
+  - File: `src/events/equipmentEvents.js`, `src/events/pigEvents.js`
+  - Issue: Big jump from rank 1 to rank 4 content.
+  - Fix: Added sight-glass-fouling and drain-valve-open at rank 2. Re-tiered pig-fast to rank 2.
 
-- [ ] **GD-007**: Optimize mode has no coaching layer
+- [x] **GD-007**: Optimize mode has no coaching layer
   - File: `game.js`
   - Issue: Feels like "hard Operate" — no guidance on what to tune or why.
-  - Fix: Henry explains efficiency target at shift start. Debrief compares to optimal.
+  - Fix: Henry explains efficiency targets at shift start + periodic coaching tips during gameplay.
 
 ---
 
 ## TIER 7 — Accessibility (launch items)
 
-- [ ] **A11Y-001**: Reduced-motion removes ALL alarm visual indication
+- [x] **A11Y-001**: Reduced-motion removes ALL alarm visual indication
   - File: `style.css:4199`
   - Issue: `prefers-reduced-motion` suppresses alarm-flash animation but no static fallback exists. Alarm bar and gauge rows become invisible to reduced-motion users.
   - Fix: Add static `background: #660000` as base style on `.has-unacked` that doesn't depend on animation.
 
-- [ ] **A11Y-002**: Icon-only buttons missing aria-labels
+- [x] **A11Y-002**: Icon-only buttons missing aria-labels
   - File: `index.html`
   - Issue: Pause, trend, snapshot, close buttons use Unicode/emoji with no accessible name.
   - Fix: Add `aria-label` to each (6 buttons, 5 minutes).
 
-- [ ] **A11Y-003**: Gauge row HIHI/LOLO static fallback for reduced-motion
+- [x] **A11Y-003**: Gauge row HIHI/LOLO static fallback for reduced-motion
   - File: `style.css`
   - Issue: `gauge-flash` animation suppressed by reduced-motion — HIHI gauge looks identical to normal except border color.
   - Fix: Add static dark red background that persists when animation is suppressed.
@@ -276,11 +276,11 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
 
 ## TIER 9 — Business / Launch Prep
 
-- [ ] **BIZ-001**: Strip AdSense/Stripe code from Steam build
+- [x] **BIZ-001**: Strip AdSense/Stripe code from Steam build
 - [ ] **BIZ-002**: Submit Steam Direct ($100) — get real App ID
 - [ ] **BIZ-003**: Steam store page — screenshots, trailer, description
 - [ ] **BIZ-004**: Replace Stripe Checkout with Apple IAP for iOS build
-- [ ] **BIZ-005**: Dead CSS cleanup (~150 lines of mobile/web rules)
+- [x] **BIZ-005**: Dead CSS cleanup (~150 lines of mobile/web rules)
 
 ---
 

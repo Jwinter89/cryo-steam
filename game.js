@@ -1002,7 +1002,7 @@
           this._stabilizerSVG = svgEl.innerHTML;
         }
         svgEl.innerHTML = FacilityViews.cryogenicPID();
-        svgEl.setAttribute('viewBox', '0 0 1000 1050');
+        svgEl.setAttribute('viewBox', '0 0 1000 750');
       }
     },
 
@@ -1099,6 +1099,8 @@
     _actualStartGame() {
       this._showScreen('game-screen');
       this._shiftStartRealTime = Date.now();
+      // Reset per-shift tracking for Speed Demon achievement
+      if (this.sim) this.sim.realSecondsAt4x = 0;
 
       const config = FACILITY_CONFIGS[this.currentFacility]
         ? FACILITY_CONFIGS[this.currentFacility]()
@@ -1336,13 +1338,37 @@
               refrigeration: "Refrigeration plant. Watch your TEG contactor level and keep an eye on BTEX compliance. EPA doesn't give second chances.",
               cryogenic: "Cryo Plant — 110 million a day. Watch the cold box, don't let moisture through the mol sieve, and keep that expander running."
             };
+            let tipText = facilityTips[this.currentFacility] || "New shift. Read your board before you touch anything.";
+            // Warn about deferred maintenance items
+            const deferred = this.eventSystem ? this.eventSystem.deferredMaintenance : [];
+            if (deferred.length > 0) {
+              tipText += ` Heads up — ${deferred.length} deferred maintenance item${deferred.length > 1 ? 's' : ''} outstanding. Expect more trouble than usual.`;
+            }
             this.henry.show({
-              text: facilityTips[this.currentFacility] || "New shift. Read your board before you touch anything.",
-              mood: 'normal',
+              text: tipText,
+              mood: deferred.length > 0 ? 'alert' : 'normal',
               position: 'right',
-              duration: 6000,
+              duration: deferred.length > 0 ? 8000 : 6000,
               type: 'tip'
             });
+
+            // Optimize mode coaching — delayed follow-up with efficiency guidance
+            if (this.currentMode === 'optimize') {
+              setTimeout(() => {
+                const optimizeTips = {
+                  stabilizer: "OPTIMIZE MODE: Your target is maximum P&L. Tune the reboiler temp for RVP dead-center in spec. Every degree off-center costs you bonus revenue. Watch fuel cost vs. RVP quality tradeoff.",
+                  refrigeration: "OPTIMIZE MODE: Maximize throughput while keeping moisture and BTU in spec. The TEG circulation rate and reboiler temp are your main levers. Sweet spot is minimum fuel cost with max recovery.",
+                  cryogenic: "OPTIMIZE MODE: Chase ethane and propane recovery numbers. Colder demet overhead = more ethane, but watch the column dP. Balance expander loading against residue compression power."
+                };
+                this.henry.show({
+                  text: optimizeTips[this.currentFacility] || "OPTIMIZE MODE: Maximize revenue, minimize penalties. Every setpoint matters.",
+                  mood: 'teaching',
+                  position: 'right',
+                  duration: 10000,
+                  type: 'tip'
+                });
+              }, 9000);
+            }
           }, 2000);
         }
       }
@@ -1546,6 +1572,19 @@
       // Henry gameplay tips
       this._henryGameplayTips(dt, gameTime);
       this._tickHenryCooldowns();
+
+      // Per-tick achievement checks (e.g. Plant God)
+      if (this.achievements) {
+        const tickAch = this.achievements.evaluateTick(this, dt);
+        if (tickAch) {
+          const def = Achievements.DEFINITIONS.find(d => d.id === tickAch);
+          if (def) {
+            const tier = Achievements.TIERS[def.tier];
+            this.showToast(def.name, def.desc, `${tier.label} ACHIEVEMENT`);
+            this._addRadioMessage(`ACHIEVEMENT UNLOCKED: ${def.name}`);
+          }
+        }
+      }
 
       // Shift timer warning + P&L colors
       this._updateShiftTimerWarning(gameTime);
@@ -2677,6 +2716,8 @@
         'expander-trip': { name: 'EXPANDER TRIP!', desc: "Turboexpander's down! Your cold box is warming up. Get it restarted before you lose ethane recovery.", mood: 'worried' },
         'cold-box-freeze': { name: 'COLD BOX FREEZE-UP', desc: "Moisture in the cold box. Brazed aluminum doesn't like that. Controlled warmup — don't rush it, 3 degrees per minute max.", mood: 'worried' },
         'molsieve-breakthrough': { name: 'MOL SIEVE BREAKTHROUGH', desc: "Moisture breaking through the mol sieve. Switch beds or inject EG downstream. Clock's ticking.", mood: 'alert' },
+        'sight-glass-fouling': { name: 'SIGHT GLASS FOULED', desc: "Can't see the level through the sight glass. Don't trust your eyes — verify with the transmitter.", mood: 'normal' },
+        'drain-valve-open': { name: 'DRAIN VALVE OPEN', desc: "Someone left a drain cracked open from last shift. Your level's going to keep dropping until you close it.", mood: 'alert' },
         'weather-change': { name: 'WEATHER INCOMING', desc: "Front moving in. Temps are dropping. Watch your exposed lines and aerial coolers.", mood: 'alert' },
         'fuel-gas-swing': { name: 'FUEL GAS SWING', desc: "Fuel gas composition just shifted. Your heater might get rich or lean. Watch the BTU and flame.", mood: 'alert' },
         'instrument-air-loss': { name: 'INSTRUMENT AIR LOSS!', desc: "Instrument air header pressure is dropping. Control valves are going to fail to their safe positions. This is not a drill.", mood: 'worried' },
@@ -2791,6 +2832,26 @@
         this._setHenryTipCooldown('ambient', 600);
       }
 
+      // Optimize mode coaching — periodic efficiency hints
+      if (this.currentMode === 'optimize' && this.sim.totalTicks % 200 === 0 && !this._henryTipCooldown('opt-coach')) {
+        const tips = [];
+        const earnings = this.pnlSystem.netPerHour;
+        const penalties = this.pnlSystem.penaltiesPerHour;
+        if (penalties > 100) tips.push("You're leaking money on penalties. Fix those first before tuning for efficiency.");
+        if (rvpPV && rvpPV.value >= 9.0 && rvpPV.value <= 11.5) {
+          const target = 10.25;
+          const off = Math.abs(rvpPV.value - target);
+          if (off > 0.5) tips.push(`RVP is ${rvpPV.value.toFixed(1)} — closer to ${target.toFixed(1)} earns more bonus.`);
+        }
+        if (earnings < 1500) tips.push("Revenue is low. Check your throughput — is something throttled?");
+        const ethPV = pvMap['AI-701'];
+        if (ethPV && ethPV.value < 88) tips.push(`Ethane recovery at ${ethPV.value.toFixed(0)}%. Colder overhead = more recovery.`);
+        if (tips.length > 0) {
+          this.henry.tip(tips[Math.floor(Math.random() * tips.length)], 6000);
+          this._setHenryTipCooldown('opt-coach', 400);
+        }
+      }
+
       // First faceplate hint
       if (this.sim.totalTicks === 60 && !this.progress.firstFaceplateHint) {
         this.henry.operatorTip('first-faceplate');
@@ -2805,7 +2866,10 @@
     },
 
     _setHenryTipCooldown(key, ticks) {
-      this._henryTipCooldowns[key] = ticks;
+      // Complacency shortens cooldowns — Henry nags more when you're sloppy
+      const complacency = this.eventSystem ? this.eventSystem.complacencyMeter : 0;
+      const factor = Math.max(0.4, 1 - complacency * 0.6);
+      this._henryTipCooldowns[key] = Math.round(ticks * factor);
     },
 
     _tickHenryCooldowns() {

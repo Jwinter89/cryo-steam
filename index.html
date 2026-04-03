@@ -174,7 +174,7 @@
       <!-- Top Bar -->
       <div id="topbar">
         <div class="topbar-left">
-          <button id="btn-main-menu" class="topbar-menu-btn" title="Main Menu">&#9776;</button>
+          <button id="btn-main-menu" class="topbar-menu-btn" title="Main Menu" aria-label="Main Menu">&#9776;</button>
           <span id="plant-name">STABILIZER</span>
           <span id="game-mode-label">OPERATE</span>
         </div>
@@ -199,7 +199,7 @@
         <div id="alarm-list-popup" class="popup" style="display:none">
           <div class="popup-header">
             <h3>ALARM SUMMARY</h3>
-            <button class="popup-close" data-popup="alarm-list-popup">X</button>
+            <button class="popup-close" data-popup="alarm-list-popup" aria-label="Close alarm list">X</button>
           </div>
           <div id="alarm-list" class="alarm-list">
             <div class="alarm-empty">NO ALARMS</div>
@@ -654,14 +654,14 @@
 
       <!-- Time Control Bar -->
       <div id="time-controls">
-        <button id="btn-pause" class="time-btn active">&#9646;&#9646;</button>
-        <button id="btn-1x" class="time-btn">1x</button>
-        <button id="btn-2x" class="time-btn">2x</button>
-        <button id="btn-4x" class="time-btn">4x</button>
+        <button id="btn-pause" class="time-btn active" aria-label="Pause">&#9646;&#9646;</button>
+        <button id="btn-1x" class="time-btn" aria-label="1x Speed">1x</button>
+        <button id="btn-2x" class="time-btn" aria-label="2x Speed">2x</button>
+        <button id="btn-4x" class="time-btn" aria-label="4x Speed">4x</button>
         <span id="time-speed-label">PAUSED</span>
-        <button id="btn-trend" class="time-btn trend-toggle-btn" title="Toggle Trend Graph">&#x1F4C8;</button>
-        <button id="btn-snapshot" class="time-btn snapshot-btn" title="Take Snapshot">&#x1F4F7;</button>
-        <button id="btn-coach" class="time-btn coach-btn" title="Pause & Coach (Henry gives a hint)" style="display:none">COACH</button>
+        <button id="btn-trend" class="time-btn trend-toggle-btn" title="Toggle Trend Graph" aria-label="Toggle Trend Graph">&#x1F4C8;</button>
+        <button id="btn-snapshot" class="time-btn snapshot-btn" title="Take Snapshot" aria-label="Take Snapshot">&#x1F4F7;</button>
+        <button id="btn-coach" class="time-btn coach-btn" title="Pause and Coach" aria-label="Pause and Coach" style="display:none">COACH</button>
       </div>
 
       <!-- (Mobile UI elements removed — Steam desktop only) -->
@@ -742,7 +742,7 @@
     <div id="field-notes-popup" class="popup" style="display:none">
       <div class="popup-header">
         <h3>FIELD NOTES</h3>
-        <button class="popup-close" data-popup="field-notes-popup">X</button>
+        <button class="popup-close" data-popup="field-notes-popup" aria-label="Close field notes">X</button>
       </div>
       <div id="field-notes-list" class="field-notes-list">
         <!-- Populated dynamically -->
@@ -764,7 +764,7 @@
     <div id="glossary-popup" class="popup" style="display:none">
       <div class="popup-header">
         <h3>OPERATOR GLOSSARY</h3>
-        <button class="popup-close" data-popup="glossary-popup">X</button>
+        <button class="popup-close" data-popup="glossary-popup" aria-label="Close glossary">X</button>
       </div>
       <div id="glossary-content">
         <!-- Populated by glossary.js -->
