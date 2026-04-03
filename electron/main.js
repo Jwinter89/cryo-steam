@@ -6,6 +6,7 @@ const { pathToFileURL } = require('url');
 // ── Steamworks SDK ──────────────────────────────────────────────
 const STEAM_APP_ID = 0; // Replace with real App ID after Steam Direct
 let steamClient = null;
+let steamCallbackInterval = null;
 
 function initSteam() {
   try {
@@ -258,5 +259,3 @@ app.on('window-all-closed', () => {
   }
 });
 
-// ── Steam Callback Pump ─────────────────────────────────────────
-let steamCallbackInterval = null;
