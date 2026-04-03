@@ -43,6 +43,7 @@ class FaceplateManager {
           const pv = this.sim.getPV(this.currentTag);
           if (pv && pv.controllable) {
             pv.mode = mode;
+            if (mode === 'AUTO') pv._integralAccum = 0;
             this._updateModeButtons(mode);
             this._updateFieldAccess(pv);
           }
@@ -63,7 +64,7 @@ class FaceplateManager {
             const spInput = document.getElementById('fp-sp');
             const newSP = parseFloat(spInput.value);
             if (!isNaN(newSP) && newSP >= pv.min && newSP <= pv.max) {
-              pv.sp = newSP;
+              if (pv.setSP) pv.setSP(newSP); else pv.sp = newSP;
               this._flashApply(true);
               document.dispatchEvent(new CustomEvent('faceplate:apply', {
                 detail: { tag: this.currentTag, sp: newSP }

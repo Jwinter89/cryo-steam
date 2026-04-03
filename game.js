@@ -70,8 +70,8 @@
       { header: 'INLET / MOL SIEVE', tags: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'] },
       { header: 'AMINE / H2S', tags: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'LIC-A03', 'AI-A04', 'AI-A05', 'CI-A01', 'TIC-A04', 'PIC-A03', 'LIC-A02', 'PIC-A02', 'LIC-A04'] },
       { header: 'COLD BOX', tags: ['TIC-301', 'TIC-302', 'TIC-303'] },
-      { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'] },
-      { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'] },
+      { header: 'EXPANDER', tags: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402', 'VI-401'] },
+      { header: 'DEMETHANIZER', tags: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'PDI-501', 'LIC-501'] },
       { header: 'RESIDUE / PRODUCT', tags: ['PIC-601', 'PIC-602', 'TIC-601', 'TIC-602', 'TIC-603', 'AI-701', 'AI-702', 'AI-703', 'AI-704', 'AI-705', 'LIC-701'] },
       { header: 'UTILITIES', tags: ['TIC-801', 'TIC-901', 'AI-801'] }
     ]
@@ -102,8 +102,8 @@
       molsieve: ['FI-100', 'PIC-100', 'TIC-100', 'TIC-201', 'TIC-202', 'TIC-203', 'AI-201'],
       amine: ['FI-A01', 'TIC-A01', 'TIC-A02', 'PIC-A01', 'LIC-A01', 'AI-A01', 'AI-A02', 'AI-A03', 'TIC-A03', 'TIC-A04', 'PIC-A03', 'LIC-A03', 'LIC-A02', 'PIC-A02', 'AI-A04', 'AI-A05', 'CI-A01', 'LIC-A04'],
       coldbox: ['TIC-301', 'TIC-302', 'TIC-303'],
-      expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402'],
-      demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'LIC-501'],
+      expander: ['TIC-401', 'TIC-402', 'PIC-401', 'SI-401', 'FIC-401', 'TIC-403', 'PIC-402', 'VI-401'],
+      demet: ['TIC-501', 'TIC-502', 'TIC-503', 'TIC-504', 'TIC-505', 'PIC-501', 'PDI-501', 'LIC-501'],
       residue: ['PIC-601', 'PIC-602', 'TIC-601', 'TIC-602', 'TIC-603', 'AI-705'],
       product: ['AI-701', 'AI-702', 'AI-703', 'AI-704', 'LIC-701', 'AI-801'],
       hotoil: ['TIC-801']
@@ -192,6 +192,8 @@
       this._initHenry();
       this._checkBuildingTabOverflow();
       window.addEventListener('resize', () => this._checkBuildingTabOverflow());
+      const tabBar = document.getElementById('building-tabs');
+      if (tabBar) tabBar.addEventListener('scroll', () => this._checkBuildingTabOverflow());
 
       // Initialize new systems
       if (window.Achievements) this.achievements = new Achievements();
@@ -347,6 +349,7 @@
       // Facility selection
       document.querySelectorAll('.mode-card[data-facility]').forEach(card => {
         const activate = () => {
+          if (card.classList.contains('facility-locked')) return;
           this.currentFacility = card.dataset.facility;
           this._startGame();
         };
@@ -430,6 +433,11 @@
         this._updateContinueButton();
         this._updateLandingPage();
         this._updateChallengesPreview();
+      }
+
+      // Update facility lock states when entering facility selection
+      if (screenId === 'facility-screen') {
+        this._updateUnlockStates();
       }
     },
 
@@ -533,7 +541,35 @@
     // ============================================================
 
     _updateUnlockStates() {
-      // All modes and facilities are unlocked in the web version
+      const cards = document.querySelectorAll('.mode-card[data-facility]');
+      cards.forEach(card => {
+        const facility = card.dataset.facility;
+        let locked = false;
+
+        if (facility === 'refrigeration') {
+          locked = !(this.progress.stabilizerShiftsComplete >= 1);
+        } else if (facility === 'cryogenic') {
+          locked = !(this.progress.refrigerationShiftsComplete >= 1);
+        }
+
+        if (locked) {
+          card.classList.add('facility-locked');
+          card.setAttribute('aria-disabled', 'true');
+          if (!card.querySelector('.lock-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'lock-overlay';
+            overlay.innerHTML = facility === 'refrigeration'
+              ? '&#128274; Complete 1 Stabilizer shift to unlock'
+              : '&#128274; Complete 1 Refrigeration shift to unlock';
+            card.appendChild(overlay);
+          }
+        } else {
+          card.classList.remove('facility-locked');
+          card.removeAttribute('aria-disabled');
+          const overlay = card.querySelector('.lock-overlay');
+          if (overlay) overlay.remove();
+        }
+      });
     },
 
     // ============================================================
@@ -1227,6 +1263,13 @@
       this._shiftAchievements = [];
       this._shiftChallenges = [];
 
+      // Reset field note hold timers so they don't bleed between shifts
+      if (window.FieldNotes && FieldNotes.notes) {
+        for (const note of FieldNotes.notes) {
+          note._holdTimer = 0;
+        }
+      }
+
       // Show challenges panel
       const chPanel = document.getElementById('challenges-panel-container');
       if (chPanel && this.challenges) {
@@ -1459,6 +1502,16 @@
       // Mol sieve cycle tracking (cryo only)
       if (this.currentFacility === 'cryogenic') {
         this._tickMolSieveCycle(dt);
+
+        // Cold sep HIHI → expander trip (liquid carryover)
+        const coldSepLvl = this.sim.getPV('LIC-301');
+        if (coldSepLvl && coldSepLvl.alarmState === 'HIHI' && this.eventSystem) {
+          const expEvt = this.eventSystem.events.find(e => e.id === 'expander-trip');
+          if (expEvt && !expEvt.active) {
+            this.eventSystem._startEvent('expander-trip', this.sim.pvMap);
+            this._addRadioMessage('COLD SEP HIHI — LIQUID CARRYOVER — EXPANDER TRIP');
+          }
+        }
       }
 
       // Update spec board (facility-aware)
@@ -1524,12 +1577,17 @@
 
       const ms = config.molSieve;
       const beds = [
-        { key: 'bedA', label: 'A' },
-        { key: 'bedB', label: 'B' },
-        { key: 'bedC', label: 'C' }
+        { key: 'bedA', label: 'A', tag: 'TIC-201' },
+        { key: 'bedB', label: 'B', tag: 'TIC-202' },
+        { key: 'bedC', label: 'C', tag: null }
       ];
 
-      // Advance cycle timers
+      // Regen heater outlet — target temp for regenerating beds
+      const regenPV = this.sim ? this.sim.getPV('TIC-203') : null;
+      const regenTarget = regenPV ? regenPV.value : 500;
+      const adsorbTarget = 85; // Inlet gas temp ~85F
+
+      // Advance cycle timers and drive bed temps
       for (const bed of beds) {
         const b = ms[bed.key];
         b.cycleTime += dt;
@@ -1538,6 +1596,19 @@
         if (b.state === 'regenerating' && b.cycleTime >= b.maxCycleTime) {
           b.state = 'standby';
           b.cycleTime = 0;
+        }
+
+        // Drive bed temperature toward state-appropriate target
+        if (bed.tag && this.sim) {
+          const pv = this.sim.getPV(bed.tag);
+          if (pv) {
+            let target;
+            if (b.state === 'regenerating') target = regenTarget * 0.85; // Bed outlet lags heater
+            else if (b.state === 'adsorbing') target = adsorbTarget;
+            else target = adsorbTarget + 20; // Standby — cooling down slowly
+            const rate = b.state === 'regenerating' ? 0.03 : 0.015;
+            pv.value += (target - pv.value) * rate * dt;
+          }
         }
       }
 
@@ -2473,7 +2544,11 @@
       Object.assign(this.progress, updates);
       this.progress.hasGameState = true;
       try {
-        localStorage.setItem('coldcreek-progress', JSON.stringify(this.progress));
+        const json = JSON.stringify(this.progress);
+        localStorage.setItem('coldcreek-progress', json);
+        if (window.steam && window.steam.isAvailable()) {
+          window.steam.writeCloudFile('progress.json', json);
+        }
       } catch (e) { /* Storage unavailable */ }
 
       // Sync progress to Firebase (only if authenticated)
@@ -2490,7 +2565,12 @@
 
     _loadProgress() {
       try {
-        const data = localStorage.getItem('coldcreek-progress');
+        // Prefer Steam Cloud progress (cross-machine), fall back to localStorage
+        let data = null;
+        if (window.steam && window.steam.isAvailable() && window.steam.isCloudEnabled()) {
+          data = window.steam.readCloudFile('progress.json');
+        }
+        if (!data) data = localStorage.getItem('coldcreek-progress');
         if (data) {
           this.progress = JSON.parse(data);
         }
@@ -2514,14 +2594,23 @@
           crisisScenario: this.crisisScenario,
           pnl: this.pnlSystem ? this.pnlSystem.toJSON() : { shiftEarnings: 0 }
         };
-        localStorage.setItem('coldcreek-gamestate', JSON.stringify(state));
+        const json = JSON.stringify(state);
+        localStorage.setItem('coldcreek-gamestate', json);
+        if (window.steam && window.steam.isAvailable()) {
+          window.steam.writeCloudFile('gamestate.json', json);
+        }
         this.saveProgress({ hasGameState: true });
       } catch (e) { /* Storage unavailable */ }
     },
 
     _continueGame() {
       try {
-        const data = localStorage.getItem('coldcreek-gamestate');
+        // Prefer Steam Cloud save (cross-machine), fall back to localStorage
+        let data = null;
+        if (window.steam && window.steam.isAvailable() && window.steam.isCloudEnabled()) {
+          data = window.steam.readCloudFile('gamestate.json');
+        }
+        if (!data) data = localStorage.getItem('coldcreek-gamestate');
         if (data) {
           const state = JSON.parse(data);
           this.currentMode = state.mode || 'operate';
@@ -3204,11 +3293,9 @@
     _checkBuildingTabOverflow() {
       const tabBar = document.getElementById('building-tabs');
       if (!tabBar) return;
-      if (tabBar.scrollWidth > tabBar.clientWidth) {
-        tabBar.classList.add('has-overflow');
-      } else {
-        tabBar.classList.remove('has-overflow');
-      }
+      const hasOverflow = tabBar.scrollWidth > tabBar.clientWidth;
+      const atEnd = tabBar.scrollLeft + tabBar.clientWidth >= tabBar.scrollWidth - 2;
+      tabBar.classList.toggle('has-overflow', hasOverflow && !atEnd);
     },
 
     // ============================================================

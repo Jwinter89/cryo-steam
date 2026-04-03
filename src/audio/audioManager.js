@@ -229,14 +229,17 @@ class AudioManager {
   }
 
   _createNoise(volume) {
-    const bufferSize = this.ctx.sampleRate * 2;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
+    // Cache noise buffer — same white noise reused across all instances
+    if (!this._noiseBuffer) {
+      const bufferSize = this.ctx.sampleRate * 2;
+      this._noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = this._noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
     }
     const source = this.ctx.createBufferSource();
-    source.buffer = buffer;
+    source.buffer = this._noiseBuffer;
     source.loop = true;
     const gain = this.ctx.createGain();
     gain.gain.value = volume;

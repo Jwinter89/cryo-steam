@@ -69,6 +69,9 @@ class ProcessVariable {
     // External force (for events pushing value in a direction)
     this.externalForce = 0;
 
+    // Integral accumulator for PI controller (eliminates steady-state offset)
+    this._integralAccum = 0;
+
     // Ramp state (for ramp sequence)
     this.rampTarget = null;
     this.rampRate = null; // units per tick
@@ -90,14 +93,18 @@ class ProcessVariable {
 
     let targetValue = this.value;
 
-    // AUTO mode: PV tracks toward setpoint via output
+    // AUTO mode: PV tracks toward setpoint via PI controller
     if (this.mode === 'AUTO' && this.controllable) {
-      // Output drives toward SP. Simple P-controller model.
       const error = this.sp - this.value;
-      const outputDelta = error * this.responseRate * dt;
+      // Integral action: accumulate error over time (slow, eliminates offset)
+      this._integralAccum += error * dt * 0.02;
+      // Anti-windup: clamp integral to prevent overshoot
+      const range = this.max - this.min;
+      this._integralAccum = Math.max(-range * 0.1, Math.min(range * 0.1, this._integralAccum));
+      const outputDelta = (error * this.responseRate + this._integralAccum * this.responseRate) * dt;
       targetValue = this.value + outputDelta;
       // Update output to reflect controller action
-      this.output = Math.max(0, Math.min(100, 50 + (error / (this.max - this.min)) * 100));
+      this.output = Math.max(0, Math.min(100, 50 + (error / range) * 100));
     }
 
     // MAN mode: output is directly set, PV responds to output position
@@ -249,7 +256,8 @@ class ProcessVariable {
       alarmState: this.alarmState,
       alarmAcked: this.alarmAcked,
       damageAccumulator: this.damageAccumulator,
-      trendHistory: this.trendHistory
+      trendHistory: this.trendHistory,
+      _integralAccum: this._integralAccum
     };
   }
 
@@ -262,6 +270,13 @@ class ProcessVariable {
     if (data.alarmAcked != null) this.alarmAcked = data.alarmAcked;
     if (data.damageAccumulator != null) this.damageAccumulator = data.damageAccumulator;
     if (data.trendHistory) this.trendHistory = data.trendHistory;
+    if (data._integralAccum != null) this._integralAccum = data._integralAccum;
+  }
+
+  /** Update setpoint — resets integral accumulator to prevent overshoot */
+  setSP(newSP) {
+    this.sp = newSP;
+    this._integralAccum = 0;
   }
 }
 

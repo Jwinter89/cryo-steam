@@ -61,7 +61,7 @@ const FieldNotes = {
       id: 'fn-012',
       category: 'DEHYDRATION',
       title: 'BTEX Clock',
-      text: 'The BTEX unit must be running whenever the still is venting. That\'s not a guideline. That\'s EPA. The clock starts the moment that pilot goes out. You have maybe 15 minutes before it becomes a compliance event that follows you forever. Check your pilot every round.',
+      text: 'The BTEX unit must be running whenever the still is venting. That\'s not a guideline. That\'s EPA. The clock starts the moment that pilot goes out. You have maybe 10 minutes before it becomes a compliance event that follows you forever. Check your pilot every round.',
       unlockCondition: 'relight-btex-fast',
       unlocked: false
     },

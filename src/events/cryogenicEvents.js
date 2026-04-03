@@ -780,23 +780,57 @@ function registerCryogenicEvents(eventSystem) {
     duration: 90
   });
 
-  // Flare Stack Fire
+  // Flare Stack Fire — liquids carryover to flare header
   eventSystem.registerEvent({
     id: 'flare-fire',
     name: 'FLARE STACK FIRE',
-    description: 'Liquids going to flare. Visible fire at flare tip.',
+    description: 'Liquids going to flare. Visible fire at flare tip. Reduce pressure to stop carryover.',
     severity: 'alarm',
     probability: 0.002,
     minRank: 3,
     radioMessage: 'VISUAL: Excessive flame at flare stack. Check liquid routing to flare.',
 
+    data: {
+      elapsed: 0,
+      routingChecked: false
+    },
+
+    onStart: (event, pvMap) => {
+      event.data.elapsed = 0;
+      event.data.routingChecked = false;
+      // Demet pressure rises as relief valves lift
+      const demetPress = pvMap['PIC-501'];
+      if (demetPress) demetPress.externalForce += 5;
+    },
+
     onTick: (event, dt, pvMap) => {
-      // Managed by reducing what goes to flare
+      event.data.elapsed += dt;
+      // Product loss while flaring
+      const productFlow = pvMap['FI-501'] || pvMap['FI-402'];
+      if (productFlow) productFlow.externalForce -= 2;
+      // Sustained flaring raises environmental/community concern
+      if (event.data.elapsed > 20 && !event.data.routingChecked) {
+        const demetPress = pvMap['PIC-501'];
+        if (demetPress) demetPress.externalForce += 2;
+      }
     },
 
     onResolve: (event, action, pvMap) => {
-      if (action === 'check-flare-routing') return true;
+      if (action === 'check-flare-routing') {
+        event.data.routingChecked = true;
+        // Checking routing reduces the pressure relief
+        const demetPress = pvMap['PIC-501'];
+        if (demetPress) demetPress.externalForce = Math.max(0, demetPress.externalForce - 5);
+        const productFlow = pvMap['FI-501'] || pvMap['FI-402'];
+        if (productFlow) productFlow.externalForce = 0;
+        return true;
+      }
       return false;
+    },
+
+    onEnd: (event, pvMap) => {
+      const demetPress = pvMap['PIC-501'];
+      if (demetPress) demetPress.externalForce = 0;
     },
 
     duration: 30

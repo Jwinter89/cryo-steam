@@ -138,7 +138,14 @@ class EventSystem {
   _rollForEvents(gameTime, pvMap) {
     const dp = this.difficultyProfile;
 
-    for (const evt of this.events) {
+    // Shuffle to avoid first-registered bias
+    const shuffled = [...this.events];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    for (const evt of shuffled) {
       if (evt.active) continue;
       if (this.activeEvents.length >= dp.maxSimultaneous) break;
 

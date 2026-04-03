@@ -128,6 +128,12 @@ const CryogenicConfig = {
       controllable: false, noise: 0.2, responseRate: 0.02
     },
     {
+      tag: 'VI-401', desc: 'EXPANDER VIBRATION', unit: 'mils',
+      value: 0.8, sp: 0.8, min: 0, max: 5,
+      hi: 2.0, hh: 3.0, lo: null, ll: null,
+      controllable: false, noise: 0.05, responseRate: 0.01
+    },
+    {
       tag: 'FIC-401', desc: 'INLET GUIDE VANE', unit: '%',
       value: 65, sp: 65, min: 0, max: 100,
       hi: null, hh: null, lo: null, ll: null,
@@ -158,6 +164,12 @@ const CryogenicConfig = {
       value: 235, sp: 235, min: 150, max: 350,
       hi: 290, hh: 320, lo: 190, ll: 170,
       controllable: true, mode: 'AUTO', noise: 1.0, responseRate: 0.03
+    },
+    {
+      tag: 'PDI-501', desc: 'DEMET DIFF PRESS', unit: 'PSI',
+      value: 2.5, sp: 2.5, min: 0, max: 15,
+      hi: 6.0, hh: 8.0, lo: null, ll: null,
+      controllable: false, noise: 0.1, responseRate: 0.03
     },
     {
       tag: 'LIC-501', desc: 'DEMET SUMP', unit: '%',
@@ -365,6 +377,17 @@ const CryogenicConfig = {
         return (targetTemp - outPV.value) * 0.005;
       }
     },
+    // Expander vibration correlates with speed and bearing temp
+    {
+      source: 'SI-401', target: 'VI-401', type: 'custom',
+      id: 'speed-to-vibration',
+      fn: (speed, vibPV, dt) => {
+        // Base vibration scales with speed, spikes near overspeed
+        const base = 0.5 + (speed / 18500) * 0.5;
+        const spike = speed > 20000 ? (speed - 20000) * 0.001 : 0;
+        return (base + spike - vibPV.value) * 0.01;
+      }
+    },
     // Expander suction drops with inlet flow restriction (pig)
     {
       source: 'FI-100', target: 'PIC-401', type: 'proportional',
@@ -411,6 +434,17 @@ const CryogenicConfig = {
       id: 'demetpress-to-demetoh',
       fn: (press, ohPV, dt) => {
         return (press - 235) * 0.003;
+      }
+    },
+    // Sump level drives tray dP — high level = flooding = high dP
+    {
+      source: 'LIC-501', target: 'PDI-501', type: 'custom',
+      id: 'sumplevel-to-demetdp',
+      fn: (level, dpPV, dt) => {
+        // Normal dP ~2.5 PSI. Rises exponentially above 70% sump
+        const baseDp = 2.5;
+        const target = level > 70 ? baseDp + Math.pow((level - 70) / 10, 2) : baseDp;
+        return (target - dpPV.value) * 0.02;
       }
     },
 

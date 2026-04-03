@@ -20,18 +20,18 @@
     "training",
     "steam"
   ],
-  "author": "Jwinter89",
+  "author": "Cold Creek Studios",
   "license": "ISC",
   "dependencies": {
+    "steamworks.js": "^0.3.1"
+  },
+  "devDependencies": {
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
     "@capacitor/ios": "^8.2.0",
     "@capacitor/preferences": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.1",
-    "steamworks.js": "^0.3.1"
-  },
-  "devDependencies": {
     "electron": "^33.0.0",
     "electron-builder": "^25.1.8"
   }

@@ -125,8 +125,8 @@ function registerRefrigerationEvents(eventSystem) {
       event.data.downtime += dt;
 
       // BTEX must be operational whenever still is venting
-      // Non-compliance after 15 game-minutes
-      if (event.data.downtime > 15 && !event.data.complianceViolation) {
+      // Non-compliance after 10 game-minutes (EPA limit)
+      if (event.data.downtime > 10 && !event.data.complianceViolation) {
         event.data.complianceViolation = true;
       }
 

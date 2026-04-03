@@ -304,8 +304,17 @@ class AlarmManager {
     if (game && game.faceplateManager && !tag.startsWith('evt-')) {
       // Close alarm list popup so faceplate is visible
       this.listPopup.style.display = 'none';
-      // Create a synthetic event at center of screen
-      const fakeEvent = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 };
+      // Position faceplate near the gauge row, fall back to screen center
+      const gaugeId = 'g-' + tag.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const gaugeEl = document.getElementById(gaugeId);
+      let fakeEvent;
+      if (gaugeEl) {
+        const rect = gaugeEl.getBoundingClientRect();
+        fakeEvent = { clientX: rect.right + 10, clientY: rect.top + rect.height / 2 };
+        gaugeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        fakeEvent = { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 };
+      }
       game.faceplateManager.open(tag, fakeEvent);
     }
 
