@@ -127,6 +127,12 @@ class FaceplateManager {
     const pv = this.sim.getPV(tag);
     if (!pv) return;
 
+    // Remove active indicator from previous bubble
+    document.querySelectorAll('.tag-bubble.fp-active').forEach(b => b.classList.remove('fp-active'));
+    // Highlight the active tag bubble
+    const bubble = document.querySelector(`.tag-bubble[data-tag="${tag}"]`);
+    if (bubble) bubble.classList.add('fp-active');
+
     this.currentTag = tag;
     this.el.style.display = 'block';
 
@@ -194,6 +200,7 @@ class FaceplateManager {
 
   close() {
     this.el.style.display = 'none';
+    document.querySelectorAll('.tag-bubble.fp-active').forEach(b => b.classList.remove('fp-active'));
     this.currentTag = null;
     const backdrop = document.getElementById('faceplate-backdrop');
     if (backdrop) backdrop.style.display = 'none';
@@ -261,19 +268,23 @@ class FaceplateManager {
     // Draw alarm limit lines
     if (pv.hi != null) {
       const hiY = h - ((pv.hi - pv.min) / range) * h;
-      ctx.strokeStyle = '#553300';
+      ctx.strokeStyle = 'rgba(255,165,0,0.45)';
+      ctx.setLineDash([4, 3]);
       ctx.beginPath();
       ctx.moveTo(0, hiY);
       ctx.lineTo(w, hiY);
       ctx.stroke();
+      ctx.setLineDash([]);
     }
     if (pv.lo != null) {
       const loY = h - ((pv.lo - pv.min) / range) * h;
-      ctx.strokeStyle = '#553300';
+      ctx.strokeStyle = 'rgba(255,165,0,0.3)';
+      ctx.setLineDash([4, 3]);
       ctx.beginPath();
       ctx.moveTo(0, loY);
       ctx.lineTo(w, loY);
       ctx.stroke();
+      ctx.setLineDash([]);
     }
 
     // Draw trend line

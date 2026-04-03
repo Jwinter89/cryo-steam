@@ -157,6 +157,11 @@ html, body {
 }
 .screen.active {
   display: flex;
+  animation: screen-fade-in 150ms ease-out;
+}
+@keyframes screen-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ============================================================
@@ -1096,6 +1101,10 @@ html, body {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  transition: box-shadow 0.3s ease;
+}
+#game-screen.critical-alarm-active {
+  box-shadow: inset 0 0 80px rgba(255,32,32,0.25);
 }
 
 /* ---- TOP BAR ---- */
@@ -1265,7 +1274,7 @@ html, body {
   }
 }
 .gauge-row.alarm-hi {
-  border-left-color: var(--alarm-lo);
+  border-left-color: var(--alarm-hi);
 }
 .gauge-row.alarm-hihi {
   border-left-color: var(--alarm-crit);
@@ -1313,7 +1322,9 @@ html, body {
   text-align: right;
   min-width: 48px;
 }
-.gauge-row.alarm-hi .gauge-val,
+.gauge-row.alarm-hi .gauge-val {
+  color: var(--alarm-hi);
+}
 .gauge-row.alarm-lo .gauge-val {
   color: var(--alarm-lo);
 }
@@ -1354,6 +1365,16 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+#center-panel.esd-shake {
+  animation: center-shake 150ms ease-out;
+}
+@keyframes center-shake {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-3px, 2px); }
+  50%  { transform: translate(3px, -2px); }
+  75%  { transform: translate(-2px, 1px); }
+  100% { transform: translate(0, 0); }
 }
 #pid-diagram {
   width: 100%;
@@ -1397,9 +1418,14 @@ html, body {
 .tag-bubble {
   cursor: pointer;
   transition: stroke 0.2s, filter 0.2s;
-  stroke: #5A9FD4 !important;
+  stroke: #707070 !important;
   stroke-width: 1.2;
-  fill: rgba(90, 159, 212, 0.08);
+  fill: rgba(112, 112, 112, 0.06);
+}
+.tag-bubble.fp-active {
+  stroke: #5A9FD4 !important;
+  stroke-width: 2;
+  fill: rgba(90, 159, 212, 0.12);
 }
 @media (hover: hover) {
   .tag-bubble:hover {
@@ -2892,8 +2918,10 @@ g[id^="equip-"]:hover line {
 }
 
 /* Enhanced flow line glow during active flow */
-.flow-line.flowing {
-  filter: drop-shadow(0 0 1px rgba(160, 160, 160, 0.3));
+.flow-line.flowing,
+.flow-line.flowing-2x,
+.flow-line.flowing-4x {
+  filter: drop-shadow(0 0 3px rgba(200, 200, 200, 0.5));
 }
 
 /* Tag bubble alarm flash */

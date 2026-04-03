@@ -122,12 +122,30 @@ class TrendManager {
 
     ctx.strokeStyle = '#444';
     ctx.lineWidth = 0.5;
+
+    // Compute Y-axis range from first tracked tag for labels
+    let yMin = 0, yMax = 100;
+    if (this._trackedTags.length > 0) {
+      const firstHist = this._history[this._trackedTags[0]];
+      if (firstHist && firstHist.values.length >= 2) {
+        yMin = Math.min(...firstHist.values);
+        yMax = Math.max(...firstHist.values);
+        if (yMax - yMin < 1) { yMin -= 0.5; yMax += 0.5; }
+      }
+    }
+
+    ctx.font = '8px Courier New';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'right';
     for (let i = 0; i <= 4; i++) {
       const y = pad.top + (i / 4) * (h - pad.top - pad.bottom);
       ctx.beginPath();
       ctx.moveTo(pad.left, y);
       ctx.lineTo(w - pad.right, y);
       ctx.stroke();
+      // Y-axis tick label
+      const val = yMax - (i / 4) * (yMax - yMin);
+      ctx.fillText(val.toFixed(1), pad.left - 4, y + 3);
     }
 
     const colors = ['#4CAF50', '#E8A030', '#4A9BD9', '#C77DFF', '#E04040', '#00CED1'];

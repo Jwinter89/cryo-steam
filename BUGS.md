@@ -103,27 +103,27 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
 
 ## TIER 4 — Visual Polish (highest Steam impression impact)
 
-- [ ] **VIS-001**: Faceplate trend alarm limit lines invisible
+- [x] **VIS-001**: Faceplate trend alarm limit lines invisible
   - File: `faceplateManager.js`
   - Issue: HI/LO limit lines drawn in `#553300` on `#2E2E2E` background (~1.3:1 contrast).
   - Fix: Change to `rgba(255,165,0,0.45)` for HI, `rgba(255,165,0,0.3)` for LO.
 
-- [ ] **VIS-002**: Screen-edge red glow on critical alarms
+- [x] **VIS-002**: Screen-edge red glow on critical alarms
   - File: `style.css` / `game.js`
   - Issue: No visual "this is serious" beyond alarm bar turning red.
   - Fix: Add `box-shadow: inset 0 0 80px rgba(255,32,32,0.25)` on `#game-screen` via `.critical-alarm-active` class.
 
-- [ ] **VIS-003**: `--alarm-hi` orange token defined but never used
+- [x] **VIS-003**: `--alarm-hi` orange token defined but never used
   - File: `style.css`, `gaugeManager.js`, `alarmManager.js`
   - Issue: Both HI and LO alarms render as gold. ISA-101 distinguishes HI (orange) from LO (yellow).
   - Fix: Wire `--alarm-hi` to HI alarm rendering. Consistent across gauge rows and alarm list.
 
-- [ ] **VIS-004**: Flow line glow too faint
+- [x] **VIS-004**: Flow line glow too faint
   - File: `style.css`
   - Issue: `drop-shadow(0 0 1px rgba(160,160,160,0.3))` is invisible at normal viewing distance.
   - Fix: Increase to 3-4x stronger, per-stream-color glows.
 
-- [ ] **VIS-005**: No Y-axis labels on trend graphs
+- [x] **VIS-005**: No Y-axis labels on trend graphs
   - File: `trendManager.js`, `faceplateManager.js`
   - Issue: Trend shows curve with no numeric scale — can't tell if value moved 2 or 20.
   - Fix: Add 4 Y-axis tick marks with numeric labels.
@@ -133,17 +133,17 @@ Status key: `[ ]` = open, `[x]` = fixed & verified, `[-]` = wontfix/deferred
   - Issue: `setAttribute('height')` and `setAttribute('y')` on every tick forces SVG relayout.
   - Fix: Use `transform: scaleY()` on fixed-height element for GPU compositing.
 
-- [ ] **VIS-007**: Screen shake on ESD trips
+- [x] **VIS-007**: Screen shake on ESD trips
   - File: `game.js` / `style.css`
   - Issue: Major events (compressor trip, relief valve) have no physical feedback.
   - Fix: `@keyframes center-shake` on `#center-panel`, 150ms, 3-4px amplitude.
 
-- [ ] **VIS-008**: Screen transitions are instant
+- [x] **VIS-008**: Screen transitions are instant
   - File: `game.js` / `style.css`
   - Issue: All screen changes are `display:none → display:flex` with no fade.
   - Fix: 150ms opacity crossfade on screen transitions.
 
-- [ ] **VIS-009**: Tag bubbles blue in normal state — ISA-101 violation
+- [x] **VIS-009**: Tag bubbles blue in normal state — ISA-101 violation
   - File: `style.css`
   - Issue: `.tag-bubble { stroke: #5A9FD4 }` always. Color should be reserved for abnormal.
   - Fix: Normal state → `#707070`. Blue only for currently-open faceplate tag.

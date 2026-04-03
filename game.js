@@ -1414,6 +1414,13 @@
       if (this.gcDisplay) this.gcDisplay.update();
       this._updateGaugeSheet();
 
+      // Screen-edge red glow when critical alarms active
+      const gs = document.getElementById('game-screen');
+      if (gs && this.alarmManager) {
+        const hasCritical = this.alarmManager.alarms.some(a => a.state === 'HIHI' || a.state === 'LOLO');
+        gs.classList.toggle('critical-alarm-active', hasCritical);
+      }
+
       // Mol sieve cycle tracking (cryo only)
       if (this.currentFacility === 'cryogenic') {
         this._tickMolSieveCycle(dt);
@@ -1609,6 +1616,9 @@
           this._compTripStartTime = this.sim.gameTimeMinutes;
           this._addRadioMessage('ESD: Compressor C-100 tripped on separator HIHI level — liquid carryover protection.');
           if (this.pnlSystem) this.pnlSystem.applyEventCost(800, 'COMP ESD TRIP');
+          if (this.audioManager) this.audioManager.playEffect('esd');
+          const cp = document.getElementById('center-panel');
+          if (cp) { cp.classList.add('esd-shake'); setTimeout(() => cp.classList.remove('esd-shake'), 200); }
         }
       }
 
@@ -1884,6 +1894,8 @@
       }
       if (this.audioManager && event.severity === 'critical') {
         this.audioManager.playEffect('alarm-critical');
+        const cp = document.getElementById('center-panel');
+        if (cp) { cp.classList.add('esd-shake'); setTimeout(() => cp.classList.remove('esd-shake'), 200); }
       }
       // Henry announces the event
       this._henryAnnounceEvent(event);
